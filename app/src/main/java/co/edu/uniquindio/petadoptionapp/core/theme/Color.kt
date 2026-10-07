@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.ui.theme
+package co.edu.uniquindio.petadoptionapp.core.theme
 
 import androidx.compose.ui.graphics.Color
 

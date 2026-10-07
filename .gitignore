@@ -34,3 +34,5 @@ replay_pid*
 /captures
 .externalNativeBuild
 .cxx
+
+app/build/
