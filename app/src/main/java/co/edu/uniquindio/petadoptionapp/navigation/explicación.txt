@@ -1,1 +1,0 @@
-Navegación principal de la app (conecta todas las features)

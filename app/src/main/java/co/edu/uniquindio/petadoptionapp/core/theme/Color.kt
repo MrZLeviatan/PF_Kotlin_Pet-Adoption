@@ -9,3 +9,11 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+
+// Fondo marrón claro
+val FondoMarron = Color(0xFFD9A066)
+// Amarillo para items seleccionados
+val ItemSeleccionado = Color(0xFFF5CE5B)
+// Casi negro para items no seleccionados
+val ItemNoSeleccionado = Color(0xFF1F1F1F)

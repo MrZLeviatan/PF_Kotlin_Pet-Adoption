@@ -1,11 +1,14 @@
 plugins {
+    // Habilita este módulo como una aplicación de Android.
     alias(libs.plugins.android.application)
+    // Activa Jetpack Compose para la interfaz gráfica con Kotlin.
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "co.edu.uniquindio.petadoptionapp"
     compileSdk {
+        // Versión del SDK con la que se compilará la aplicación.
         version = release(37)
     }
 
@@ -45,6 +48,23 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Librerias implementadas:
+
+    // Sistema de navegación entre pantallas usando Compose.
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Iconos extendidos de Material Design
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+
+
+    // Coil para cargar imágenes desde URL
+    // Muestra imágenes en Compose
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    // Permite descargarlas de internet
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
