@@ -19,20 +19,22 @@ enum class DashboardDestination(
     // Propiedad para guardar el ícono correspondiente a la opción
     val icon: ImageVector,
     // Roles que pueden ver este item
-    val roles: Set<UserRole>
+    val roles: Set<UserRole>,
+    // Pantalla a la que lleva. null = no es una pantalla (es el botón "+")
+    val route: DashboardRoutes?
 
 ) {
 
     // Lista de opciones para el navigation bar para Usuario
-    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USUARIO)),
-    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USUARIO)),
-    ADD("", Icons.Filled.Add, setOf(UserRole.USUARIO)),
+    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USUARIO), DashboardRoutes.HomeUser),
+    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USUARIO), DashboardRoutes.Explore),
+    ADD("", Icons.Filled.Add, setOf(UserRole.USUARIO), null),
 
     // Lista de opciones para el navigation bar para Monitor
-    DASHBOARD("Dashboard", Icons.Outlined.Dashboard, setOf(UserRole.MONITOR)),
-    PUBLICATIONS("Feeds", Icons.Outlined.Storage, setOf(UserRole.MONITOR)),
+    DASHBOARD("Dashboard", Icons.Outlined.Dashboard, setOf(UserRole.MONITOR), DashboardRoutes.HomeMonitor),
+    PUBLICATIONS("Feeds", Icons.Outlined.Storage, setOf(UserRole.MONITOR), DashboardRoutes.Publications),
 
     // Lista de opciones compartida
-    MESSAGES("Mensajes", Icons.Outlined.ChatBubbleOutline, UserRole.entries.toSet()),
-    PROFILE("Perfil", Icons.Outlined.AccountCircle, UserRole.entries.toSet())
+    MESSAGES("Mensajes", Icons.Outlined.ChatBubbleOutline, UserRole.entries.toSet(), DashboardRoutes.Messages),
+    PROFILE("Perfil", Icons.Outlined.AccountCircle, UserRole.entries.toSet(), DashboardRoutes.Profile)
 }

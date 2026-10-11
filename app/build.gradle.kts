@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.android.application)
     // Activa Jetpack Compose para la interfaz gráfica con Kotlin.
     alias(libs.plugins.kotlin.compose)
+    // Agrega el plugin de serialización de Kotlin.
+    kotlin("plugin.serialization") version "2.0.21"
+
 }
 
 android {
@@ -49,14 +52,18 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+
+
     // Librerias implementadas:
 
+    // Importa la librería oficial de Kotlinx Serialization para analizar y serializar objetos a formato JSON
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     // Sistema de navegación entre pantallas usando Compose.
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+    // Para usar viewModel() (omítela si ya la tienes)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     // Iconos extendidos de Material Design
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
-
 
     // Coil para cargar imágenes desde URL
     // Muestra imágenes en Compose

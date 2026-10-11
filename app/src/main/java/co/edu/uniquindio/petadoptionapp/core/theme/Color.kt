@@ -16,6 +16,9 @@ val FondoMarron = Color(0xFFD4A373)
 val FondoCrema = Color(0xFFFBEBC4)
 val FondoClaro = Color(0xFFFFF6E0)
 val FondoEtiquetasClaro = Color(0xFFF1D9B5)
+val FondoTarjeta = Color(0xFFFFFFFF)
+val FondoAviso = Color(0xFFF5E6D3)
+
 
 // Items:
 val ItemSeleccionado = Color(0xFFE8D5B7)
@@ -26,3 +29,9 @@ val ItemNoSeleccionado = Color(0xFF1F1F1F)
 // Texto y Bordes:
 val TextoMarron = Color(0xFF4A2C0F)
 val BordeMarron = Color(0xFFC98F55)
+
+
+// Botones
+val BotonDeshabilitado = Color(0xFF9E9382)
+val ChipSeleccionado = Color(0xFFD4A06A)
+val NaranjaBoton = Color(0xFFC98A45)

@@ -5,8 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
-import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
+import co.edu.uniquindio.petadoptionapp.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,8 +16,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             // Aplica los colores y estilos de tu tema a todo lo de adentro
             PetAdoptionAppTheme {
-                // Carga la pantalla principal con la barra inferior.
-                MainScreen(role = UserRole.USUARIO)
+                // Carga el enrutador con todas las rutas
+                AppNavigation()
             }
         }
     }
