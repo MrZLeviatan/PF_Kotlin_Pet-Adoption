@@ -18,6 +18,7 @@ val FondoClaro = Color(0xFFFFF6E0)
 val FondoEtiquetasClaro = Color(0xFFF1D9B5)
 val FondoTarjeta = Color(0xFFFFFFFF)
 val FondoAviso = Color(0xFFF5E6D3)
+val FondoChip = Color(0xFFF1D9B5)
 
 
 // Items:
