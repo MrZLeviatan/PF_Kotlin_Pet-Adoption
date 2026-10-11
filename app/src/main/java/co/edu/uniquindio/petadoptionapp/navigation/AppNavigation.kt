@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
+import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 
 // Componente raíz de navegación encargada de configurar las rutas principales de toda la aplicación.
 @Composable
@@ -29,7 +30,10 @@ fun AppNavigation() {
             MainScreen(
                 role = args.role,
                 // Al tocar el botón central "+", navega a la pantalla de crear publicación colocándola encima del dashboard.
-                onCreatePost = { navController.navigate(MainRoutes.CreatePost) }
+                onCreatePost = { navController.navigate(MainRoutes.CreatePost) },
+                // Al tocar una tarjeta, abre el detalle con el id de esa publicación
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+
             )
         }
 
@@ -40,6 +44,15 @@ fun AppNavigation() {
                 onBack = { navController.popBackStack() },
                 onViewPost = { navController.popBackStack() },
                 onGoHome = { navController.popBackStack() }
+            )
+        }
+
+        // Detalle de la publicación (sin barra inferior)
+        composable<MainRoutes.PostDetail> {
+            val args = it.toRoute<MainRoutes.PostDetail>()      // Lee el id que llegó
+            PostDetailScreen(
+                postId = args.postId,
+                onBack = { navController.popBackStack() }       // Vuelve al feed
             )
         }
     }

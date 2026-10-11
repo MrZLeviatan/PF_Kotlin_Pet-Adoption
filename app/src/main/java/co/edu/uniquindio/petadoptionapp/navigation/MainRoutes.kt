@@ -15,4 +15,9 @@ sealed class MainRoutes {
     // Ruta para la pantalla completa de creación de una nueva publicación (se muestra en pantalla completa sin barra inferior).
     @Serializable
     data object CreatePost : MainRoutes()
+
+    // Detalle de una publicación (pantalla completa, sin barra)
+    @Serializable
+    data class PostDetail(val postId: String) : MainRoutes()
+
 }

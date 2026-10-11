@@ -16,7 +16,8 @@ fun DashboardNavigation(
     // Espacio de relleno (padding) proporcionado para evitar que el contenido se solape con la barra inferior.
     padding: PaddingValues,
     // Rol actual del usuario logueado para determinar su pantalla de inicio.
-    role: UserRole
+    role: UserRole,
+    onPostClick: (String) -> Unit = {}
 ) {
     // Componente contenedor que configura la navegación basada en destinos y rutas serializables.
     NavHost(
@@ -31,7 +32,7 @@ fun DashboardNavigation(
     ) {
         // Pantalla de inicio para Usuario
         composable<DashboardRoutes.HomeUser> {
-            HomeUserScreen(padding = padding)
+            HomeUserScreen(padding = padding, onPostClick = onPostClick)
         }
     }
 }

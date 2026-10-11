@@ -21,7 +21,9 @@ fun MainScreen(
     // Rol del usuario. Por defecto Usuario
     role: UserRole = UserRole.USUARIO,
     // Se ejecuta al tocar el "+". Lo resuelve AppNavigation
-    onCreatePost: () -> Unit = {}
+    onCreatePost: () -> Unit = {},
+    // Se ejecuta al darle click a una publicación
+    onPostClick: (String) -> Unit = {}
 ) {
 
     // Controlador del NavHost interno (el que cambia de pantalla al tocar la barra)
@@ -72,7 +74,8 @@ fun MainScreen(
         DashboardNavigation(
             navController = navController,
             padding = padding,
-            role = role
+            role = role,
+            onPostClick = onPostClick
         )
     }
 }
