@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.core.component
 
 // Importación general de materiales y componentes visuales (androidx)
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,8 @@ fun formFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedContainerColor = FondoClaro,
     // Color de fondo cuando el campo se encuentra en reposo.
     unfocusedContainerColor = FondoClaro,
+    // Color de fondo cuando ocurre un error
+    errorContainerColor = FondoClaro,
     // Color del borde exterior cuando el usuario está escribiendo.
     focusedBorderColor = BordeMarron,
     // Color del borde exterior cuando el campo está inactivo.
@@ -48,8 +51,20 @@ fun formFieldColors() = OutlinedTextFieldDefaults.colors(
     unfocusedTextColor = TextoMarron,
     // Color de la etiqueta flotante cuando el campo está enfocado.
     focusedLabelColor = TextoMarron,
+    // Color del texto al ocurrir un error
+    errorTextColor = TextoMarron,
     // Color de la etiqueta flotante cuando el campo está en reposo.
-    unfocusedLabelColor = TextoMarron
+    unfocusedLabelColor = TextoMarron,
+
+    // Color de los mensajes de error
+
+    errorBorderColor = ColorError,
+    // Color de la etiqueta flotante al haber error
+    errorLabelColor = ColorError,
+    // Color del texto de apoyo (el mensaje de error debajo del campo)
+    errorSupportingTextColor = ColorError,
+    // Color del cursor de escritura si llega a activarse en error
+    errorCursorColor = ColorError
 )
 
 // Componente de tarjeta blanca con esquinas redondeadas y un título centrado para agrupar secciones.
@@ -148,18 +163,42 @@ fun FormDropdown(
         Box(modifier = Modifier.matchParentSize().clickable { expanded = true })
 
         // Menú desplegable que muestra las opciones disponibles.
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, containerColor = FondoTarjeta) {
             // Recorre cada opción de la lista para renderizarla como un elemento seleccionable.
             options.forEach { option ->
+
+                // Evaluamos si esta opción es la que está seleccionada actualmente
+                val isSelected = option == value
+
                 DropdownMenuItem(
                     // Muestra el texto de la opción actual.
-                    text = { Text(option) },
+                    text = { Text(option, color = TextoMarron, fontWeight = FontWeight.Medium) },
                     onClick = {
                         // Notifica al componente padre cuál opción fue seleccionada.
                         onSelect(option)
                         // Cierra automáticamente el menú desplegable.
                         expanded = false
-                    }
+                    },
+                    // Aplicamos un modificador condicional para que dibuje el borde hacia afuera si está seleccionada
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 2.dp) // Pequeño margen alrededor
+                        .then(
+                            if (isSelected) {
+                                Modifier.border(
+                                    width = 1.5.dp,
+                                    color = TextoMarron, // O el color de borde que prefieras para la selección
+                                    shape = RoundedCornerShape(8.dp) // Bordes redondeados para el contorno
+                                )
+                            } else {
+                                Modifier // Sin borde si no está seleccionado
+                            }
+                        ),
+                    // Personaliza los colores de los elementos internos si lo requieres
+                    colors = MenuDefaults.itemColors(
+                        textColor = TextoMarron,
+                        leadingIconColor = TextoMarron,
+                        trailingIconColor = TextoMarron
+                    )
                 )
             }
         }

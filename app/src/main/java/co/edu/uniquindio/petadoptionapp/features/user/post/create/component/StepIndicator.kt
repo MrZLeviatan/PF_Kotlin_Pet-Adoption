@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 // Importación de los temas a usar
 import co.edu.uniquindio.petadoptionapp.core.theme.BotonDeshabilitado
+
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemSeleccionado
 import co.edu.uniquindio.petadoptionapp.core.theme.TextoMarron

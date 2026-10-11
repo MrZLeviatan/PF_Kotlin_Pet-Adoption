@@ -7,6 +7,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,7 +58,10 @@ fun StepInfoContent(state: CreatePostUiState, viewModel: CreatePostViewModel) {
             // Ocupa todo el ancho disponible y fija una altura amplia de 180dp.
             modifier = Modifier.fillMaxWidth().height(180.dp),
             // Muestra un texto guía temporal orientativo en tamaño de 13sp cuando está vacío.
-            placeholder = { Text("Describe la situación de la mascota, su personalidad, necesidades especiales...", fontSize = 13.sp) },
+            placeholder = { Text("Describe la situación de la mascota, su personalidad, necesidades especiales...", fontSize = 13.sp, color = Color(
+                0xFFB4A585
+            )
+            ) },
             // Cambia los bordes a color rojo si la descripción contiene algún error de validación.
             isError = state.descriptionError != null,
             // Texto de apoyo inferior que muestra dinámicamente el error o el contador de caracteres.

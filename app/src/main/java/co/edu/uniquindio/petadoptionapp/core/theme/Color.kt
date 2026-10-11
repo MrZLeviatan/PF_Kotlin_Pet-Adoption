@@ -21,7 +21,7 @@ val FondoAviso = Color(0xFFF5E6D3)
 
 
 // Items:
-val ItemSeleccionado = Color(0xFFE8D5B7)
+val ItemSeleccionado = Color(0xFFE9C46A)
 val ItemCrearFeed = Color(0xFFE9C46A)
 val ItemNoSeleccionado = Color(0xFF1F1F1F)
 
@@ -33,5 +33,12 @@ val BordeMarron = Color(0xFFC98F55)
 
 // Botones
 val BotonDeshabilitado = Color(0xFF9E9382)
+
+val BotonHabilitado = Color(0xFFE9C46A)
 val ChipSeleccionado = Color(0xFFD4A06A)
 val NaranjaBoton = Color(0xFFC98A45)
+
+
+// Error
+
+val ColorError = Color(0xFFD32F2F)
