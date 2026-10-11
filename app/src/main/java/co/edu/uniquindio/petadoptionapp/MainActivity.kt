@@ -4,40 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
-import co.edu.uniquindio.petadoptionapp.features.home.HomeScreen
+import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Permite que la app se dibuje detrás de la barra de estado y la de navegación del sistema
         enableEdgeToEdge()
+        // Aquí empieza la interfaz de la app
         setContent {
+            // Aplica los colores y estilos de tu tema a todo lo de adentro
             PetAdoptionAppTheme {
-                HomeScreen()
+                // Carga la pantalla principal con la barra inferior.
+                MainScreen(role = UserRole.USUARIO)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PetAdoptionAppTheme {
-        Greeting("Android")
     }
 }

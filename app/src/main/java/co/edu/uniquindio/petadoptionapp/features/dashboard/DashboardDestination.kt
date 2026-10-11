@@ -23,14 +23,14 @@ enum class DashboardDestination(
 
 ) {
 
-    // Lista de opciones para el navigation bar para User
-    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USER)),
-    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USER)),
-    ADD("", Icons.Filled.Add, setOf(UserRole.USER)),
+    // Lista de opciones para el navigation bar para Usuario
+    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USUARIO)),
+    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USUARIO)),
+    ADD("", Icons.Filled.Add, setOf(UserRole.USUARIO)),
 
     // Lista de opciones para el navigation bar para Monitor
     DASHBOARD("Dashboard", Icons.Outlined.Dashboard, setOf(UserRole.MONITOR)),
-    PUBLICATIONS("Publicaciones", Icons.Outlined.Storage, setOf(UserRole.MONITOR)),
+    PUBLICATIONS("Feeds", Icons.Outlined.Storage, setOf(UserRole.MONITOR)),
 
     // Lista de opciones compartida
     MESSAGES("Mensajes", Icons.Outlined.ChatBubbleOutline, UserRole.entries.toSet()),

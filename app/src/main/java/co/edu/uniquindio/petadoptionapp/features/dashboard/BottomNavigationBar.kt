@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemSeleccionado
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemNoSeleccionado
+import co.edu.uniquindio.petadoptionapp.core.theme.ItemCrearFeed
 import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
 
 // Define el componente visual de la barra de navegación inferior.
@@ -60,7 +61,7 @@ fun BottomNavigationBar(
                                 // Tamaño del círculo
                                 .size(52.dp)
                                 // Color amarillo y forma redonda
-                                .background(ItemSeleccionado, CircleShape),
+                                .background(ItemCrearFeed, CircleShape),
                             // Centra el "+" dentro del círculo
                             contentAlignment = Alignment.Center
                         ) {
@@ -119,7 +120,7 @@ fun BottomNavigationBar(
     }
 }
 
-// Preview del USER: Inicio, Explorar, +, Mensajes, Perfil
+// Preview del NavigationBar Usuario
 @Preview(showBackground = true)
 @Composable
 fun BottomNavigationBarUserPreview() {
@@ -128,7 +129,7 @@ fun BottomNavigationBarUserPreview() {
 
     BottomNavigationBar(
         // Solo los items que puede ver el USER
-        items = DashboardDestination.entries.filter { UserRole.USER in it.roles },
+        items = DashboardDestination.entries.filter { UserRole.USUARIO in it.roles },
         // Muestra el item seleccionado
         selectedIndex = selected,
         // Al tocar un item, lo marca como seleccionado
@@ -136,7 +137,7 @@ fun BottomNavigationBarUserPreview() {
     )
 }
 
-// Preview del MONITOR: Dashboard, Publicaciones, Mensajes, Perfil
+// Preview del NavigationBar Monitor
 @Preview(showBackground = true)
 @Composable
 fun BottomNavigationBarMonitorPreview() {
