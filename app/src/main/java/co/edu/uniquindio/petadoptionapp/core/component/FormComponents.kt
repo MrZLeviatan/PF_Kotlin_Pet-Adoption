@@ -22,7 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// Importación de los temas a usar
 import co.edu.uniquindio.petadoptionapp.core.theme.*
+
 
 // Genera un texto estilizado agregando un asterisco de color rojo al final para indicar campo obligatorio.
 fun requiredText(text: String): AnnotatedString = buildAnnotatedString {

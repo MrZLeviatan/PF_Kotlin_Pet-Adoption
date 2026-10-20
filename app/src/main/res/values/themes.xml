@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.PetAdoptionApp" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- res/values/themes.xml -->
+    <style name="Theme.PetAdoptionApp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFFFF6E0</item>
+    </style>
 </resources>

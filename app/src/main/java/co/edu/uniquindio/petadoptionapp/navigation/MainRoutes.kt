@@ -8,6 +8,11 @@ import kotlinx.serialization.Serializable
 // Define una clase sellada (sealed class) que agrupa las rutas de nivel superior (pantallas principales y modales sin barra inferior).
 sealed class MainRoutes {
 
+
+    // Pantalla de carga inicial
+    @Serializable
+    data object Splash : MainRoutes()
+
     // Ruta del dashboard principal que contiene la barra de navegación inferior. Recibe obligatoriamente el rol del usuario como parámetro.
     @Serializable
     data class Main(val role: UserRole) : MainRoutes()
