@@ -42,7 +42,7 @@ conserva los valores por defecto del esquema base, que siguen siendo válidos.
 @Composable
 fun PetAdoptionAppTheme(
     // Detecta por defecto si el móvil está en modo oscuro.
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     // Pasa las pantallas o vistas hijas que irán dentro del tema
     content: @Composable () -> Unit,
 ) {

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Kog`Maw adoption app</string>
+    <string name="app_name_pantallas">Huellas</string>
+    <string name="splash_tagline">Adopta con amor, cambia una vida</string>
+    <string name="splash_hero_description">Imagen de perro y gatos descansando juntos</string>
+    <string name="splash_notice_title">Adopción responsable</string>
+    <string name="splash_notice_message">Adoptar responsablemente significa brindar amor, compromiso y cuidado durante toda la vida de tu compañero.</string>
 </resources>

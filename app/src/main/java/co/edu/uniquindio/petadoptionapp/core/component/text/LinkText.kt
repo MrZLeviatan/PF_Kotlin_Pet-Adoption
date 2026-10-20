@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.core.component
+package co.edu.uniquindio.petadoptionapp.core.component.text
 
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +10,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.tooling.preview.Preview
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
+import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 /**
  Enlace de texto reutilizable
@@ -43,4 +45,13 @@ fun LinkText(
             // `Role.Button` hace que TalkBack lo anuncie como botón/acción.
             .clickable(role = Role.Button, onClick = onClick),
     )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun LinkTextPreview() {
+    PetAdoptionAppTheme {
+        LinkText(text = "¿Olvidaste tu contraseña?", onClick = {})
+    }
 }
