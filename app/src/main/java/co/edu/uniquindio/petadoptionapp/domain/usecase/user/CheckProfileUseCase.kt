@@ -29,6 +29,8 @@ class CheckProfileUseCase(
                 when {
                     // Retorna un fallo si no se encuentra el perfil del moderador.
                     moderator == null -> Result.failure(UserException.ProfileNotFound)
+                    moderator.account.id != account.id ||
+                            moderator.account.role != account.role -> Result.failure(UserException.ProfileMismatch)
                     // Retorna un fallo si el moderador no tiene permisos activos para moderar.
                     !moderator.canModerate() -> Result.failure(AuthException.InactiveModerator)
                     // Retorna éxito si el moderador cumple con todas las condiciones.
@@ -40,10 +42,18 @@ class CheckProfileUseCase(
             UserRole.USER -> {
                 // Busca el perfil del usuario por ID.
                 val user = userRepository.findById(account.id)
-                // Retorna un fallo si no existe o si la cuenta ya fue eliminada (anonimizada).
-                if (user == null || user.deleted) Result.failure(UserException.ProfileNotFound)
-                // Retorna éxito si el perfil existe y está activo.
-                else Result.success(Unit)
+                when {
+                    // Retorna un fallo si no existe o si la cuenta ya fue eliminada (anonimizada).
+                    user == null -> Result.failure(UserException.ProfileNotFound)
+                    // Retorna un fallo si la cuenta no coincide con la del perfil.
+                    user.deleted -> Result.failure(UserException.AccountDeleted)
+                    // Retorna un fallo si la cuenta no coincide con la del perfil.
+                    user.account.id != account.id ||
+                            user.account.role != account.role -> Result.failure(UserException.ProfileMismatch)
+                    // Retorna éxito si el perfil cumple con todas las condiciones.
+                    else -> Result.success(Unit)
+                }
             }
+
         }
 }

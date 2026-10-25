@@ -31,16 +31,21 @@ class RegisterUseCase(
         location: Location
     ): Result<Account> {
 
+
+        // Normaliza una sola vez; este valor se usa en todo el flujo.
+        val email = credentials.email.trim().lowercase()
+        val cleanUserName = userName.trim()
+        val cleanName = name.trim()
+        val cleanPhone = phone.trim()
+        val cleanCredentials = credentials.copy(email = email)
+
         // 1. Válida el formato de todos los campos (Sin internet)
 
-        if (!AuthValidator.isEmailValid(credentials.email))
-            return Result.failure(AuthException.InvalidEmail)
-        if (!AuthValidator.isPasswordValid(credentials.password))
-            return Result.failure(AuthException.WeakPassword)
-        if (!UserValidator.isUserNameValid(userName))
-            return Result.failure(UserException.InvalidUserName)
-        if (!UserValidator.isPhoneValid(phone))
-            return Result.failure(UserException.InvalidPhone)
+        if (!AuthValidator.isEmailValid(email)) return Result.failure(AuthException.InvalidEmail)
+        if (!AuthValidator.isPasswordValid(credentials.password)) return Result.failure(AuthException.WeakPassword)
+        if (!UserValidator.isNameValid(cleanName)) return Result.failure(UserException.InvalidName)
+        if (!UserValidator.isUserNameValid(cleanUserName)) return Result.failure(UserException.InvalidUserName)
+        if (!UserValidator.isPhoneValid(cleanPhone)) return Result.failure(UserException.InvalidPhone)
 
         // 2. La ubicación debe tener coordenadas reales
         if (!location.hasCoordinates())
@@ -48,15 +53,14 @@ class RegisterUseCase(
 
         // 3. Duplicados que Firebase Auth no conoce.
 
-        if (userRepository.existsByUserName(userName.trim()))
-            return Result.failure(UserException.UserNameTaken)
-        if (userRepository.existsByPhone(phone.trim()))
-            return Result.failure(UserException.PhoneTaken)
+        if (userRepository.existsByUserName(cleanUserName)) return Result.failure(UserException.UserNameTaken)
+        if (userRepository.existsByPhone(cleanPhone)) return Result.failure(UserException.PhoneTaken)
+
 
         // 4. Firebase crea la cuenta (rechaza si el email ya existe).
 
         // Registra las credenciales en el repositorio de autenticación para obtener el identificador único.
-        val uid = authRepository.register(credentials)
+        val uid = authRepository.register(cleanCredentials)
             // Obtiene el identificador único o retorna el error si falla el registro.
             .getOrElse { return Result.failure(it) }
 
@@ -66,12 +70,12 @@ class RegisterUseCase(
         // Crea el objeto de cuenta con los datos básicos y el rol de usuario estándar.
         val account = Account(
             id = uid,
-            email = credentials.email.trim(),
-            userName = userName.trim(),
+            email = email,
+            userName = cleanUserName,
             role = UserRole.USER
         )
         // Crea el objeto de perfil de usuario asociando la cuenta, el nombre y el teléfono.
-        val user = User(account = account, name = name.trim(), phone = phone.trim(), location = location)
+        val user = User(account = account, name = cleanName, phone = cleanPhone, location = location)
 
         // 6. Guardar el perfil; si falla, cerrar sesión para no dejarla a medias.
 
@@ -79,11 +83,11 @@ class RegisterUseCase(
             // Retorna el éxito con la cuenta creada si se guarda correctamente.
             onSuccess = { Result.success(account) },
             // Ejecuta este bloque si falla el almacenamiento del perfil.
-            onFailure = {
-                // Cierra la sesión activa para evitar dejarla a medias.
-                authRepository.logout()
+            onFailure = { error ->
+                // Cierra la sesión y elimina la cuenta en caso de fallo.
+                authRepository.deleteAccount().onFailure { authRepository.logout() }
                 // Retorna el error obtenido como un fallo.
-                Result.failure(it)
+                Result.failure(error)
             }
         )
     }

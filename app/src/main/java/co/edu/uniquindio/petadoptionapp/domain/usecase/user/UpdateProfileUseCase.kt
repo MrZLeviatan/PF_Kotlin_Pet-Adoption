@@ -11,7 +11,9 @@ El alias no se edita aquí: es parte de la identidad (`Account`).
  */
 class UpdateProfileUseCase(
     // Inyecta el repositorio de usuarios.
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    // Inyecta el caso de uso que confirma que quien pide es el titular.
+    private val requireOwnUser: RequireOwnUserUseCase
 ) {
     // Define la función asíncrona principal que recibe los datos de actualización y devuelve un resultado vacío.
     suspend operator fun invoke(
@@ -27,19 +29,28 @@ class UpdateProfileUseCase(
         location: Location
     ): Result<Unit> {
 
+        // 1. Solo el titular de la sesión puede editar este perfil.
+        requireOwnUser(userId).getOrElse { return Result.failure(it) }
+
+        // 2. Formato de los campos, sin internet.
+        val cleanName = name.trim()
+        val cleanPhone = phone.trim()
         // Valida si el formato del nombre es correcto y retorna un fallo si no lo es.
-        if (!UserValidator.isNameValid(name)) return Result.failure(UserException.InvalidName)
+        if (!UserValidator.isNameValid(cleanName)) return Result.failure(UserException.InvalidName)
         // Valida si el formato del teléfono es correcto y retorna un fallo si no lo es.
-        if (!UserValidator.isPhoneValid(phone)) return Result.failure(UserException.InvalidPhone)
+        if (!UserValidator.isPhoneValid(cleanPhone)) return Result.failure(UserException.InvalidPhone)
         // Válida si la ubicación contiene coordenadas válidas y retorna un fallo si no las tiene.
         if (!location.hasCoordinates()) return Result.failure(UserException.InvalidLocation)
 
-        // Verifica si el número de teléfono ya está registrado por otro usuario excluyendo el ID actual.
-        if (userRepository.existsByPhone(phone.trim(), excludeId = userId))
-        // Retorna un fallo si el teléfono ya se encuentra ocupado.
+        // 3. El perfil debe existir y estar activo.
+        val user = userRepository.findById(userId)
+        if (user == null || user.deleted) return Result.failure(UserException.ProfileNotFound)
+
+        // 4. El teléfono no puede ser de otra persona (se ignora el propio).
+        if (userRepository.existsByPhone(cleanPhone, excludeId = userId))
             return Result.failure(UserException.PhoneTaken)
 
-        // Actualiza los campos específicos del perfil en el repositorio con los valores limpios.
-        return userRepository.updateProfile(userId, name.trim(), phone.trim(), photoUrl, location)
+        // 5. Guarda solo estos campos.
+        return userRepository.updateProfile(userId, cleanName, cleanPhone, photoUrl, location)
     }
 }

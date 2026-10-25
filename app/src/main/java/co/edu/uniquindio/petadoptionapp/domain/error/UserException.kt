@@ -38,4 +38,16 @@ sealed class UserException : Exception() {
 
     // No existe el usuario buscado (por ejemplo, al abrir un perfil ajeno).
     object UserNotFound : UserException()
+
+    // Ocurre cuando una persona intenta modificar o eliminar el perfil de otra.
+    object NotAllowed : UserException()
+
+    // Ocurre cuando el perfil encontrado no corresponde a la cuenta autenticada (id o rol distintos).
+    object ProfileMismatch : UserException()
+
+    // Ocurre cuando la cuenta ya fue eliminada (anonimizada), pero su identidad de Auth sigue viva.
+    object AccountDeleted : UserException()
+
+    // Ocurre cuando el borrado de cuenta quedó a medias y hay que reintentarlo.
+    object DeletionIncomplete : UserException()
 }

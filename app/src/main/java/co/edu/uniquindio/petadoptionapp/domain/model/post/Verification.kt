@@ -44,4 +44,12 @@ data class Verification(
             reviewedAt = System.currentTimeMillis()
         )
     }
+
+    /**
+     Devuelve una copia marcada "en proceso": un moderador la está revisando.
+     */
+    fun startReview(moderatorId: String): Verification = copy(
+        status = VerificationStatus.IN_PROCESS,
+        reviewedBy = moderatorId
+    )
 }

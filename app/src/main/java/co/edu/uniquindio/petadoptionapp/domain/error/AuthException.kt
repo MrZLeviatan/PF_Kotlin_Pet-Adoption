@@ -32,6 +32,9 @@ sealed class AuthException : Exception() {
     // Un moderador intentó entrar, pero su cuenta está inactiva o suspendida.
     object InactiveModerator : AuthException()
 
+    // Ocurre cuando una acción exclusiva de moderadores la intenta otra persona o un moderador inactivo.
+    object NotModerator : AuthException()
+
 
     //  Errores de A2F
 
@@ -46,4 +49,9 @@ sealed class AuthException : Exception() {
 
     // Se agotaron los intentos de verificación.
     object TooManyAttempts : AuthException()
+
+    // Ocurre cuando se intenta una acción que exige sesión y no hay ninguna abierta.
+    object NotAuthenticated : AuthException()
+
+
 }

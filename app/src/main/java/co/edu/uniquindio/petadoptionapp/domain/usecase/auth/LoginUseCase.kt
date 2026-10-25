@@ -1,6 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.auth
 
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
+import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.auth.Credentials
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.LoginResult
@@ -46,11 +47,16 @@ class LoginUseCase(
                 checkProfile(result.account).fold(
                     // Si el perfil es válido, retorna el éxito con el resultado del login.
                     onSuccess = { Result.success(result) },
-                    // Si falla, cierra la sesión para evitar dejarla abierta a medias.
-                    onFailure = {
-                        authRepository.logout()
+                    // Si falla, limpia la sesión según el tipo de error.
+                    onFailure = { error ->
+                        // Si la cuenta ya estaba eliminada, termina de borrar su identidad; si no, solo cierra sesión.
+                        if (error === UserException.AccountDeleted) {
+                            authRepository.deleteAccount().onFailure { authRepository.logout() }
+                        } else {
+                            authRepository.logout()
+                        }
                         // Retorna el error encontrado como un fallo.
-                        Result.failure(it)
+                        Result.failure(error)
                     }
                 )
         }

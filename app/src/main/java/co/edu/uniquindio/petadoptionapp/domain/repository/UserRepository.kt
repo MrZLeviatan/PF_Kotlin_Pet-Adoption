@@ -5,6 +5,7 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.Moderator
 import co.edu.uniquindio.petadoptionapp.domain.model.users.User
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.AccountDeletionFeedback
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSettings
+import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSummary
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -50,6 +51,16 @@ interface UserRepository {
     - Qué recibe: Él [Moderator] o `null` si no existe.
      */
     suspend fun findModeratorById(id: String): Moderator?
+
+
+    /**
+    Busca perfiles cuyo alias empiece por el texto escrito.
+
+    - Qué envía: El [query] (lo que escribió la persona) y el [limit] de resultados.
+    - Qué recibe: Un [Result] con la lista de [UserSummary] que coinciden.
+    Excluye cuentas eliminadas (anonimizadas).
+     */
+    suspend fun searchByUserName(query: String, limit: Int): Result<List<UserSummary>>
 
 
     // Duplicados
