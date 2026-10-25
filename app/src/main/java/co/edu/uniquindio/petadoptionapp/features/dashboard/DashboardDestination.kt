@@ -10,7 +10,7 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.ui.graphics.vector.ImageVector
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 
 // Crea una lista fija (Enum) para definir las opciones del menú de navegación.
 enum class DashboardDestination(
@@ -26,13 +26,13 @@ enum class DashboardDestination(
 ) {
 
     // Lista de opciones para el navigation bar para Usuario
-    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USUARIO), DashboardRoutes.HomeUser),
-    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USUARIO), DashboardRoutes.Explore),
-    ADD("", Icons.Filled.Add, setOf(UserRole.USUARIO), null),
+    HOME("Inicio", Icons.Outlined.Home, setOf(UserRole.USER), DashboardRoutes.HomeUser),
+    EXPLORE("Explorar", Icons.Outlined.Explore, setOf(UserRole.USER), DashboardRoutes.Explore),
+    ADD("", Icons.Filled.Add, setOf(UserRole.USER), null),
 
     // Lista de opciones para el navigation bar para Monitor
-    DASHBOARD("Dashboard", Icons.Outlined.Dashboard, setOf(UserRole.MONITOR), DashboardRoutes.HomeMonitor),
-    PUBLICATIONS("Feeds", Icons.Outlined.Storage, setOf(UserRole.MONITOR), DashboardRoutes.Publications),
+    DASHBOARD("Dashboard", Icons.Outlined.Dashboard, setOf(UserRole.MODERATOR), DashboardRoutes.HomeMonitor),
+    PUBLICATIONS("Feeds", Icons.Outlined.Storage, setOf(UserRole.MODERATOR), DashboardRoutes.Publications),
 
     // Lista de opciones compartida
     MESSAGES("Mensajes", Icons.Outlined.ChatBubbleOutline, UserRole.entries.toSet(), DashboardRoutes.Messages),

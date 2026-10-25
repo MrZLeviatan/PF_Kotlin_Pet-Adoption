@@ -5,7 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.login.LoginScreen
@@ -41,7 +41,7 @@ fun AppNavigation() {
                 onLoginSuccess = {
                     // TEMPORAL: hasta tener autenticación real,
                     // entra al dashboard con rol fijo y saca el login de la pila.
-                    navController.navigate(MainRoutes.Main(role = UserRole.USUARIO)) {
+                    navController.navigate(MainRoutes.Main(role = UserRole.USER)) {
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },

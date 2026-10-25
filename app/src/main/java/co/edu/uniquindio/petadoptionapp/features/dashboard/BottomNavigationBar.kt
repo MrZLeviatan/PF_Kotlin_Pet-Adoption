@@ -27,7 +27,7 @@ import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemSeleccionado
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemNoSeleccionado
 import co.edu.uniquindio.petadoptionapp.core.theme.ItemCrearFeed
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 
 // Define el componente visual de la barra de navegación inferior.
 @Composable
@@ -129,7 +129,7 @@ fun BottomNavigationBarUserPreview() {
 
     BottomNavigationBar(
         // Solo los items que puede ver el USER
-        items = DashboardDestination.entries.filter { UserRole.USUARIO in it.roles },
+        items = DashboardDestination.entries.filter { UserRole.USER in it.roles },
         // Muestra el item seleccionado
         selectedIndex = selected,
         // Al tocar un item, lo marca como seleccionado
@@ -145,7 +145,7 @@ fun BottomNavigationBarMonitorPreview() {
 
     BottomNavigationBar(
         // Solo los items que puede ver el MONITOR
-        items = DashboardDestination.entries.filter { UserRole.MONITOR in it.roles },
+        items = DashboardDestination.entries.filter { UserRole.MODERATOR in it.roles },
         selectedIndex = selected,
         onItemClick = { selected = it }
     )

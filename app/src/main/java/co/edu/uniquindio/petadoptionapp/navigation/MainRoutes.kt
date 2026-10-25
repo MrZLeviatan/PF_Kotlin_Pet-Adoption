@@ -1,6 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.navigation
 
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import kotlinx.serialization.Serializable
 
 // Anotación que indica que todas las subclases de esta clase sellada pueden serializarse para Jetpack Navigation.

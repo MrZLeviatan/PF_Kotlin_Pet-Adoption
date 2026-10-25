@@ -30,4 +30,8 @@
         <string name="login_error_email_empty">Debe llenar el campo correo</string>
         <string name="login_error_email_invalid">Ingresa un correo válido</string>
         <string name="login_error_password_empty">Debe llenar el campo contraseña</string>
+
+
+    <!-- Strings en base a los comentarios de los post-->
+        <string name="comment_deleted">Comentario eliminado</string>
 </resources>

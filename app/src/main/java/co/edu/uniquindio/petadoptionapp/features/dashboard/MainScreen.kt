@@ -12,14 +12,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 import androidx.compose.ui.tooling.preview.Preview
-import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 
 
 // Pantalla contenedora: junta el contenido con la barra de navegación inferior
 @Composable
 fun MainScreen(
     // Rol del usuario. Por defecto Usuario
-    role: UserRole = UserRole.USUARIO,
+    role: UserRole = UserRole.USER,
     // Se ejecuta al tocar el "+". Lo resuelve AppNavigation
     onCreatePost: () -> Unit = {},
     // Se ejecuta al darle click a una publicación
