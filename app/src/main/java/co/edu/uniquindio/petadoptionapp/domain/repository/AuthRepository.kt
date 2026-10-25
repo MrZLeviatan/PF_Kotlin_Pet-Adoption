@@ -74,9 +74,8 @@ interface AuthRepository {
     /**
      Registra un nuevo usuario en la plataforma.
      *
-     - Qué envía: Las [credentials] (correo y contraseña) y él [userName] (nombre de usuario).
+     - Qué envía: Las [credentials] (correo y contraseña).
      - Qué recibe: Un [Result] con la UUID recién creada.
-     Da de alta a un usuario nuevo en el sistema de autenticación y base de datos.
 
      Firebase Auth solo conoce email y contraseña. El alias, el nombre y el teléfono son perfil, y se guardan en Firestore con UserRepository.
      */
@@ -102,6 +101,27 @@ interface AuthRepository {
      Permite al usuario actualizar su clave desde los ajustes de su perfil exigiendo verificar su identidad actual.
      */
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
+
+
+    // Eliminar cuenta
+
+    /**
+    Confirma la identidad de la sesión actual antes de una operación sensible.
+
+    - Qué envía ([password]): La contraseña vigente de la cuenta.
+    - Qué recibe: Un [Result<Unit>] que confirma si la contraseña es correcta.
+    Firebase exige haber iniciado sesión recientemente antes de borrar una cuenta.
+     */
+    suspend fun reauthenticate(password: String): Result<Unit>
+
+
+    /**
+    Elimina la cuenta de Firebase Auth de la sesión actual.
+
+    - Qué recibe: Un [Result<Unit>] que confirma si la cuenta fue eliminada.
+    Al borrarla, la sesión se cierra. El perfil de Firestore se borra aparte con UserRepository.
+     */
+    suspend fun deleteAccount(): Result<Unit>
 
 }
 

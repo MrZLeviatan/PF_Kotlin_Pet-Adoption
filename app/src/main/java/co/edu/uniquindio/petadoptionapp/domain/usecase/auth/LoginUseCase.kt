@@ -4,22 +4,22 @@ import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.model.auth.Credentials
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.LoginResult
-import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
-import co.edu.uniquindio.petadoptionapp.domain.usecase.user.checkProfile
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
 // Define la clase del caso de uso para gestionar el inicio de sesión.
 class LoginUseCase(
 
-    // Recibe la dependencia del repository de autenticación.
+    // Recibe la dependencia del repositorio de autenticación.
     private val authRepository: AuthRepository,
-    // Recibe la dependencia del repositorio de usuarios.
-    private val userRepository: UserRepository
+    // Recibe el caso de uso que verifica que la cuenta tenga un perfil válido.
+    private val checkProfile: CheckProfileUseCase
 
 ) {
     // Función asíncrona principal que se ejecuta al invocar el caso de uso.
     suspend operator fun invoke(credentials: Credentials): Result<LoginResult> {
 
-        // Válida si el formato del correo electrónico es correcto.
+        // Valida si el formato del correo electrónico es correcto.
         if (!AuthValidator.isEmailValid(credentials.email)) {
             // Retorna un fallo si el correo no es válido.
             return Result.failure(AuthException.InvalidEmail)
@@ -41,20 +41,18 @@ class LoginUseCase(
                     .map { result }
 
             // Ejecuta este bloque si el inicio de sesión fue exitoso.
-            is LoginResult.Success -> {
+            is LoginResult.Success ->
                 // Verifica la existencia y estado del perfil del usuario.
-                val error = userRepository.checkProfile(result.account)
-                // Comprueba si el perfil no presenta errores.
-                if (error == null) {
-                    // Retorna el éxito con el resultado del login.
-                    Result.success(result)
-                } else {
-                    // Cierra la sesión para evitar dejarla abierta a medias.
-                    authRepository.logout()
-                    // Retorna el error encontrado como un fallo.
-                    Result.failure(error)
-                }
-            }
+                checkProfile(result.account).fold(
+                    // Si el perfil es válido, retorna el éxito con el resultado del login.
+                    onSuccess = { Result.success(result) },
+                    // Si falla, cierra la sesión para evitar dejarla abierta a medias.
+                    onFailure = {
+                        authRepository.logout()
+                        // Retorna el error encontrado como un fallo.
+                        Result.failure(it)
+                    }
+                )
         }
     }
 }

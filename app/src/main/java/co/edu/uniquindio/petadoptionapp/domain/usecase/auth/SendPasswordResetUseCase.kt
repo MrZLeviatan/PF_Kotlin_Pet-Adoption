@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.auth
 
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
 /**
 Documenta el caso de uso para solicitar el correo de recuperación de contraseña.

@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.auth
 
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
 // Define la clase del caso de uso para cambiar la contraseña inyectando el repositorio de autenticación.
 class ChangePasswordUseCase(

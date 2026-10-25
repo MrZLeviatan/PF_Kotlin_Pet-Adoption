@@ -35,6 +35,10 @@ data class User (
     val settings: UserSettings = UserSettings(),
     // Última modificación del perfil, en milisegundos desde 1970 (epoch).
     val updatedAt: Long = System.currentTimeMillis(),
+    // Marca la cuenta como eliminada (borrado lógico).
+    val deleted: Boolean = false,
+    // Momento de eliminación, en milisegundos (epoch); nulo si la cuenta sigue activa.
+    val deletedAt: Long? = null,
 
 
     ){

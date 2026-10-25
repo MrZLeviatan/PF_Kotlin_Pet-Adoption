@@ -1,6 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.auth
 
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
+import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.auth.Credentials
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 import co.edu.uniquindio.petadoptionapp.domain.model.users.Account
@@ -8,6 +9,8 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.User
 import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.UserValidator
 
 /**
 Documenta el caso de uso que crea una nueva cuenta de usuario y su perfil coordinando ambos repositorios.
@@ -34,21 +37,21 @@ class RegisterUseCase(
             return Result.failure(AuthException.InvalidEmail)
         if (!AuthValidator.isPasswordValid(credentials.password))
             return Result.failure(AuthException.WeakPassword)
-        if (!AuthValidator.isUserNameValid(userName))
-            return Result.failure(AuthException.InvalidUserName)
-        if (!AuthValidator.isPhoneValid(phone))
-            return Result.failure(AuthException.InvalidPhone)
+        if (!UserValidator.isUserNameValid(userName))
+            return Result.failure(UserException.InvalidUserName)
+        if (!UserValidator.isPhoneValid(phone))
+            return Result.failure(UserException.InvalidPhone)
 
         // 2. La ubicación debe tener coordenadas reales
         if (!location.hasCoordinates())
-            return Result.failure(AuthException.InvalidLocation)
+            return Result.failure(UserException.InvalidLocation)
 
         // 3. Duplicados que Firebase Auth no conoce.
 
         if (userRepository.existsByUserName(userName.trim()))
-            return Result.failure(AuthException.UserNameTaken)
+            return Result.failure(UserException.UserNameTaken)
         if (userRepository.existsByPhone(phone.trim()))
-            return Result.failure(AuthException.PhoneTaken)
+            return Result.failure(UserException.PhoneTaken)
 
         // 4. Firebase crea la cuenta (rechaza si el email ya existe).
 
