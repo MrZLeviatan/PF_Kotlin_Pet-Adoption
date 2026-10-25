@@ -1,8 +1,33 @@
 <resources>
+    <!--Strings nativos de la App-->
     <string name="app_name">Kog`Maw adoption app</string>
-    <string name="app_name_pantallas">Huellas</string>
-    <string name="splash_tagline">Adopta con amor, cambia una vida</string>
-    <string name="splash_hero_description">Imagen de perro y gatos descansando juntos</string>
-    <string name="splash_notice_title">Adopción responsable</string>
-    <string name="splash_notice_message">Adoptar responsablemente significa brindar amor, compromiso y cuidado durante toda la vida de tu compañero.</string>
+
+    <!--String nativos de la pantalla Splash de carga-->
+        <string name="app_name_pantallas">Huellas</string>
+        <string name="splash_tagline">Adopta con amor, cambia una vida</string>
+        <string name="splash_hero_description">Imagen de perro y gatos descansando juntos</string>
+        <string name="splash_notice_title">Adopción responsable</string>
+        <string name="splash_notice_message">Adoptar responsablemente significa brindar amor, compromiso y cuidado durante toda la vida de tu compañero.</string>
+
+    <!--Strings nativos de la pantalla de Lógin-->
+        <string name="login_hero_description">Imagen de perro y gatos descansando juntos</string>
+        <!--%1$s = marcador donde irá el ícono, %2$s = nombre de la app-->
+        <string name="login_welcome">Bienvenid%1$s a %2$s</string>
+        <!--Lo que leen los lectores de pantalla, con la "o" real-->
+        <string name="login_welcome_spoken">Bienvenido a %1$s</string>
+        <string name="login_title">Inicio de sesión</string>
+        <string name="login_email_placeholder">Correo electrónico</string>
+        <string name="login_password_placeholder">Contraseña</string>
+        <string name="login_button">Iniciar sesión</string>
+        <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+        <string name="login_divider_or">o</string>
+        <string name="login_no_account">¿No tienes una cuenta?</string>
+        <string name="login_create_account">Crear una cuenta</string>
+        <!--Comunes (accesibilidad del campo de contraseña)-->
+        <string name="common_show_password">Mostrar contraseña</string>
+        <string name="common_hide_password">Ocultar contraseña</string>
+        <!--Mensajes error para el formulario-->
+        <string name="login_error_email_empty">Debe llenar el campo correo</string>
+        <string name="login_error_email_invalid">Ingresa un correo válido</string>
+        <string name="login_error_password_empty">Debe llenar el campo contraseña</string>
 </resources>

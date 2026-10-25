@@ -1,6 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.core.component.text
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,6 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
@@ -28,25 +31,29 @@ fun LinkText(
     // Parámetro opcional: modificadores externos para personalizar el diseño desde fuera
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        // Asigna el texto que se recibió por parámetro
-        text = text,
-        // Parte de labelMedium (Rubik) y solo sube el peso aquí. Así no se altera NavigationBar ni otros componentes que usan ese rol.
-        style = MaterialTheme.typography.labelMedium.copy(
-            fontWeight = FontWeight.SemiBold,
-            // Subrayado: el color solo no basta para identificar un link.
-            textDecoration = TextDecoration.Underline,
-        ),
-        // Asigna el color específico para los hipervínculos
-        color = AppTheme.colors.textLink,
-        modifier = modifier
-            // Área táctil mínima recomendada de 48dp: un texto de una línea mide ~20dp y sería difícil de tocar.
-            .heightIn(min = 48.dp)
-            // `Role.Button` hace que TalkBack lo anuncie como botón/acción.
-            .clickable(role = Role.Button, onClick = onClick),
-    )
-}
 
+    Box(
+        modifier = modifier
+            // 48 dp: mínimo recomendado de accesibilidad para elementos tocables.
+            .heightIn(min = 48.dp)
+            .widthIn(min = 48.dp)
+            // Role.Button: TalkBack lo anuncia como acción tocable.
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            // Asigna el texto que se recibió por parámetro
+            text = text,
+            // Solo se sube el peso aquí, para no afectar otros componentes que usan labelMedium.
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                // El color solo no basta para identificar un link (daltonismo).
+                textDecoration = TextDecoration.Underline,
+            ),
+            color = AppTheme.colors.textLink,
+        )
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

@@ -13,6 +13,11 @@ sealed class MainRoutes {
     @Serializable
     data object Splash : MainRoutes()
 
+
+    // Pantalla de inicio de sesión (sin barra inferior)
+    @Serializable
+    data object Login : MainRoutes()
+
     // Ruta del dashboard principal que contiene la barra de navegación inferior. Recibe obligatoriamente el rol del usuario como parámetro.
     @Serializable
     data class Main(val role: UserRole) : MainRoutes()

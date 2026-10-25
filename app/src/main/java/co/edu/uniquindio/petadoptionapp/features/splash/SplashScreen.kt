@@ -4,7 +4,6 @@ package co.edu.uniquindio.petadoptionapp.features.splash
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,7 +42,7 @@ import kotlinx.coroutines.delay
 import co.edu.uniquindio.petadoptionapp.core.component.icon.PawCircle
 
 
-// Tiempo que se muestra la marca antes de navegar.
+// Tiempo que se muestra la marca antes de navegar (Posteriormente se configura con la demora de conexión a los sistemas)
 private const val SPLASH_DURATION_MS = 2_500L
 
 // La altura de la imagen se deriva del ancho, para que se vea igual en cualquier pantalla.
@@ -57,7 +56,8 @@ private val CardCornerRadius = 24.dp
 
 /**
 Pantalla de carga inicial.
-Solo contiene la lógica de tiempo; el dibujo vive en [SplashContent]. No decide a dónde navegar: avisa que terminó y AppNavigation resuelve el destino.
+Solo contiene la lógica de tiempo; el dibujo vive en [SplashContent].
+No decide a dónde navegar: avisa que terminó y AppNavigation resuelve el destino.
  */
 @Composable
 fun SplashScreen(

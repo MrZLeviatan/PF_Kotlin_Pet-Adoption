@@ -7,9 +7,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import co.edu.uniquindio.petadoptionapp.domain.model.enums.UserRole
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
+import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
+import co.edu.uniquindio.petadoptionapp.features.login.LoginScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
-import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 
 // Componente raíz de navegación encargada de configurar las rutas principales de toda la aplicación.
 @Composable
@@ -21,18 +22,35 @@ fun AppNavigation() {
         startDestination = MainRoutes.Splash
     ) {
 
-        // Pantalla de carga
+        // Pantalla de carga: al terminar, va al login.
         composable<MainRoutes.Splash> {
             SplashScreen(
                 onFinished = {
-                    navController.navigate(MainRoutes.Main(role = UserRole.USUARIO)) {
+                    navController.navigate(MainRoutes.Login) {
+                        // Saca el splash de la pila: "atrás" no debe volver a él.
                         popUpTo<MainRoutes.Splash> { inclusive = true }
                     }
                 }
             )
-        }   // ← AQUÍ se cierra Splash
+        }
 
-        // Dashboard con la barra inferior (ahora al mismo nivel que Splash)
+        // Inicio de sesión
+        // Inicio de sesión
+        composable<MainRoutes.Login> {
+            LoginScreen(
+                onLoginSuccess = {
+                    // TEMPORAL: hasta tener autenticación real,
+                    // entra al dashboard con rol fijo y saca el login de la pila.
+                    navController.navigate(MainRoutes.Main(role = UserRole.USUARIO)) {
+                        popUpTo<MainRoutes.Login> { inclusive = true }
+                    }
+                },
+                onForgotPasswordClick = { /* pendiente: MainRoutes.ForgotPassword */ },
+                onRegisterClick = { /* pendiente: MainRoutes.Register */ },
+            )
+        }
+
+        // Dashboard con la barra inferior
         composable<MainRoutes.Main> {
             val args = it.toRoute<MainRoutes.Main>()
             MainScreen(
