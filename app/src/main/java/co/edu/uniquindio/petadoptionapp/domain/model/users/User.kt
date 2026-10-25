@@ -26,7 +26,7 @@ data class User (
     val phone: String = "",
     val photoUrl: String? = "",
     // Locación geográfica del usuario.
-    val location: Location,
+    val location: Location = Location(),
     // Reputación (métricas) del usuario.
     val reputation: Reputation = Reputation(),
     // Ids de los chats en los que participa la persona.
