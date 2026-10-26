@@ -12,5 +12,7 @@ data class Category(
     val id: String = "",
     val name: String = "",
     // Oculta la categoría para publicaciones nuevas sin borrar las existentes.
-    val active: Boolean = true
+    val active: Boolean = true,
+    // `true` si las publicaciones de esta categoría admiten el botón "Me interesa adoptar".
+    val allowsAdoptionRequests: Boolean = false
 )

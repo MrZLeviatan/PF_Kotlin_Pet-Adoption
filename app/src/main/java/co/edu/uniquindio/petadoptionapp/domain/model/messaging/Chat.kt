@@ -1,12 +1,12 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 
 /**
- Conversación entre dos personas, normalmente originada por una
- publicación (por ejemplo, alguien interesado en adoptar una mascota).
+Conversación entre dos personas, normalmente originada por una
+publicación (por ejemplo, alguien interesado en adoptar una mascota).
 
- Solo guarda un resumen del último mensaje para poder dibujar la lista de
- chats sin descargar los mensajes. Los mensajes completos viven en la
- sub-colección `messages`.
+Solo guarda un resumen del último mensaje para poder dibujar la lista de
+chats sin descargar los mensajes. Los mensajes completos viven en la
+subcolección `messages`.
  */
 data class Chat(
 
@@ -16,14 +16,18 @@ data class Chat(
     val participantIds: List<String> = emptyList(),
     // Publicación que originó el chat; nulo si no hay.
     val postId: String? = null,
-    // Texto del último mensaje, para la vista previa.
+    // Texto del último mensaje, para la vista previa; vacío si fue automático.
     val lastMessage: String = "",
+    // Tipo del último mensaje, para mostrar el texto traducido si fue automático.
+    val lastMessageType: MessageType = MessageType.TEXT,
     // Momento del último mensaje, en milisegundos (epoch), sirve para ordenar la lista.
-    val lastMessageAt: Long = System.currentTimeMillis(),
+    val lastMessageAt: Long = 0L,
     // Id de quien envió el último mensaje.
     val lastSenderId: String = "",
-    // Mensajes sin leer por participantes. La clave es el ID de la cuenta; el valor, la cantidad pendiente.
+    // Mensajes sin leer por participante. La clave es el id de la cuenta; el valor, la cantidad pendiente.
     val unreadCounts: Map<String, Int> = emptyMap(),
+    // Último momento en que cada participante abrió el chat (clave: id de la cuenta), en milisegundos (epoch).
+    val lastReadAt: Map<String, Long> = emptyMap(),
     // Momento en que se creó el chat, en milisegundos (epoch).
     val createdAt: Long = System.currentTimeMillis()
 ) {
@@ -35,11 +39,15 @@ data class Chat(
     // Cantidad de mensajes sin leer que tiene la persona indicada.
     fun unreadFor(userId: String): Int = unreadCounts[userId] ?: 0
 
+    // ¿La persona indicada ya vio este mensaje? Sirve para mostrar "visto".
+    fun isMessageSeenBy(userId: String, message: Message): Boolean =
+        message.sentAt <= (lastReadAt[userId] ?: 0L)
+
     companion object {
         /**
-         Genera un id determinista a partir de los dos participantes y la
-         publicación. Los ids se ordenan para que A+B y B+A produzcan el
-         mismo resultado, evitando chats duplicados.
+        Genera un id determinista a partir de los dos participantes y la
+        publicación. Los ids se ordenan para que A+B y B+A produzcan el
+        mismo resultado, evitando chats duplicados.
          */
         fun buildId(userA: String, userB: String, postId: String? = null): String {
             val (first, second) = listOf(userA, userB).sorted()
