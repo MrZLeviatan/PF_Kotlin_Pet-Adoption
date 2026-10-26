@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.newpassword
+package co.edu.uniquindio.petadoptionapp.features.auth.newpassword
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.channels.Channel

@@ -1,6 +1,8 @@
 package co.edu.uniquindio.petadoptionapp.data.repository.send
 
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.Notification
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalType
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Category
@@ -25,7 +27,7 @@ object SeedData {
     // Define los usuarios de prueba.
     val users = listOf(
         User(
-            account = Account(id = "u1", email = "ana@correo.com", userName = "ana_77", role = UserRole.USER),
+            account = Account(id = "u1", email = "n@gmail.com", userName = "ana_77", role = UserRole.USER),
             name = "Ana Gómez",
             phone = "3001234567",
             location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro")
@@ -48,7 +50,7 @@ object SeedData {
 
     // Define las contraseñas de prueba por correo (solo existen en esta fase; en Firebase las guarda Auth).
     val passwords = mapOf(
-        "nicolas.cabreras@uqvirtual.edu.co" to "12345",
+        "n@gmail.com" to "12345",
         "luis@correo.com" to "Secreta123",
         "mod@petadoption.com" to "Moderador123"
     )
@@ -81,7 +83,7 @@ object SeedData {
             description = "Cachorro criollo de ocho meses, juguetón y sociable.",
             animalTypeId = "dog", breed = "Criollo", size = AnimalSize.MEDIUM, ageInMonths = 8,
             vaccinated = true, neutered = false,
-            photoUrls = listOf("https://picsum.photos/400?random=11"),
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro"),
             verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
             createdAt = 1_000L
@@ -91,7 +93,7 @@ object SeedData {
             id = "p2", authorId = "u2", title = "Gato perdido en el norte", categoryId = "lost",
             description = "Gato gris con collar azul, se perdió cerca del parque.",
             animalTypeId = "cat", breed = "Mestizo", size = AnimalSize.SMALL, ageInMonths = 24,
-            photoUrls = listOf("https://picsum.photos/400?random=12"),
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
             verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
             importantCount = 3, createdAt = 2_000L
@@ -101,7 +103,7 @@ object SeedData {
             id = "p3", authorId = "u1", title = "Hogar de paso para cachorros", categoryId = "temporary",
             description = "Busco hogar temporal para tres cachorros rescatados.",
             animalTypeId = "dog", size = AnimalSize.SMALL,
-            photoUrls = listOf("https://picsum.photos/400?random=13"),
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro"),
             verification = Verification(status = VerificationStatus.UNVERIFIED,
                 priorityLevel = PriorityLevel.HIGH, priorityReason = "Animales en riesgo"),
@@ -111,7 +113,7 @@ object SeedData {
         Post(
             id = "p4", authorId = "u2", title = "Cachorros a la venta", categoryId = "adoption",
             description = "Vendo cachorros de raza, precio negociable.",
-            animalTypeId = "dog", photoUrls = listOf("https://picsum.photos/400?random=14"),
+            animalTypeId = "dog", photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
             verification = Verification(status = VerificationStatus.REJECTED, reviewedBy = "m1",
                 rejectionReason = "No se permite la venta de animales"),
@@ -139,5 +141,32 @@ object SeedData {
             BadgeRequirementType.POSTS_VERIFIED, 10),
         Badge("commenter", "Conversador", "Escribe 20 comentarios", "",
             BadgeRequirementType.COMMENTS_WRITTEN, 20)
+    )
+
+    // Define las notificaciones de ejemplo para ana_77 (u1): mezcla leídas y sin leer.
+    val notifications = listOf(
+        Notification(
+            id = "n1", recipientId = "u1", type = NotificationType.NEW_COMMENT,
+            actorId = "u2", actorName = "luis_9", postId = "p1", commentId = "c1",
+            read = false, createdAt = 5_000L
+        ),
+        Notification(
+            id = "n2", recipientId = "u1", type = NotificationType.POST_VERIFIED,
+            actorId = "m1", actorName = "mod_01", postId = "p1",
+            read = false, createdAt = 4_000L
+        ),
+        Notification(
+            id = "n3", recipientId = "u1", type = NotificationType.POST_IMPORTANT,
+            actorId = "u2", actorName = "luis_9", postId = "p1",
+            read = false, createdAt = 3_000L
+        ),
+        Notification(
+            id = "n4", recipientId = "u1", type = NotificationType.BADGE_UNLOCKED,
+            extra = "first_post", read = true, createdAt = 2_000L
+        ),
+        Notification(
+            id = "n5", recipientId = "u1", type = NotificationType.LEVEL_UP,
+            extra = "PROTECTOR", read = true, createdAt = 1_000L
+        )
     )
 }

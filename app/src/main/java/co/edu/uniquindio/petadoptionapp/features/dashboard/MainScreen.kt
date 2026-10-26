@@ -3,74 +3,88 @@ package co.edu.uniquindio.petadoptionapp.features.dashboard
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-
-// Importación de librerías para la navegación
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-
+import androidx.compose.runtime.key
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 
-
-// Pantalla contenedora: junta el contenido con la barra de navegación inferior
+/**
+Pantalla contenedora: lee el rol de la sesión y muestra la barra y las pantallas que le corresponden.
+ */
 @Composable
 fun MainScreen(
-    // Rol del usuario. Por defecto Usuario
-    role: UserRole = UserRole.USER,
-    // Se ejecuta al tocar el "+". Lo resuelve AppNavigation
     onCreatePost: () -> Unit = {},
-    // Se ejecuta al darle click a una publicación
-    onPostClick: (String) -> Unit = {}
+    onPostClick: (String) -> Unit = {},
+    viewModel: DashboardViewModel = hiltViewModel()
 ) {
+    val role by viewModel.role.collectAsStateWithLifecycle()
 
-    // Controlador del NavHost interno (el que cambia de pantalla al tocar la barra)
+    // Sin sesión no se dibuja nada: la navegación principal ya lleva al login.
+    role?.let { currentRole ->
+        // key(rol): si el rol cambia, se reconstruye la navegación interna desde su pantalla de inicio.
+        key(currentRole) {
+            MainContent(
+                role = currentRole,
+                onCreatePost = onCreatePost,
+                onPostClick = onPostClick
+            )
+        }
+    }
+}
+
+// Solo dibuja: recibe el rol ya resuelto. Es lo que se previsualiza.
+@Composable
+private fun MainContent(
+    role: UserRole,
+    onCreatePost: () -> Unit,
+    onPostClick: (String) -> Unit
+) {
+    // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
 
-    // Items de la barra: solo los que puede ver este rol
+    // Items de la barra: solo los que puede ver este rol.
     val items = DashboardDestination.entries.filter { role in it.roles }
 
-    // Pantalla en la que está el usuario ahora mismo (se actualiza sola al navegar)
+    // Pantalla actual (se actualiza sola al navegar).
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Posición del item que corresponde a la pantalla actual
+    // Posición del item que corresponde a la pantalla actual.
     val selectedIndex = items.indexOfFirst { item ->
         item.route?.let { route ->
             currentDestination?.hierarchy?.any { it.hasRoute(route::class) } == true
         } == true
     }
 
-    // Scaffold = esqueleto de la pantalla (barra inferior + contenido)
     Scaffold(
-        // Aquí va la barra inferior
         bottomBar = {
             BottomNavigationBar(
                 items = items,
                 selectedIndex = selectedIndex,
-                // Al tocar un item, lo marca como seleccionado
                 onItemClick = { index ->
                     val route = items[index].route
-
                     if (route == null) {
-                        // route null = es el botón "+": abre crear publicación
+                        // route null = botón "+": abre crear publicación.
                         onCreatePost()
                     } else {
-                        // Es un item normal: navega a su pantalla
                         navController.navigate(route) {
-                            // Evita que la pila crezca cada vez que tocas un item
+                            // Evita que la pila crezca al tocar items repetidamente.
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true   // No crea otra copia si ya estás en esa pantalla
-                            restoreState = true      // Recupera el estado al volver a una pantalla
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 }
             )
         }
     ) { padding ->
-        // Contenido que cambia según el item tocado
         DashboardNavigation(
             navController = navController,
             padding = padding,
@@ -80,9 +94,14 @@ fun MainScreen(
     }
 }
 
-// Preview para ver la pantalla completa en Android Studio
-@Preview(showBackground = true)
+@Preview(name = "Usuario", showBackground = true)
 @Composable
-fun MainScreenPreview() {
-    MainScreen()
+private fun MainUserPreview() {
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}) }
+}
+
+@Preview(name = "Moderador", showBackground = true)
+@Composable
+private fun MainModeratorPreview() {
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}) }
 }

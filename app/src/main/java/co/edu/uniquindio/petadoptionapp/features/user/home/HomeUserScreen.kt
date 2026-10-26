@@ -1,12 +1,13 @@
 package co.edu.uniquindio.petadoptionapp.features.user.home
 
-// Importación general de materiales y componentes visuales (androidx)
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,111 +37,95 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
+import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
+import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSummary
 import coil3.compose.AsyncImage
-// Importación de los temas a usar
-import co.edu.uniquindio.petadoptionapp.core.theme.BordeMarron
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoChip
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoClaro
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoCrema
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
-import co.edu.uniquindio.petadoptionapp.core.theme.ItemSeleccionado
-import co.edu.uniquindio.petadoptionapp.core.theme.TextoMarron
 
-// Publicación quemada (de mentira). Después vendrán de una base de datos
-private val burnedPost = FeedPost(
-    id = "1",
-    imageUrl = "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png",
-    type = "Adopción",
-    distanceKm = 2.4,
-    title = "Luna busca un hogar lleno de amor",
-    species = "Perro",
-    breed = "Mestiza",
-    size = "Mediana",
-    vaccinesInfo = "Vacunas al día",
-    interestedCount = 12
-)
+private val ScreenHorizontalPadding = 16.dp
 
+/**
+Pantalla de inicio del usuario.
+
+Conecta el [HomeUserViewModel] con la UI: observa el estado y reenvía las acciones.
+[HomeUserContent] solo dibuja.
+ */
 @Composable
 fun HomeUserScreen(
-    // Recibe los espacios o padding de la barra del sistema, por defecto vacíos.
     padding: PaddingValues = PaddingValues(),
-
-    // Se ejecuta al tocar una tarjeta y entrega el id (se usará para abrir el detalle).
     onPostClick: (String) -> Unit = {},
-    // El ViewModel que guarda el estado de la pantalla. viewModel() lo crea y lo recuerda.
-    viewModel: HomeUserViewModel = viewModel()
+    onUserClick: (String) -> Unit = {},
+    viewModel: HomeUserViewModel = hiltViewModel()
 ) {
-    // Observa el estado del ViewModel. Cada vez que cambia, la pantalla se redibuja.
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Se ejecuta una sola vez al abrir la pantalla y entrega la publicación quemada al ViewModel.
-    LaunchedEffect(Unit) {
-        viewModel.setPosts(listOf(burnedPost))
-    }
+    HomeUserContent(
+        state = state,
+        padding = padding,
+        onQueryChange = viewModel::onQueryChange,
+        onPostClick = onPostClick,
+        onUserClick = onUserClick
+    )
+}
 
-    // Organiza los elementos verticalmente: cabecera, buscador y lista de publicaciones.
+// Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
+@Composable
+private fun HomeUserContent(
+    state: HomeUserUiState,
+    padding: PaddingValues,
+    onQueryChange: (String) -> Unit,
+    onPostClick: (String) -> Unit,
+    onUserClick: (String) -> Unit
+) {
     Column(
         modifier = Modifier
-            // Hace que la columna ocupe todo el tamaño de la pantalla.
             .fillMaxSize()
-            // Aplica el color de fondo crema de la app.
-            .background(FondoCrema)
-            // Ajusta el margen interno para no solaparse con las barras del sistema.
+            .background(AppTheme.colors.background)
             .padding(padding)
     ) {
-        // Muestra la cabecera con el saludo, ubicación y notificaciones.
-        HomeHeader(
-            userName = state.userName,
-            city = state.city,
-            notifications = state.notifications
-        )
+        HomeHeader(userName = state.userName, city = state.city, notifications = state.notifications)
 
-        // Muestra la barra de búsqueda. Recibe el texto actual y avisa al ViewModel cuando cambia.
-        SearchField(
-            query = state.query,
-            onQueryChange = viewModel::onQueryChange
-        )
+        SearchField(query = state.query, onQueryChange = onQueryChange)
 
-        // Si el buscador no encontró nada, muestra un mensaje. Si no, muestra la lista.
-        if (state.posts.isEmpty() && state.query.isNotBlank()) {
-            // Caja que ocupa el espacio sobrante y centra el mensaje.
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                // Mensaje de búsqueda sin resultados.
-                Text("No se encontraron publicaciones", color = TextoMarron, fontSize = 14.sp)
-            }
-        } else {
-            // Contenedor de lista optimizado con desplazamiento vertical.
-            LazyColumn(
-                // Toma todo el peso y espacio sobrante disponible en la columna.
+        when {
+            // Búsqueda de personas (empieza con @).
+            state.isSearchingUsers -> UserResults(users = state.users, onUserClick = onUserClick)
+            state.hasError -> CenteredMessage(stringResource(R.string.home_error_generic), isError = true)
+            // Error al cargar el feed.
+            state.hasError -> CenteredMessage(stringResource(R.string.home_error_generic), isError = true)
+            // Buscó algo y no hay coincidencias.
+            state.posts.isEmpty() && state.query.isNotBlank() ->
+                CenteredMessage(stringResource(R.string.home_search_empty))
+            // Feed vacío (sin búsqueda).
+            state.posts.isEmpty() && !state.isLoading ->
+                CenteredMessage(stringResource(R.string.home_empty_feed))
+            else -> LazyColumn(
                 modifier = Modifier.weight(1f),
-                // Asigna los márgenes de espacio interno horizontal y vertical de la lista.
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                // Agrega una separación de 16dp entre cada elemento de la lista.
+                contentPadding = PaddingValues(horizontal = ScreenHorizontalPadding, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Por cada publicación del estado, dibuja una tarjeta.
                 items(state.posts, key = { it.id }) { post ->
                     FeedPostCard(post = post, onClick = { onPostClick(post.id) })
                 }
@@ -149,269 +134,297 @@ fun HomeUserScreen(
     }
 }
 
-// Componente privado para la cabecera del inicio con saludo e icono con contador.
+// Mensaje centrado que ocupa el espacio sobrante.
 @Composable
-private fun HomeHeader(
-    // Nombre del usuario actual.
-    userName: String,
-    // Nombre de la ciudad o localización actual.
-    city: String,
-    // Cantidad de notificaciones pendientes.
-    notifications: Int
-) {
-    // Organiza en una fila el saludo (izquierda) y la campana (derecha).
+private fun ColumnScopeMessage() {}
+
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.CenteredMessage(text: String, isError: Boolean = false) {
+    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (isError) AppTheme.colors.stateError else AppTheme.colors.textPrimary,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+// Cabecera: saludo y ciudad a la izquierda, campana con contador a la derecha.
+@Composable
+private fun HomeHeader(userName: String, city: String, notifications: Int) {
     Row(
         modifier = Modifier
-            // Ajusta el ancho al máximo de la pantalla.
             .fillMaxWidth()
-            // Aplica márgenes internos a los lados y arriba/abajo.
-            .padding(horizontal = 16.dp, vertical = 20.dp),
-        // Distribuye los elementos con espacio máximo entre ellos (extremos).
+            .padding(horizontal = ScreenHorizontalPadding, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        // Alinea los elementos verticalmente al centro.
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Columna vertical para agrupar el texto del saludo y la ubicación.
         Column {
-            // Muestra el nombre de usuario saludándolo.
             Text(
-                // Formatea el texto insertando el nombre recibido.
-                text = "Bienvenido, $userName",
-                // Define el tamaño de letra en 24sp.
-                fontSize = 24.sp,
-                // Aplica un grosor extra negrita a la letra.
-                fontWeight = FontWeight.ExtraBold,
-                // Asigna el color de texto marrón definido en el tema.
-                color = TextoMarron
+                text = stringResource(R.string.home_welcome, userName),
+                style = MaterialTheme.typography.headlineSmall,
+                color = AppTheme.colors.textPrimary
             )
-            // Fila para situar el texto de la ciudad junto con su icono.
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Muestra el texto de la ubicación actual.
-                Text(text = city, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextoMarron)
-                // Muestra el icono de pin de ubicación.
+                Text(
+                    text = city,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppTheme.colors.textPrimary
+                )
                 Icon(
-                    // Asigna la forma de vector del pin de localización.
                     imageVector = Icons.Filled.LocationOn,
-                    // Omite la descripción de accesibilidad al ser decorativo junto al texto.
                     contentDescription = null,
-                    // Establece el color rojo para resaltar el pin.
-                    tint = Color.Red,
-                    // Define el tamaño del icono en 16dp.
+                    tint = AppTheme.colors.stateError,   // CAMBIAR si tienes un color propio para el pin
                     modifier = Modifier.size(16.dp)
                 )
             }
         }
 
-        // Contenedor cuadrado redondeado para encapsular el icono de notificaciones.
+        // Botón circular con la campana.
         Box(
             modifier = Modifier
-                // Fija el tamaño del botón en 44dp de ancho y alto.
                 .size(44.dp)
-                // Pinta el fondo claro en forma circular.
-                .background(FondoClaro, CircleShape)
-                // Agrega un borde circular marrón de 1dp.
-                .border(1.dp, BordeMarron, CircleShape),
-            // Centra todo el contenido interno.
+                .background(AppTheme.colors.background, CircleShape)             // CAMBIAR: fondo claro
+                .border(1.dp, AppTheme.colors.textPrimary, CircleShape),        // CAMBIAR: color de borde
             contentAlignment = Alignment.Center
         ) {
-            // Componente que permite superponer una insignia contadora sobre el icono.
             BadgedBox(
-                // Mueve la campana un poco a la izquierda dentro del círculo.
                 modifier = Modifier.offset(x = (-1).dp),
-                // Define la insignia flotante.
                 badge = {
-                    // Contenedor de la insignia de notificación con color personalizado.
-                    Badge(containerColor = ItemSeleccionado, contentColor = TextoMarron) {
-                        // Convierte el entero de notificaciones a texto para mostrarlo.
-                        Text(text = "$notifications")
+                    // Sin notificaciones no se dibuja la insignia (evita mostrar un "0").
+                    if (notifications > 0) {
+                        Badge(
+                            containerColor = AppTheme.colors.textPrimary,       // CAMBIAR: color de acento
+                            contentColor = AppTheme.colors.background
+                        ) { Text(text = "$notifications") }
                     }
                 }
             ) {
-                // Icono de la campana de notificaciones.
                 Icon(
-                    // Utiliza la versión lineal de campana.
                     imageVector = Icons.Outlined.Notifications,
-                    // Descripción textual para motores de accesibilidad.
-                    contentDescription = "Notificaciones",
-                    // Asigna el color de icono en tono marrón.
-                    tint = TextoMarron
+                    contentDescription = stringResource(R.string.home_notifications_description),
+                    tint = AppTheme.colors.textPrimary
                 )
             }
         }
     }
 }
 
-// Componente privado para el cuadro de texto de búsqueda, recibe y avisa cuando cambia (el estado vive en el ViewModel).
+
+// Lista de personas encontradas; al tocar una, abre su perfil.
 @Composable
-private fun SearchField(
-    // Texto actual del buscador, viene del ViewModel.
-    query: String,
-    // Función que se ejecuta cada vez que el usuario escribe.
-    onQueryChange: (String) -> Unit
-) {
-    // Campo de texto estilizado con bordes.
+private fun ColumnScope.UserResults(users: List<UserSummary>, onUserClick: (String) -> Unit) {
+    if (users.isEmpty()) {
+        CenteredMessage(stringResource(R.string.home_users_empty))
+        return
+    }
+    LazyColumn(
+        modifier = Modifier.weight(1f),
+        contentPadding = PaddingValues(horizontal = ScreenHorizontalPadding, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(users, key = { it.id }) { user ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onUserClick(user.id) }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                AsyncImage(
+                    model = user.photoUrl,
+                    contentDescription = stringResource(R.string.home_user_photo_description, user.userName),
+                    contentScale = ContentScale.Crop,
+                    placeholder = ColorPainter(Color.LightGray),
+                    modifier = Modifier.size(44.dp).clip(CircleShape)
+                )
+                Text(
+                    text = "@${user.userName}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = AppTheme.colors.textPrimary
+                )
+            }
+        }
+    }
+}
+
+
+// Buscador: el estado vive en el ViewModel.
+@Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
     OutlinedTextField(
-        // Muestra el texto que llega desde el ViewModel.
         value = query,
-        // Avisa al ViewModel cada vez que se teclea un carácter.
         onValueChange = onQueryChange,
         modifier = Modifier
-            // Ajusta el ancho al máximo del contenedor.
             .fillMaxWidth()
-            // Agrega márgenes a los lados del buscador.
-            .padding(horizontal = 16.dp),
-        // Muestra un texto indicativo previo cuando no se ha escrito nada.
-        placeholder = { Text("Buscar mascotas, fundaciones...") },
-        // Coloca el icono de la lupa al inicio a la izquierda del campo de texto.
-        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "Buscar") },
-        // Restringe el campo de texto a una sola línea horizontal.
+            .padding(horizontal = ScreenHorizontalPadding),
+        placeholder = { Text(stringResource(R.string.home_search_placeholder)) },
+        leadingIcon = {
+            Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.home_search_description))
+        },
         singleLine = true,
-        // Asigna bordes redondeados con radio de 24dp.
         shape = RoundedCornerShape(24.dp),
-        // Configuración de colores de fondo y bordes para estados enfocados e inactivos.
         colors = OutlinedTextFieldDefaults.colors(
-            // Fondo cuando el usuario tiene el foco en el campo.
-            focusedContainerColor = FondoClaro,
-            // Fondo cuando el campo está inactivo.
-            unfocusedContainerColor = FondoClaro,
-            // Color del borde al enfocar.
-            focusedBorderColor = BordeMarron,
-            // Color del borde estando inactivo.
-            unfocusedBorderColor = BordeMarron
+            focusedContainerColor = AppTheme.colors.surface,
+            unfocusedContainerColor = AppTheme.colors.background,
+            focusedBorderColor = AppTheme.colors.textPrimary,
+            unfocusedBorderColor = AppTheme.colors.textPrimary
         )
     )
 }
 
 // Tarjeta de una publicación del feed.
 @Composable
-private fun FeedPostCard(
-    // Datos de la publicación a dibujar.
-    post: FeedPost,
-    // Acción al tocar la tarjeta.
-    onClick: () -> Unit
-) {
-    // Contenedor con esquinas redondeadas; toda la tarjeta es tocable.
+private fun FeedPostCard(post: FeedPost, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        // Fondo marrón de la tarjeta.
-        colors = CardDefaults.cardColors(containerColor = FondoMarron),
-        // Borde delgado alrededor.
-        border = BorderStroke(1.dp, BordeMarron)
+        colors = CardDefaults.cardColors(containerColor = AppTheme.colors.background),   // CAMBIAR: color de tarjeta
+        border = BorderStroke(1.dp, AppTheme.colors.textPrimary)                          // CAMBIAR: borde
     ) {
-        // Descarga y muestra la foto desde el link de Cloudinary.
         AsyncImage(
-            // Link de la imagen.
             model = post.imageUrl,
-            // Descripción para accesibilidad.
             contentDescription = post.title,
-            // Recorta la foto para llenar el espacio sin deformarla.
             contentScale = ContentScale.Crop,
-            // Cuadro gris mientras carga la imagen.
             placeholder = ColorPainter(Color.LightGray),
-            // Ocupa todo el ancho de la tarjeta con 200dp de alto.
             modifier = Modifier.fillMaxWidth().height(200.dp)
         )
 
-        // Apila el contenido de texto debajo de la foto.
         Column(modifier = Modifier.padding(12.dp)) {
-
-            // Fila con las dos etiquetas: tipo y distancia.
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Etiqueta del tipo de publicación (ej: Adopción).
-                FeedTag(text = post.type, icon = Icons.Outlined.Pets)
-                // Etiqueta de la distancia con el pin en rojo.
-                FeedTag(text = "${post.distanceKm} km", icon = Icons.Filled.LocationOn, iconColor = Color.Red)
+                FeedTag(text = post.categoryName, icon = Icons.Outlined.Pets)
+                // Sin ubicación del usuario no hay distancia que mostrar.
+                post.distanceKm?.let {
+                    FeedTag(
+                        text = stringResource(R.string.home_distance_km, it.toString()),
+                        icon = Icons.Filled.LocationOn,
+                        iconColor = AppTheme.colors.stateError
+                    )
+                }
             }
 
-            // Espacio vacío de 8dp.
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // Título de la publicación.
-            Text(post.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextoMarron)
+            Text(
+                text = post.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = AppTheme.colors.textPrimary
+            )
 
-            // Espacio vacío de 6dp.
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp))
 
-            // Tres líneas de información, cada una con su ícono.
-            FeedInfoRow(Icons.Outlined.Pets, "${post.species} • ${post.breed} • ${post.size}")
-            FeedInfoRow(Icons.Outlined.VerifiedUser, post.vaccinesInfo)
-            FeedInfoRow(Icons.Outlined.FavoriteBorder, "${post.interestedCount} personas interesadas", bold = true)
+            // Los textos se arman aquí porque stringResource necesita el contexto de Compose.
+            FeedInfoRow(
+                Icons.Outlined.Pets,
+                stringResource(
+                    R.string.home_info_animal,
+                    post.animalName.orEmpty(),
+                    post.breed.ifBlank { stringResource(R.string.home_breed_unknown) },
+                    sizeText(post.size)
+                )
+            )
+            FeedInfoRow(Icons.Outlined.VerifiedUser, vaccinesText(post.vaccinated))
+            FeedInfoRow(
+                Icons.Outlined.FavoriteBorder,
+                stringResource(R.string.home_interested, post.importantCount),
+                bold = true
+            )
 
-            // Espacio vacío de 12dp.
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // Botón amarillo "Es Importante" (aún sin acción).
+            // Botón "Es importante" (se conecta a ToggleImportantUseCase en el siguiente paso).
             Button(
                 onClick = { },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = ItemSeleccionado, contentColor = TextoMarron)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AppTheme.colors.stateSelected,
+                    contentColor = AppTheme.colors.textPrimary
+                )
             ) {
-                // Estrella vacía a la izquierda del texto.
                 Icon(Icons.Outlined.StarBorder, contentDescription = null, modifier = Modifier.size(20.dp))
-                // Espacio entre la estrella y el texto.
-                Spacer(modifier = Modifier.width(8.dp))
-                // Texto del botón.
-                Text("Es Importante", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.home_important_button), style = MaterialTheme.typography.labelLarge)
             }
         }
     }
 }
 
-// Etiqueta pequeña con ícono y texto (ej: "Adopción").
+// Etiqueta pequeña con ícono y texto.
 @Composable
-private fun FeedTag(
-    // Texto de la etiqueta.
-    text: String,
-    // Ícono a la izquierda del texto.
-    icon: ImageVector,
-    // Color del ícono; si no se indica, usa el marrón.
-    iconColor: Color = TextoMarron
-) {
-    // Fondo con forma de pastilla.
-    Surface(shape = RoundedCornerShape(8.dp), color = FondoChip) {
-        // Ícono y texto en una fila, centrados verticalmente.
+private fun FeedTag(text: String, icon: ImageVector, iconColor: Color = AppTheme.colors.textPrimary) {
+    Surface(shape = RoundedCornerShape(8.dp), color = AppTheme.colors.background) {   // CAMBIAR: fondo del chip
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(14.dp))
-            Text(text, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextoMarron)
+            Text(text, style = MaterialTheme.typography.labelMedium, color = AppTheme.colors.textPrimary)
         }
     }
 }
 
-// Una línea de información con ícono a la izquierda y texto a la derecha.
+// Una línea de información con ícono.
 @Composable
-private fun FeedInfoRow(
-    // Ícono de la línea.
-    icon: ImageVector,
-    // Texto de la línea.
-    text: String,
-    // Si es true, el texto va en negrita.
-    bold: Boolean = false
-) {
+private fun FeedInfoRow(icon: ImageVector, text: String, bold: Boolean = false) {
     Row(
         modifier = Modifier.padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = TextoMarron, modifier = Modifier.size(16.dp))
+        Icon(icon, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
         Text(
             text = text,
-            fontSize = 14.sp,
-            color = TextoMarron,
-            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal
+            style = if (bold) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+            color = AppTheme.colors.textPrimary
         )
     }
 }
 
-// Vista previa de la pantalla en Android Studio.
-@Preview(showBackground = true)
+// Traducen valores del dominio a texto del recurso (viven aquí por stringResource).
 @Composable
-fun HomeUserScreenPreview() {
-    HomeUserScreen()
+private fun sizeText(size: AnimalSize?): String = when (size) {
+    null -> stringResource(R.string.home_size_unknown)
+    AnimalSize.SMALL -> stringResource(R.string.home_size_small)
+    AnimalSize.MEDIUM -> stringResource(R.string.home_size_medium)
+    AnimalSize.LARGE -> stringResource(R.string.home_size_large)
+}
+
+@Composable
+private fun vaccinesText(vaccinated: Boolean?): String = when (vaccinated) {
+    true -> stringResource(R.string.home_vaccines_yes)
+    false -> stringResource(R.string.home_vaccines_no)
+    null -> stringResource(R.string.home_vaccines_unknown)
+}
+
+@Preview(name = "Con publicaciones", showBackground = true, heightDp = 900)
+@Composable
+private fun HomeUserContentPreview() {
+    PetAdoptionAppTheme {
+        HomeUserContent(
+            state = HomeUserUiState(
+                userName = "ana_77", city = "Armenia, Colombia", notifications = 2,
+                posts = listOf(
+                    FeedPost("1", null, "Adopción", 1.2, "Perrito en adopción", "Perro", "Criollo",
+                        AnimalSize.MEDIUM, true, 3)
+                )
+            ),
+            padding = PaddingValues(),
+            onQueryChange = {},
+            onPostClick = {},
+            onUserClick = {}
+        )
+    }
+}
+
+@Preview(name = "Vacío", showBackground = true)
+@Composable
+private fun HomeUserEmptyPreview() {
+    PetAdoptionAppTheme {
+        HomeUserContent(HomeUserUiState(userName = "ana_77"), PaddingValues(), {}, {}, {})
+    }
 }

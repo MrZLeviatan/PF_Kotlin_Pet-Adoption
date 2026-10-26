@@ -22,7 +22,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveAnimalType
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveCategoriesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.UpdateAnimalTypeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.UpdateCategoryUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.CountUnreadNotificationsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetFeedUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.DeleteAccountUseCase
@@ -68,8 +70,22 @@ object UseCaseModule {
     ): CheckProfileUseCase = CheckProfileUseCase(userRepository)
 
 
-    // Registrar Cuenta
+    // Implementación de saber quien se logueo
+    @Provides
+    @ViewModelScoped
+    fun provideObserveCurrentUserUseCase(
+        userRepository: UserRepository,
+    ): ObserveCurrentUserUseCase = ObserveCurrentUserUseCase(userRepository)
 
+
+    @Provides
+    @ViewModelScoped
+    fun provideObserveSessionUseCase(
+        authRepository: AuthRepository,
+    ): ObserveSessionUseCase = ObserveSessionUseCase(authRepository)
+
+
+    // Registrar Cuenta
 
     @Provides
     @ViewModelScoped
@@ -79,5 +95,59 @@ object UseCaseModule {
     ): RegisterUseCase = RegisterUseCase(authRepository, userRepository)
 
 
+    // Home User
 
+    @Provides
+    @ViewModelScoped
+    fun provideGetFeedUseCase(
+        postRepository: PostRepository,
+    ): GetFeedUseCase = GetFeedUseCase(postRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesLoadCatalogUseCase(
+        catalogRepository: CatalogRepository,
+    ): LoadCatalogUseCase = LoadCatalogUseCase(catalogRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesObserveCategoriesUseCase(
+        catalogRepository: CatalogRepository,
+    ): ObserveCategoriesUseCase = ObserveCategoriesUseCase(catalogRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesObserveAnimalTypesUseCase(
+        catalogRepository: CatalogRepository,
+    ): ObserveAnimalTypesUseCase = ObserveAnimalTypesUseCase(catalogRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesCountUnreadNotificationsUseCase(
+        notificationRepository: NotificationRepository,
+        authRepository: AuthRepository,
+    ): CountUnreadNotificationsUseCase = CountUnreadNotificationsUseCase(notificationRepository, authRepository)
+
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesSearchUsersUseCase(
+        userRepository: UserRepository,
+        requiredUser: RequireUserUseCase,
+    ): SearchUsersUseCase = SearchUsersUseCase(userRepository, requiredUser)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesRequireUserUseCase(
+        authRepository: AuthRepository,
+    ): RequireUserUseCase = RequireUserUseCase(authRepository)
+
+
+    // Home Moderador
 }

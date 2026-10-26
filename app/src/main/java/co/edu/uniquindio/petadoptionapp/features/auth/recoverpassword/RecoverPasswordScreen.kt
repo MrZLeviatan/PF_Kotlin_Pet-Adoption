@@ -1,7 +1,6 @@
-package co.edu.uniquindio.petadoptionapp.features.newpassword
+package co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,42 +40,40 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 private val ScreenHorizontalPadding = 24.dp
 
 /**
-Pantalla para definir la nueva contraseña (se llega desde el enlace del correo).
-Conecta el [NewPasswordViewModel] con la UI; [NewPasswordContent] solo dibuja.
+Pantalla para pedir el enlace de recuperación de contraseña.
+Conecta el [RecoverPasswordViewModel] con la UI; [RecoverPasswordContent] solo dibuja.
  */
 @Composable
-fun NewPasswordScreen(
+fun RecoverPasswordScreen(
     onBack: () -> Unit,
-    onPasswordUpdated: () -> Unit,
-    viewModel: NewPasswordViewModel = viewModel(),
+    onEmailSent: () -> Unit,
+    viewModel: RecoverPasswordViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentOnPasswordUpdated by rememberUpdatedState(onPasswordUpdated)
+    val currentOnEmailSent by rememberUpdatedState(onEmailSent)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                NewPasswordEvent.PasswordUpdated -> currentOnPasswordUpdated()
+                RecoverPasswordEvent.EmailSent -> currentOnEmailSent()
             }
         }
     }
 
-    NewPasswordContent(
+    RecoverPasswordContent(
         uiState = uiState,
-        onPasswordChange = viewModel::onPasswordChange,
-        onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        onConfirmClick = viewModel::onConfirmClick,
+        onEmailChange = viewModel::onEmailChange,
+        onSendClick = viewModel::onSendClick,
         onDialogAccept = viewModel::onDialogAccept,
         onBack = onBack,
     )
 }
 
 @Composable
-private fun NewPasswordContent(
-    uiState: NewPasswordUiState,
-    onPasswordChange: (String) -> Unit,
-    onConfirmPasswordChange: (String) -> Unit,
-    onConfirmClick: () -> Unit,
+private fun RecoverPasswordContent(
+    uiState: RecoverPasswordUiState,
+    onEmailChange: (String) -> Unit,
+    onSendClick: () -> Unit,
     onDialogAccept: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -95,47 +93,38 @@ private fun NewPasswordContent(
 
         IconHeader(
             icon = Icons.Outlined.Security,
-            title = stringResource(R.string.new_password_title),
-            subtitle = stringResource(R.string.new_password_subtitle),
+            title = stringResource(R.string.recover_title),
+            subtitle = stringResource(R.string.recover_subtitle),
         )
 
         Spacer(Modifier.height(32.dp))
 
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            AppTextField(
-                value = uiState.password,
-                onValueChange = onPasswordChange,
-                label = stringResource(R.string.new_password_label),
-                leadingIcon = Icons.Outlined.Lock,
-                isPassword = true,
-            )
-            AppTextField(
-                value = uiState.confirmPassword,
-                onValueChange = onConfirmPasswordChange,
-                label = stringResource(R.string.new_password_confirm_label),
-                leadingIcon = Icons.Outlined.Lock,
-                isPassword = true,
-                imeAction = ImeAction.Done,
-                keyboardActions = KeyboardActions(
-                    onDone = { if (uiState.isFormFilled) onConfirmClick() }
-                ),
-            )
-        }
+        AppTextField(
+            value = uiState.email,
+            onValueChange = onEmailChange,
+            label = stringResource(R.string.recover_email_label),
+            leadingIcon = Icons.Outlined.Email,
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Done,
+            keyboardActions = KeyboardActions(
+                onDone = { if (uiState.isEmailFilled) onSendClick() }
+            ),
+        )
 
         Spacer(Modifier.height(32.dp))
 
         PrimaryButton(
-            text = stringResource(R.string.new_password_button),
-            onClick = onConfirmClick,
-            enabled = uiState.isFormFilled,
+            text = stringResource(R.string.recover_send_button),
+            onClick = onSendClick,
+            enabled = uiState.isEmailFilled,
         )
     }
 
     if (uiState.showSuccessDialog) {
         AppInfoDialog(
-            title = stringResource(R.string.new_password_success_title),
-            message = stringResource(R.string.new_password_success_message),
-            confirmText = stringResource(R.string.new_password_success_button),
+            title = stringResource(R.string.recover_success_title),
+            message = stringResource(R.string.recover_success_message),
+            confirmText = stringResource(R.string.recover_success_button),
             onConfirm = onDialogAccept,
             icon = {
                 IconCircle(
@@ -150,40 +139,36 @@ private fun NewPasswordContent(
 
 @Preview(name = "Vacía", showBackground = true, heightDp = 800)
 @Composable
-private fun NewPasswordEmptyPreview() {
+private fun RecoverPasswordEmptyPreview() {
     PetAdoptionAppTheme {
-        NewPasswordContent(
-            uiState = NewPasswordUiState(),
-            onPasswordChange = {}, onConfirmPasswordChange = {},
-            onConfirmClick = {}, onDialogAccept = {}, onBack = {},
+        RecoverPasswordContent(
+            uiState = RecoverPasswordUiState(),
+            onEmailChange = {}, onSendClick = {}, onDialogAccept = {}, onBack = {},
         )
     }
 }
 
-@Preview(name = "Llena", showBackground = true, heightDp = 800)
+@Preview(name = "Con correo", showBackground = true, heightDp = 800)
 @Composable
-private fun NewPasswordFilledPreview() {
+private fun RecoverPasswordFilledPreview() {
     PetAdoptionAppTheme {
-        NewPasswordContent(
-            uiState = NewPasswordUiState(password = "12345678", confirmPassword = "12345678"),
-            onPasswordChange = {}, onConfirmPasswordChange = {},
-            onConfirmClick = {}, onDialogAccept = {}, onBack = {},
+        RecoverPasswordContent(
+            uiState = RecoverPasswordUiState(email = "nicolas.cabreras@uqvirtual.edu.co"),
+            onEmailChange = {}, onSendClick = {}, onDialogAccept = {}, onBack = {},
         )
     }
 }
 
-@Preview(name = "Contraseña actualizada", showBackground = true, heightDp = 800)
+@Preview(name = "Correo enviado", showBackground = true, heightDp = 800)
 @Composable
-private fun NewPasswordSuccessPreview() {
+private fun RecoverPasswordSuccessPreview() {
     PetAdoptionAppTheme {
-        NewPasswordContent(
-            uiState = NewPasswordUiState(
-                password = "12345678",
-                confirmPassword = "12345678",
+        RecoverPasswordContent(
+            uiState = RecoverPasswordUiState(
+                email = "nicolas.cabreras@uqvirtual.edu.co",
                 showSuccessDialog = true,
             ),
-            onPasswordChange = {}, onConfirmPasswordChange = {},
-            onConfirmClick = {}, onDialogAccept = {}, onBack = {},
+            onEmailChange = {}, onSendClick = {}, onDialogAccept = {}, onBack = {},
         )
     }
 }

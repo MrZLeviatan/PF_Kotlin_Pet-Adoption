@@ -9,6 +9,11 @@ import kotlinx.serialization.Serializable
 sealed class MainRoutes {
 
 
+
+    // Ahora: sin argumentos, el rol se lee de la sesión.
+    @Serializable data object Main : MainRoutes()
+
+
     // Pantalla de carga inicial
     @Serializable
     data object Splash : MainRoutes()
@@ -30,9 +35,6 @@ sealed class MainRoutes {
     @Serializable
     data object NewPassword : MainRoutes()
 
-    // Ruta del dashboard principal que contiene la barra de navegación inferior. Recibe obligatoriamente el rol del usuario como parámetro.
-    @Serializable
-    data class Main(val role: UserRole) : MainRoutes()
 
     // Ruta para la pantalla completa de creación de una nueva publicación (se muestra en pantalla completa sin barra inferior).
     @Serializable
@@ -42,4 +44,9 @@ sealed class MainRoutes {
     @Serializable
     data class PostDetail(val postId: String) : MainRoutes()
 
+    @Serializable data class UserProfile(val userId: String) : MainRoutes()
+
 }
+
+
+

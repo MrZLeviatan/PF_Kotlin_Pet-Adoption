@@ -75,7 +75,17 @@
         <string name="register_error_location">Selecciona una ubicación válida</string>
         <string name="register_error_generic">No pudimos crear tu cuenta. Inténtalo de nuevo.</string>
 
-    <!--Comunes-->
+
+    <!--String nativos de la Barra de navegación-->
+        <string name="nav_home">Inicio</string>
+        <string name="nav_explore">Explorar</string>
+        <string name="nav_dashboard">Dashboard</string>
+        <string name="nav_feeds">Post</string>
+        <string name="nav_messages">Mensajes</string>
+        <string name="nav_profile">Perfil</string>
+        <string name="nav_create_description">Crear publicación</string>
+
+    <!--String Comunes-->
         <string name="common_back">Volver</string>
         <string name="common_step_indicator">Paso %1$d de %2$d</string>
         <string name="common_password_strength">Seguridad: %1$s</string>
@@ -83,6 +93,28 @@
         <string name="common_strength_medium">Media</string>
         <string name="common_strength_strong">Alta</string>
 
+    <!--String nativos del Home de usuario -->
+        <string name="home_welcome">Bienvenido, %1$s</string>
+        <string name="home_notifications_description">Notificaciones</string>
+        <string name="home_search_placeholder">Buscar mascotas o @personas</string>
+        <string name="home_search_description">Buscar</string>
+        <string name="home_search_empty">No se encontraron publicaciones</string>
+        <string name="home_empty_feed">Aún no hay publicaciones</string>
+        <string name="home_distance_km">%1$s km</string>
+        <string name="home_info_animal">%1$s • %2$s • %3$s</string>
+        <string name="home_interested">%1$d personas interesadas</string>
+        <string name="home_important_button">Es importante</string>
+        <string name="home_vaccines_yes">Vacunas al día</string>
+        <string name="home_vaccines_no">Sin vacunas al día</string>
+        <string name="home_vaccines_unknown">Vacunas sin información</string>
+        <string name="home_size_small">Pequeño</string>
+        <string name="home_size_medium">Mediano</string>
+        <string name="home_size_large">Grande</string>
+        <string name="home_size_unknown">Tamaño sin definir</string>
+        <string name="home_breed_unknown">Raza sin definir</string>
+        <string name="home_error_generic">No se pudo cargar el feed</string>
+        <string name="home_users_empty">No se encontraron personas</string>
+        <string name="home_user_photo_description">Foto de %1$s</string>
 
     <!--Strings de la pantalla Recuperar contraseña-->
     <string name="recover_title">Recuperar contraseña</string>

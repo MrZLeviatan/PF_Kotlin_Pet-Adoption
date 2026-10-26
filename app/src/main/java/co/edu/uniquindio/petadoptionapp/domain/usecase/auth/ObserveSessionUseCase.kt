@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.auth
 import co.edu.uniquindio.petadoptionapp.domain.model.users.Account
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 /**
  Dice quién está dentro de la app ahora mismo.

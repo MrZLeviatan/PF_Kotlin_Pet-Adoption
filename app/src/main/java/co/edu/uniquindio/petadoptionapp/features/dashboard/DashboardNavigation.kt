@@ -1,38 +1,55 @@
 package co.edu.uniquindio.petadoptionapp.features.dashboard
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.features.user.home.HomeUserScreen
 
-// Componente Composable encargado de gestionar las rutas y pantallas internas del dashboard según el rol del usuario.
+// Rutas internas del dashboard según el rol.
 @Composable
 fun DashboardNavigation(
-    // Controlador de navegación principal que permite cambiar entre las pantallas del dashboard.
     navController: NavHostController,
-    // Espacio de relleno (padding) proporcionado para evitar que el contenido se solape con la barra inferior.
     padding: PaddingValues,
-    // Rol actual del usuario logueado para determinar su pantalla de inicio.
     role: UserRole,
     onPostClick: (String) -> Unit = {}
 ) {
-    // Componente contenedor que configura la navegación basada en destinos y rutas serializables.
     NavHost(
         navController = navController,
-        // Define la pantalla inicial (punto de partida) evaluando dinámicamente el rol del usuario.
+        // Cada rol arranca en su propia pantalla de inicio.
         startDestination = when (role) {
-            // Si el rol es usuario estándar, arranca en la pantalla principal de usuario (HomeUser).
             UserRole.USER -> DashboardRoutes.HomeUser
-            // Si el rol es monitor/moderador, arranca en la pantalla principal de monitor (HomeMonitor).
             UserRole.MODERATOR -> DashboardRoutes.HomeMonitor
         }
     ) {
-        // Pantalla de inicio para Usuario
+        // Usuario
         composable<DashboardRoutes.HomeUser> {
             HomeUserScreen(padding = padding, onPostClick = onPostClick)
         }
+        composable<DashboardRoutes.Explore> { PlaceholderScreen("Explore", padding) }
+
+        // Moderador
+        composable<DashboardRoutes.HomeMonitor> { PlaceholderScreen("HomeMonitor", padding) }
+        composable<DashboardRoutes.Publications> { PlaceholderScreen("Publications", padding) }
+
+        // Compartidas
+        composable<DashboardRoutes.Messages> { PlaceholderScreen("Messages", padding) }
+        composable<DashboardRoutes.Profile> { PlaceholderScreen("Profile", padding) }
+    }
+}
+
+// Pantalla temporal; se elimina cuando existan las reales.
+@Composable
+private fun PlaceholderScreen(name: String, padding: PaddingValues) {
+    Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+        Text(name)
     }
 }

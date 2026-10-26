@@ -5,13 +5,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
+import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
+import co.edu.uniquindio.petadoptionapp.features.auth.newpassword.NewPasswordScreen
+import co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword.RecoverPasswordScreen
+import co.edu.uniquindio.petadoptionapp.features.auth.register.RegisterScreen
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
-import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
-import co.edu.uniquindio.petadoptionapp.features.newpassword.NewPasswordScreen
-import co.edu.uniquindio.petadoptionapp.features.recoverpassword.RecoverPasswordScreen
-import co.edu.uniquindio.petadoptionapp.features.auth.register.RegisterScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 
@@ -40,8 +39,9 @@ fun AppNavigation() {
         composable<MainRoutes.Login> {
             LoginScreen(
                 onLoginSuccess = {
-                    // TEMPORAL: rol fijo hasta leer el rol real de la cuenta.
-                    navController.navigate(MainRoutes.Main(role = UserRole.USER)) {
+                    // El rol (usuario o moderador) lo lee MainScreen de la sesión.
+                    navController.navigate(MainRoutes.Main) {
+                        // Saca el login de la pila: "atrás" no debe volver a él.
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },
@@ -52,7 +52,16 @@ fun AppNavigation() {
             )
         }
 
-        // Nuevos destinos, debajo de Register:
+        composable<MainRoutes.Register> {
+            RegisterScreen(
+                onBackToLogin = { navController.popBackStack() },
+                // Tras registrarse vuelve al login (el Login sigue en la pila).
+                onRegisterSuccess = { navController.popBackStack() },
+                onTermsClick = { /* pendiente: pantalla de términos */ },
+                onPoliciesClick = { /* pendiente: pantalla de políticas */ },
+            )
+        }
+
         composable<MainRoutes.RecoverPassword> {
             RecoverPasswordScreen(
                 onBack = { navController.popBackStack() },
@@ -60,6 +69,8 @@ fun AppNavigation() {
                 onEmailSent = { navController.popBackStack() },
             )
         }
+
+
 
         composable<MainRoutes.NewPassword> {
             NewPasswordScreen(
@@ -73,34 +84,15 @@ fun AppNavigation() {
             )
         }
 
-
-
-        // Nuevo destino, debajo de Login:
-        composable<MainRoutes.Register> {
-            RegisterScreen(
-                onBackToLogin = { navController.popBackStack() },
-                onRegisterSuccess = {
-                    // TEMPORAL: sin autenticación real, entra al dashboard con rol fijo.
-                    navController.navigate(MainRoutes.Login) {
-                        popUpTo<MainRoutes.Login> { inclusive = true }
-                    }
-                },
-                onTermsClick = { /* pendiente: pantalla de términos */ },
-                onPoliciesClick = { /* pendiente: pantalla de políticas */ },
-            )
-        }
-
-        // Dashboard con la barra inferior
+        // Dashboard con la barra inferior: el rol sale de la sesión.
         composable<MainRoutes.Main> {
-            val args = it.toRoute<MainRoutes.Main>()
             MainScreen(
-                role = args.role,
                 onCreatePost = { navController.navigate(MainRoutes.CreatePost) },
                 onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
             )
         }
 
-        // Crear publicación (sin barra)
+        // Crear publicación (sin barra).
         composable<MainRoutes.CreatePost> {
             CreatePostScreen(
                 onBack = { navController.popBackStack() },
@@ -109,7 +101,7 @@ fun AppNavigation() {
             )
         }
 
-        // Detalle de la publicación (sin barra)
+        // Detalle de la publicación (sin barra).
         composable<MainRoutes.PostDetail> {
             val args = it.toRoute<MainRoutes.PostDetail>()
             PostDetailScreen(

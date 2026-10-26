@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.recoverpassword
+package co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.channels.Channel
