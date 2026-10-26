@@ -1,10 +1,13 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.reputation
 
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.AwardResult
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointReason
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointRules
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointTransaction
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.UserLevel
 import co.edu.uniquindio.petadoptionapp.domain.repository.ReputationRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 
 /**
 Documenta el caso de uso interno que otorga puntos por una acción.
@@ -14,7 +17,9 @@ Cada hecho da puntos una sola vez (id determinista) y los comentarios tienen un 
  */
 class AwardPointsUseCase(
     // Inyecta el repositorio de reputación.
-    private val reputationRepository: ReputationRepository
+    private val reputationRepository: ReputationRepository,
+    // Inyecta el caso de uso que crea notificaciones.
+    private val notify: NotifyUseCase
 ) {
     companion object {
         // Define la ventana del tope diario: 24 horas en milisegundos.
@@ -55,7 +60,11 @@ class AwardPointsUseCase(
             postId = postId,
             actorId = actorId
         )
-        return reputationRepository.award(transaction)
-        // Pendiente: si result.leveledUp(), NotifyUseCase LEVEL_UP a la persona.
+        return reputationRepository.award(transaction).onSuccess { result ->
+            // Si el premio hizo subir de nivel, avisa a la propia persona.
+            if (result.leveledUp()) {
+                notify(userId, NotificationType.LEVEL_UP, extra = UserLevel.fromPoints(result.newPoints).name)
+            }
+        }
     }
 }

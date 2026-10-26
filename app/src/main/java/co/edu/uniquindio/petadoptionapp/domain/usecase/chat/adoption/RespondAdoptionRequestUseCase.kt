@@ -3,9 +3,11 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption
 import co.edu.uniquindio.petadoptionapp.domain.error.AdoptionException
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
@@ -19,7 +21,9 @@ class RespondAdoptionRequestUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
     // Inyecta el caso de uso para requerir un usuario autenticado.
-    private val requireUser: RequireUserUseCase
+    private val requireUser: RequireUserUseCase,
+    // Inyecta el caso de uso que crea notificaciones.
+    private val notify: NotifyUseCase
 ) {
     // Define la función asíncrona principal que recibe el ID de la solicitud y un indicador booleano de aceptación, devolviendo un resultado vacío.
     suspend operator fun invoke(requestId: String, accept: Boolean): Result<Unit> {
@@ -47,6 +51,13 @@ class RespondAdoptionRequestUseCase(
         // Genera la solicitud actualizada según la decisión (aceptada o rechazada) y solicita al repositorio actualizar su estado de forma atómica asegurando que el estado anterior sea pendiente.
         val updated = if (accept) request.accept() else request.decline()
         return chatRepository.updateRequestStatus(requestId, AdoptionRequestStatus.PENDING, updated)
-        // Pendiente: NotifyUseCase ADOPTION_RESPONSE al solicitante.
+            .onSuccess {
+                // `extra` indica si fue aceptada o rechazada, para que la UI elija el texto.
+                notify(
+                    request.requesterId, NotificationType.ADOPTION_RESPONSE,
+                    session.id, session.userName, request.postId,
+                    extra = if (accept) "ACCEPTED" else "DECLINED"
+                )
+            }
     }
 }

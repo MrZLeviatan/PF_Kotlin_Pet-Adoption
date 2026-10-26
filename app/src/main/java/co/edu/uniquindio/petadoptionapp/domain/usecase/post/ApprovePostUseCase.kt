@@ -1,9 +1,13 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointReason
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseCase
 
 /**
@@ -14,7 +18,12 @@ class ApprovePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
     // Inyecta el caso de uso que confirma que quien pide es un moderador activo.
-    private val requireModerator: RequireModeratorUseCase
+    private val requireModerator: RequireModeratorUseCase,
+    // Inyecta el caso de uso que crea notificaciones.
+    private val notify: NotifyUseCase,
+    // Inyecta el caso de uso que otorga puntos (también avisa si sube de nivel).
+    private val awardPoints: AwardPointsUseCase
+
 ) {
     // Define la función asíncrona principal que recibe el ID de la publicación y devuelve un resultado vacío.
     suspend operator fun invoke(postId: String): Result<Unit> {
@@ -40,5 +49,10 @@ class ApprovePostUseCase(
 
         // Aprueba solo si el estado sigue siendo el que se leyó (la transacción evita pisar a otro moderador).
         return postRepository.updateVerification(postId, current, post.verification.approve(moderator.id))
+            .onSuccess {
+                notify(post.authorId, NotificationType.POST_VERIFIED, moderator.id, moderator.userName, postId)
+                awardPoints(post.authorId, PointReason.POST_VERIFIED, sourceId = postId, postId = postId)
+                // Pendiente aparte: sumar 1 a approvedCount del moderador.
+            }
     }
 }

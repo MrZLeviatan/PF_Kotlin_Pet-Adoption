@@ -7,9 +7,12 @@ import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestSta
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Chat
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Message
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.MessageType
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.repository.CatalogRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.ChatValidator
 
@@ -27,7 +30,10 @@ class SendAdoptionInterestUseCase(
     // Inyecta el repositorio de catálogos para saber si la categoría admite adopción.
     private val catalogRepository: CatalogRepository,
     // Inyecta el caso de uso para requerir un usuario autenticado.
-    private val requireUser: RequireUserUseCase
+    private val requireUser: RequireUserUseCase,
+    // Inyecta el caso de uso que crea notificaciones.
+    private val notify: NotifyUseCase
+
 ) {
     // Define la función asíncrona principal que recibe el ID de la publicación y un mensaje opcional, devolviendo un resultado con la solicitud de adopción creada.
     suspend operator fun invoke(postId: String, message: String = ""): Result<AdoptionRequest> {
@@ -101,6 +107,10 @@ class SendAdoptionInterestUseCase(
 
         // 8. Guarda todo o nada. Pendiente: NotifyUseCase ADOPTION_REQUEST al autor.
         // Solicita al repositorio guardar la solicitud, el chat y el mensaje en una sola transacción atómica, mapeando el resultado final para devolver la solicitud creada.
-        return chatRepository.sendAdoptionInterest(request, chat, autoMessage).map { request }
+        return chatRepository.sendAdoptionInterest(request, chat, autoMessage)
+            .onSuccess {
+                notify(post.authorId, NotificationType.ADOPTION_REQUEST, session.id, session.userName, postId)
+            }
+            .map { request }
     }
 }

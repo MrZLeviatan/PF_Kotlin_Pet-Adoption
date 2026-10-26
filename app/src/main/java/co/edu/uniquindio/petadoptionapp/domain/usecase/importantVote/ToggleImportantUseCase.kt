@@ -2,8 +2,12 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote
 
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.error.VoteException
+import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointReason
 import co.edu.uniquindio.petadoptionapp.domain.repository.ImportantVoteRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
@@ -16,7 +20,11 @@ class ToggleImportantUseCase(
     // Inyecta el repositorio de publicaciones para comprobar que se pueda votar.
     private val postRepository: PostRepository,
     // Inyecta el caso de uso que confirma que hay una sesión de usuario.
-    private val requireUser: RequireUserUseCase
+    private val requireUser: RequireUserUseCase,
+    // Inyecta el caso de uso que crea notificaciones.
+    private val notify: NotifyUseCase,
+    // Inyecta el caso de uso que otorga puntos (también avisa si sube de nivel).
+    private val awardPoints: AwardPointsUseCase
 ) {
     // Define la función asíncrona que recibe el ID de la publicación y devuelve si quedó votada.
     suspend operator fun invoke(postId: String): Result<Boolean> {
@@ -33,6 +41,12 @@ class ToggleImportantUseCase(
         if (post.authorId == session.id) return Result.failure(VoteException.CannotVoteOwnPost)
 
         // 4. Alterna el voto. Pendiente: notificación y puntos al autor solo cuando el resultado sea `true`.
-        return voteRepository.toggle(postId, session.id)
+        return voteRepository.toggle(postId, session.id).onSuccess { voted ->
+            if (voted) {
+                notify(post.authorId, NotificationType.POST_IMPORTANT, session.id, session.userName, postId)
+                // sourceId = "postId_votanteId": dar, quitar y volver a dar no suma dos veces.
+                awardPoints(post.authorId, PointReason.IMPORTANT_RECEIVED, "${postId}_${session.id}", postId, session.id)
+            }
+        }
     }
 }
