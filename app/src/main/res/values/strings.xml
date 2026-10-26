@@ -31,6 +31,150 @@
         <string name="login_error_email_invalid">Ingresa un correo válido</string>
         <string name="login_error_password_empty">Debe llenar el campo contraseña</string>
 
+    <!--Comunes-->
+        <string name="common_back">Volver</string>
+        <string name="common_step_indicator">Paso %1$d de %2$d</string>
+        <string name="common_password_strength">Seguridad: %1$s</string>
+        <string name="common_strength_weak">Baja</string>
+        <string name="common_strength_medium">Media</string>
+        <string name="common_strength_strong">Alta</string>
+
+    <!--Strings de la pantalla de Registro-->
+        <string name="register_title">Crear cuenta</string>
+        <string name="register_name_label">Nombre completo*</string>
+        <string name="register_email_label">Correo electrónico*</string>
+        <string name="register_phone_label">Teléfono*</string>
+        <string name="register_password_label">Contraseña*</string>
+        <string name="register_confirm_password_label">Confirmar contraseña*</string>
+        <string name="register_next_button">Siguiente</string>
+        <string name="register_have_account">¿Ya tienes una cuenta?</string>
+        <string name="register_login_link">Inicia sesión</string>
+        <string name="register_location_subtitle">Configura tu ubicación para encontrar mascotas cerca de ti</string>
+        <string name="register_city_label">Ciudad*</string>
+        <string name="register_address_label">Dirección*</string>
+        <string name="register_set_location">Establecer mi ubicación</string>
+    <!--%1$s = marcador de Términos y Condiciones, %2$s = marcador de Políticas de Adopción-->
+        <string name="register_terms_template">Acepto los %1$s y las %2$s de la app.</string>
+        <string name="register_terms_link">Términos y Condiciones</string>
+        <string name="register_policies_link">Políticas de Adopción</string>
+        <string name="register_create_button">Crear cuenta</string>
+        <string name="register_success_title">Cuenta creada</string>
+        <string name="register_success_message">¡Bienvenido! Tu cuenta ya está lista para encontrar mascotas cerca de ti.</string>
+        <string name="register_success_button">Aceptar</string>
+
+    <!--Strings de la pantalla Recuperar contraseña-->
+    <string name="recover_title">Recuperar contraseña</string>
+    <string name="recover_subtitle">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</string>
+    <string name="recover_email_label">Correo electrónico</string>
+    <string name="recover_send_button">Enviar enlace de recuperación</string>
+    <string name="recover_success_title">Correo enviado</string>
+    <string name="recover_success_message">Hemos enviado un enlace de recuperación a tu correo electrónico. Haz clic en el enlace para restablecer tu contraseña.</string>
+    <string name="recover_success_button">Aceptar</string>
+
+    <!--Strings de la pantalla Nueva contraseña-->
+    <string name="new_password_title">Nueva contraseña</string>
+    <string name="new_password_subtitle">Ingresa tu nueva contraseña y la confirmación de esta.</string>
+    <string name="new_password_label">Contraseña*</string>
+    <string name="new_password_confirm_label">Confirmar contraseña*</string>
+    <string name="new_password_button">Confirmar nueva contraseña</string>
+    <string name="new_password_success_title">Contraseña actualizada</string>
+    <string name="new_password_success_message">Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión con tus nuevos datos.</string>
+    <string name="new_password_success_button">Aceptar</string>
+
+
+    <!--Strings de la pantalla Mi Perfil-->
+    <string name="profile_level_label">Nivel actual</string>
+    <string name="profile_level_badge">LVL %1$d</string>
+    <string name="profile_points">%1$s puntos acumulados</string>
+    <string name="profile_progress">Progreso: %1$d%%</string>
+    <string name="profile_points_short">%1$s pts</string>
+    <string name="profile_diary_title">Mi Diario Comunidad</string>
+    <string name="profile_my_posts">Mis publicaciones</string>
+    <string name="profile_my_likes">Me gusta</string>
+    <string name="profile_edit">Editar perfil</string>
+    <string name="profile_settings">Configuración</string>
+
+
+    <!--Comunes-->
+    <string name="common_share">Compartir</string>
+
+    <!--Strings de la pantalla de Métricas-->
+    <string name="metrics_title">Dashboard</string>
+    <string name="metrics_posts_title">Publicaciones</string>
+    <string name="metrics_posts_subtitle">Estado actual de tus publicaciones</string>
+    <string name="metrics_posts_active">Activas</string>
+    <string name="metrics_posts_review">Revisión</string>
+    <string name="metrics_posts_finished">Finalizadas</string>
+    <string name="metrics_badges_title">Insignias conseguidas</string>
+    <string name="metrics_badges_subtitle">Reconocimientos obtenidos en tu actividad</string>
+
+
+    <!--Comunes: tiempo transcurrido-->
+    <plurals name="common_time_hours_ago">
+        <item quantity="one">hace %1$d hora</item>
+        <item quantity="other">hace %1$d horas</item>
+    </plurals>
+    <plurals name="common_time_days_ago">
+        <item quantity="one">hace %1$d día</item>
+        <item quantity="other">hace %1$d días</item>
+    </plurals>
+
+    <!--Strings de la pantalla Mis Publicaciones-->
+    <string name="my_posts_title">Mis Publicaciones</string>
+    <string name="my_posts_tab_all">Todas (%1$d)</string>
+    <string name="my_posts_tab_active">Activas (%1$d)</string>
+    <string name="my_posts_tab_pending">Pendientes (%1$d)</string>
+    <string name="my_posts_tab_finished">Finalizadas (%1$d)</string>
+    <string name="my_posts_section_active">Activas (%1$d)</string>
+    <string name="my_posts_section_pending">Pendientes de verificación (%1$d)</string>
+    <string name="my_posts_section_finished">Finalizadas (%1$d)</string>
+    <string name="my_posts_type_adoption">Adopción</string>
+    <string name="my_posts_type_lost">Perdido</string>
+    <string name="my_posts_published">Publicado %1$s</string>
+    <string name="my_posts_sent">Enviado %1$s</string>
+    <plurals name="my_posts_interested">
+        <item quantity="one">%1$d persona interesada</item>
+        <item quantity="other">%1$d personas interesadas</item>
+    </plurals>
+    <string name="my_posts_finish">Finalizar publicación</string>
+    <string name="my_posts_delete">Eliminar</string>
+    <string name="my_posts_not_editable">No editable en revisión</string>
+    <string name="my_posts_empty">No tienes publicaciones en esta categoría</string>
+
+
+    <!--Strings de la pantalla Notificaciones-->
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_filter_all">Todas</string>
+    <string name="notifications_filter_unread">Sin leer</string>
+    <string name="notifications_filter_messages">Mensajes</string>
+    <string name="notifications_new_tag">Nuevo</string>
+    <string name="notifications_empty">No tienes notificaciones en esta categoría</string>
+    <string name="notifications_time_minutes">Hace %1$d min</string>
+    <string name="notifications_time_hours">Hace %1$d h</string>
+    <string name="notifications_time_yesterday">Ayer</string>
+    <plurals name="notifications_time_days">
+        <item quantity="one">Hace %1$d día</item>
+        <item quantity="other">Hace %1$d días</item>
+    </plurals>
+
+
+    <!--Comunes-->
+    <string name="common_char_counter">%1$d/%2$d caracteres</string>
+
+    <!--Strings de la pantalla Motivos de Rechazo-->
+    <string name="reject_title">Motivos de Rechazo</string>
+    <string name="reject_notice">La publicación rechazada no aparecerá en el feed público y el usuario recibirá una notificación con el motivo detallado.</string>
+    <string name="reject_reasons_title">Motivos frecuentes</string>
+    <string name="reject_reason_insufficient_info">Información insuficiente</string>
+    <string name="reject_reason_invalid_image">Imagen no válida</string>
+    <string name="reject_reason_suspicious_content">Contenido sospechoso</string>
+    <string name="reject_reason_animal_sale">Posible venta de animales</string>
+    <string name="reject_reason_wrong_location">Ubicación incorrecta</string>
+    <string name="reject_reason_duplicated">Publicación duplicada</string>
+    <string name="reject_description_title">Descripción</string>
+    <string name="reject_description_placeholder">Describe el motivo del porque la publicación fue rechazada.</string>
+    <string name="reject_confirm_button">Confirmar rechazo</string>
+
 
     <!-- Strings en base a los comentarios de los post-->
         <string name="comment_deleted">Comentario eliminado</string>

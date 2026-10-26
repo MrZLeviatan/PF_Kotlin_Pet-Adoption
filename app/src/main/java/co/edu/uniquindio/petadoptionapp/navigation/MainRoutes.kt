@@ -18,6 +18,18 @@ sealed class MainRoutes {
     @Serializable
     data object Login : MainRoutes()
 
+    // Registro de cuenta (dos fases, un solo destino)
+    @Serializable
+    data object Register : MainRoutes()
+
+    // Recuperar contraseña: pide el correo para enviar el enlace
+    @Serializable
+    data object RecoverPassword : MainRoutes()
+
+    // Nueva contraseña: se abre desde el enlace del correo
+    @Serializable
+    data object NewPassword : MainRoutes()
+
     // Ruta del dashboard principal que contiene la barra de navegación inferior. Recibe obligatoriamente el rol del usuario como parámetro.
     @Serializable
     data class Main(val role: UserRole) : MainRoutes()

@@ -146,7 +146,7 @@ private fun LoginContent(
             // onFocusChanged avisa al ViewModel cuando el usuario entra o sale del campo,
             // para mostrar el error si lo deja vacío.
             modifier = Modifier.onFocusChanged { onEmailFocusChange(it.isFocused) },
-            placeholder = stringResource(R.string.login_email_placeholder),
+            label = stringResource(R.string.login_email_placeholder),
             leadingIcon = Icons.Outlined.Email,
             errorMessage = emailErrorMessage(uiState.emailError),
             keyboardType = KeyboardType.Email,
@@ -159,7 +159,7 @@ private fun LoginContent(
             value = uiState.password,
             onValueChange = onPasswordChange,
             modifier = Modifier.onFocusChanged { onPasswordFocusChange(it.isFocused) },
-            placeholder = stringResource(R.string.login_password_placeholder),
+            label = stringResource(R.string.login_password_placeholder),
             leadingIcon = Icons.Outlined.Lock,
             errorMessage = passwordErrorMessage(uiState.passwordError),
             isPassword = true,

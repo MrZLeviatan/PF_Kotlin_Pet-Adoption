@@ -28,17 +28,20 @@ import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 
 /**
- Campo de texto de la app (correo, contraseña, nombre...).
+Campo de texto de la app (correo, contraseña, nombre...).
 
- Centraliza el estilo del formulario para que todas las pantallas se vean igual.
- Con `isPassword = true` gestiona solo el botón de mostrar/ocultar.
- El texto escrito usa `bodyLarge` (Rubik Regular) por defecto en Material.
+Centraliza el estilo del formulario para que todas las pantallas se vean igual.
+Con `isPassword = true` gestiona solo el botón de mostrar/ocultar.
+El texto escrito usa `bodyLarge` (Rubik Regular) por defecto en Material.
+
+La descripción del campo es una etiqueta flotante: se ve dentro del campo mientras
+está vacío y sin foco, y sube al borde superior al enfocarlo o escribir.
  */
 @Composable
 fun AppTextField(
     value: String,                              // Texto actual ingresado en el campo
     onValueChange: (String) -> Unit,            // Callback que se ejecuta cuando el usuario escribe o borra texto
-    placeholder: String,                        // Texto guía o marcador que aparece cuando el campo está vacío
+    label: String,                              // Descripción del campo: flota arriba al enfocar o escribir
     leadingIcon: ImageVector,                   // Icono decorativo ubicado al inicio del campo de texto
     modifier: Modifier = Modifier,              // Modificador externo para personalizar posición o márgenes
     errorMessage: String? = null,
@@ -59,14 +62,16 @@ fun AppTextField(
         isError = errorMessage != null,
         supportingText = errorMessage?.let { { Text(text = it) } },
         shape = MaterialTheme.shapes.medium,
-        placeholder = {
+        // `label` en lugar de `placeholder`: Material anima la subida al borde superior
+        // y además TalkBack sigue leyendo la descripción cuando el campo ya tiene texto.
+        label = {
             Text(
-                text = placeholder,
+                text = label,
                 style = MaterialTheme.typography.bodyLarge,
             )
         },
         leadingIcon = {
-            // Decorativo: el placeholder ya describe el campo.
+            // Decorativo: la etiqueta ya describe el campo.
             Icon(imageVector = leadingIcon, contentDescription = null)
         },
         // Si es contraseña, muestra un icono interactivo al final para alternar la visibilidad del texto
@@ -110,8 +115,9 @@ fun AppTextField(
             unfocusedLeadingIconColor = AppTheme.colors.border,
             focusedTrailingIconColor = AppTheme.colors.textPrimary,
             unfocusedTrailingIconColor = AppTheme.colors.border,
-            focusedPlaceholderColor = AppTheme.colors.stateDisabled,
-            unfocusedPlaceholderColor = AppTheme.colors.stateDisabled,
+            // Etiqueta: gris dentro del campo (hace de placeholder), oscura al enfocar
+            focusedLabelColor = AppTheme.colors.textPrimary,
+            unfocusedLabelColor = AppTheme.colors.stateDisabled,
             // Colores del estado de error (sin esto, Material usa los suyos por defecto)
             errorContainerColor = AppTheme.colors.surface,
             errorBorderColor = AppTheme.colors.stateError,
@@ -120,7 +126,7 @@ fun AppTextField(
             errorLeadingIconColor = AppTheme.colors.stateError,
             errorTrailingIconColor = AppTheme.colors.stateError,
             errorSupportingTextColor = AppTheme.colors.stateError,
-            errorPlaceholderColor = AppTheme.colors.stateDisabled,
+            errorLabelColor = AppTheme.colors.stateError,
         ),
     )
 }

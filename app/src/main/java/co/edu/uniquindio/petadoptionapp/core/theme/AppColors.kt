@@ -61,6 +61,11 @@ data class AppColors(
     val chipUnselected: Color,
 
     val isDark: Boolean,
+
+    // En data class AppColors, junto a los demás estados:
+    val stateWarning: Color,
+    val stateSuccess: Color,
+
 )
 
 
@@ -99,6 +104,11 @@ internal val LightAppColors = AppColors(
 
     textLink = PetPalette.LinkBrown,
 
+    stateWarning = Color(0xFFE0A100),
+    stateSuccess = Color(0xFF3E9B4F),
+
+
+
     isDark = false,
 )
 
@@ -131,6 +141,9 @@ internal val DarkAppColors = AppColors(
     chipUnselected = PetPalette.Night600,
 
     textLink = PetPalette.Yellow,
+
+    stateWarning = Color(0xFFFFCA28),
+    stateSuccess = Color(0xFF81C784),
 
     isDark = true,
 )

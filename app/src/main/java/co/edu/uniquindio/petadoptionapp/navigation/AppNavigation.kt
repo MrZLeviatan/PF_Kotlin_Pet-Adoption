@@ -9,6 +9,9 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.login.LoginScreen
+import co.edu.uniquindio.petadoptionapp.features.newpassword.NewPasswordScreen
+import co.edu.uniquindio.petadoptionapp.features.recoverpassword.RecoverPasswordScreen
+import co.edu.uniquindio.petadoptionapp.features.register.RegisterScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 
@@ -34,8 +37,6 @@ fun AppNavigation() {
             )
         }
 
-        // Inicio de sesión
-        // Inicio de sesión
         composable<MainRoutes.Login> {
             LoginScreen(
                 onLoginSuccess = {
@@ -45,8 +46,46 @@ fun AppNavigation() {
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },
-                onForgotPasswordClick = { /* pendiente: MainRoutes.ForgotPassword */ },
-                onRegisterClick = { /* pendiente: MainRoutes.Register */ },
+                onForgotPasswordClick = { navController.navigate(MainRoutes.RecoverPassword) },
+                onRegisterClick = { navController.navigate(MainRoutes.Register) },
+            )
+        }
+
+        // Nuevos destinos, debajo de Register:
+        composable<MainRoutes.RecoverPassword> {
+            RecoverPasswordScreen(
+                onBack = { navController.popBackStack() },
+                // El correo ya salió: vuelve al login y el usuario sigue desde su bandeja.
+                onEmailSent = { navController.popBackStack() },
+            )
+        }
+
+        composable<MainRoutes.NewPassword> {
+            NewPasswordScreen(
+                onBack = { navController.popBackStack() },
+                onPasswordUpdated = {
+                    navController.navigate(MainRoutes.Login) {
+                        // Limpia la pila: "atrás" no debe volver a esta pantalla.
+                        popUpTo<MainRoutes.NewPassword> { inclusive = true }
+                    }
+                },
+            )
+        }
+
+
+
+        // Nuevo destino, debajo de Login:
+        composable<MainRoutes.Register> {
+            RegisterScreen(
+                onBackToLogin = { navController.popBackStack() },
+                onRegisterSuccess = {
+                    // TEMPORAL: sin autenticación real, entra al dashboard con rol fijo.
+                    navController.navigate(MainRoutes.Main(role = UserRole.USER)) {
+                        popUpTo<MainRoutes.Login> { inclusive = true }
+                    }
+                },
+                onTermsClick = { /* pendiente: pantalla de términos */ },
+                onPoliciesClick = { /* pendiente: pantalla de políticas */ },
             )
         }
 
