@@ -3,9 +3,12 @@ plugins {
     alias(libs.plugins.android.application)
     // Activa Jetpack Compose para la interfaz gráfica con Kotlin.
     alias(libs.plugins.kotlin.compose)
-    // Agrega el plugin de serialización de Kotlin.
-    kotlin("plugin.serialization") version "2.0.21"
-
+    // Agrega el plugin de serialización de Kotlin (usa la misma versión de Kotlin del proyecto).
+    alias(libs.plugins.kotlinx.serialization)
+    // Agrega Hilt para la inyección de dependencias.
+    alias(libs.plugins.hilt.android)
+    // Agrega KSP, el procesador que genera el código de Hilt.
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -43,6 +46,7 @@ android {
 }
 
 dependencies {
+    // Base de Compose y Android
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -52,26 +56,31 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // Librerías implementadas:
 
-
-    // Librerias implementadas:
-
-    // Importa la librería oficial de Kotlinx Serialization para analizar y serializar objetos a formato JSON
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // Analiza y serializa objetos a formato JSON.
+    implementation(libs.kotlinx.serialization.json)
     // Sistema de navegación entre pantallas usando Compose.
-    implementation("androidx.navigation:navigation-compose:2.8.5")
-    // Para usar viewModel() (omítela si ya la tienes)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    // Iconos extendidos de Material Design
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+    implementation(libs.androidx.navigation.compose)
+    // Para usar viewModel() y observar estados en Compose.
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    // Iconos extendidos de Material Design.
+    implementation(libs.material.icons.extended)
 
-    // Coil para cargar imágenes desde URL
-    // Muestra imágenes en Compose
-    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
-    // Permite descargarlas de internet
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    // Coil para cargar imágenes desde URL: las muestra en Compose y las descarga de internet.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
+    // Hilt: inyección de dependencias.
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
+    // DataStore: guardado local de preferencias (se usará después, para la sesión).
+    implementation(libs.data.store)
+
+    // Pruebas
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
