@@ -55,6 +55,7 @@ data class AppColors(
     val stateDisabled: Color,
     val stateError: Color,
     val onStateError: Color,
+    val stateComplete: Color,
 
     // Chips
     val chipSelected: Color,
@@ -96,8 +97,11 @@ internal val LightAppColors = AppColors(
     stateSelected = PetPalette.Yellow,
     stateUnselected = PetPalette.Ink,
     stateDisabled = PetPalette.Stone,
+    stateComplete = PetPalette.DarkBrown,
+
     stateError = PetPalette.Red,
     onStateError = PetPalette.White,
+
 
     chipSelected = PetPalette.Tan,
     chipUnselected = PetPalette.Sand200,
@@ -136,6 +140,8 @@ internal val DarkAppColors = AppColors(
     stateDisabled = PetPalette.Stone,
     stateError = PetPalette.RedLight,
     onStateError = PetPalette.Night900,
+    stateComplete = PetPalette.DarkBrown,
+
 
     chipSelected = PetPalette.Tan,
     chipUnselected = PetPalette.Night600,

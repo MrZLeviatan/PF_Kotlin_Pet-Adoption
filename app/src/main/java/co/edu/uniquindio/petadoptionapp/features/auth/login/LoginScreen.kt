@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.login
+package co.edu.uniquindio.petadoptionapp.features.auth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,10 +35,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
@@ -48,33 +52,36 @@ import co.edu.uniquindio.petadoptionapp.core.component.text.WelcomeTitle
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
+
+
 private val ScreenHorizontalPadding = 24.dp
-private val HeroCornerRadius = 24.dp
-private const val HERO_ASPECT_RATIO = 3f / 2f
+private val HeroCornerRadius = 16.dp
+private const val HERO_ASPECT_RATIO = 2f / 1f
 
 /**
- * Pantalla de inicio de sesión.
- *
- * Conecta el [LoginViewModel] con la UI: observa el estado, reenvía las acciones
- * del usuario y reacciona a los eventos de un solo uso. [LoginContent] solo dibuja.
+ Pantalla de inicio de sesión.
+
+ Conecta el [LoginViewModel] con la UI: observa el estado, reenvía las acciones
+ del usuario y reacciona a los eventos de un solo uso. [LoginContent] solo dibuja.
  */
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onTwoFactorRequired: (accountId: String) -> Unit,
     onForgotPasswordClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    viewModel: LoginViewModel = viewModel(),
+    viewModel: LoginViewModel = hiltViewModel(),
 ) {
-    // Se detiene la observación cuando la app pasa a segundo plano.
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Siempre apunta al callback más reciente sin reiniciar la colección.
     val currentOnLoginSuccess by rememberUpdatedState(onLoginSuccess)
+    val currentOnTwoFactorRequired by rememberUpdatedState(onTwoFactorRequired)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 LoginEvent.LoginSuccess -> currentOnLoginSuccess()
+                is LoginEvent.TwoFactorRequired -> currentOnTwoFactorRequired(event.accountId)
             }
         }
     }
@@ -170,6 +177,18 @@ private fun LoginContent(
 
         Spacer(Modifier.height(30.dp))
 
+        // liveRegion: TalkBack anuncia el error solo al aparecer.
+        loginErrorMessage(uiState.loginError)?.let { message ->
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = AppTheme.colors.stateError,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        }
+
         PrimaryButton(
             text = stringResource(R.string.login_button),
             onClick = onLoginClick,
@@ -216,6 +235,16 @@ private fun emailErrorMessage(error: EmailError?): String? = when (error) {
     null -> null
     EmailError.EMPTY -> stringResource(R.string.login_error_email_empty)
     EmailError.INVALID_FORMAT -> stringResource(R.string.login_error_email_invalid)
+}
+
+@Composable
+private fun loginErrorMessage(error: LoginError?): String? = when (error) {
+    null -> null
+    LoginError.INVALID_EMAIL -> stringResource(R.string.login_error_email_invalid)
+    LoginError.INVALID_CREDENTIALS -> stringResource(R.string.login_error_invalid_credentials)
+    LoginError.INACTIVE_MODERATOR -> stringResource(R.string.login_error_inactive_moderator)
+    LoginError.ACCOUNT_DELETED -> stringResource(R.string.login_error_account_deleted)
+    LoginError.GENERIC -> stringResource(R.string.login_error_generic)
 }
 
 @Composable

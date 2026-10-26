@@ -48,7 +48,7 @@ object SeedData {
 
     // Define las contraseñas de prueba por correo (solo existen en esta fase; en Firebase las guarda Auth).
     val passwords = mapOf(
-        "ana@correo.com" to "Secreta123",
+        "nicolas.cabreras@uqvirtual.edu.co" to "12345",
         "luis@correo.com" to "Secreta123",
         "mod@petadoption.com" to "Moderador123"
     )

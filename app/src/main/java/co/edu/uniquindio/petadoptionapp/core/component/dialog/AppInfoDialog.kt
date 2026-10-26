@@ -45,7 +45,7 @@ fun AppInfoDialog(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .background(AppTheme.colors.surfaceElevated, RoundedCornerShape(24.dp))
+                .background(AppTheme.colors.surface, RoundedCornerShape(24.dp))
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

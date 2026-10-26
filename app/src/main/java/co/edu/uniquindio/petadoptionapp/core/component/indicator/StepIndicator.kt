@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,17 +34,27 @@ fun StepIndicator(
     // Cantidad total de pasos del flujo
     totalSteps: Int,
     modifier: Modifier = Modifier,
+    // Pasos ya terminados (anteriores al actual)
+    completedColor: Color = AppTheme.colors.stateComplete,
+    // Paso en el que está el usuario
+    currentColor: Color = AppTheme.colors.stateSelected,
+    // Pasos que faltan
+    pendingColor: Color = AppTheme.colors.stateDisabled,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             repeat(totalSteps) { index ->
+                val step = index + 1
                 Box(
                     modifier = Modifier
                         .width(28.dp)
                         .height(4.dp)
                         .background(
-                            color = if (index < currentStep) AppTheme.colors.stateSelected
-                            else AppTheme.colors.stateDisabled,
+                            color = when {
+                                step < currentStep -> completedColor
+                                step == currentStep -> currentColor
+                                else -> pendingColor
+                            },
                             shape = CircleShape,
                         ),
                 )

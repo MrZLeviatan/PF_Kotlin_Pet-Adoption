@@ -27,7 +27,9 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 // Marcadores que se insertan en el string; el orden lo define el recurso, no el código.
 private const val TERMS_MARKER = "{terms}"
 private const val POLICIES_MARKER = "{policies}"
-private val MARKER_REGEX = Regex("\\{terms}|\\{policies}")
+private val MARKER_REGEX = Regex(
+    "${Regex.escape(TERMS_MARKER)}|${Regex.escape(POLICIES_MARKER)}"
+)
 
 /**
 Casilla "Acepto los Términos y Condiciones y las Políticas de Adopción de la app".

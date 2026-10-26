@@ -8,10 +8,10 @@ import androidx.navigation.toRoute
 import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
-import co.edu.uniquindio.petadoptionapp.features.login.LoginScreen
+import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
 import co.edu.uniquindio.petadoptionapp.features.newpassword.NewPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.recoverpassword.RecoverPasswordScreen
-import co.edu.uniquindio.petadoptionapp.features.register.RegisterScreen
+import co.edu.uniquindio.petadoptionapp.features.auth.register.RegisterScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 
@@ -40,12 +40,13 @@ fun AppNavigation() {
         composable<MainRoutes.Login> {
             LoginScreen(
                 onLoginSuccess = {
-                    // TEMPORAL: hasta tener autenticación real,
-                    // entra al dashboard con rol fijo y saca el login de la pila.
+                    // TEMPORAL: rol fijo hasta leer el rol real de la cuenta.
                     navController.navigate(MainRoutes.Main(role = UserRole.USER)) {
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },
+                // TODO: cuando exista la ruta de A2F → navController.navigate(MainRoutes.TwoFactor(accountId))
+                onTwoFactorRequired = { accountId -> },
                 onForgotPasswordClick = { navController.navigate(MainRoutes.RecoverPassword) },
                 onRegisterClick = { navController.navigate(MainRoutes.Register) },
             )
@@ -80,7 +81,7 @@ fun AppNavigation() {
                 onBackToLogin = { navController.popBackStack() },
                 onRegisterSuccess = {
                     // TEMPORAL: sin autenticación real, entra al dashboard con rol fijo.
-                    navController.navigate(MainRoutes.Main(role = UserRole.USER)) {
+                    navController.navigate(MainRoutes.Login) {
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },

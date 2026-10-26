@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.register
+package co.edu.uniquindio.petadoptionapp.features.auth.register
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -17,15 +17,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,20 +31,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.button.BackButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
-import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrength
 import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrengthBar
 import co.edu.uniquindio.petadoptionapp.core.component.form.TermsCheckbox
 import co.edu.uniquindio.petadoptionapp.core.component.icon.PawCircle
@@ -69,7 +70,7 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onTermsClick: () -> Unit,
     onPoliciesClick: () -> Unit,
-    viewModel: RegisterViewModel = viewModel(),
+    viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnRegisterSuccess by rememberUpdatedState(onRegisterSuccess)
@@ -93,6 +94,7 @@ fun RegisterScreen(
             onPhoneChange = viewModel::onPhoneChange,
             onPasswordChange = viewModel::onPasswordChange,
             onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+            onFocusChange = viewModel::onFocusChange,
             onCityChange = viewModel::onCityChange,
             onAddressChange = viewModel::onAddressChange,
             onTermsChange = viewModel::onTermsChange,
@@ -108,13 +110,15 @@ fun RegisterScreen(
     )
 }
 
-// Agrupa las acciones para no arrastrar 16 parámetros por cada composable.
+// Agrupa las acciones para no arrastrar 17 parámetros por cada composable.
 private data class RegisterActions(
     val onFullNameChange: (String) -> Unit = {},
     val onEmailChange: (String) -> Unit = {},
     val onPhoneChange: (String) -> Unit = {},
     val onPasswordChange: (String) -> Unit = {},
     val onConfirmPasswordChange: (String) -> Unit = {},
+    // Avisa al ViewModel cuándo un campo gana o pierde el foco, para mostrar su error.
+    val onFocusChange: (RegisterField, Boolean) -> Unit = { _, _ -> },
     val onCityChange: (String) -> Unit = {},
     val onAddressChange: (String) -> Unit = {},
     val onTermsChange: (Boolean) -> Unit = {},
@@ -152,13 +156,7 @@ private fun RegisterContent(
             contentAlignment = Alignment.CenterStart,
         ) {
             if (uiState.step > 1) {
-                IconButton(onClick = actions.onPreviousStep) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.common_back),
-                        tint = AppTheme.colors.textPrimary,
-                    )
-                }
+                BackButton(onClick = actions.onPreviousStep)
             }
         }
 
@@ -207,42 +205,63 @@ private fun PersonalDataStep(uiState: RegisterUiState, actions: RegisterActions)
         AppTextField(
             value = uiState.fullName,
             onValueChange = actions.onFullNameChange,
+            // onFocusChanged avisa al ViewModel cuando el usuario entra o sale del campo,
+            // para mostrar el error si lo deja vacío.
+            modifier = Modifier.onFocusChanged {
+                actions.onFocusChange(RegisterField.NAME, it.isFocused)
+            },
             label = stringResource(R.string.register_name_label),
             leadingIcon = Icons.Outlined.Person,
+            errorMessage = nameErrorMessage(uiState.nameError),
         )
         AppTextField(
             value = uiState.email,
             onValueChange = actions.onEmailChange,
+            modifier = Modifier.onFocusChanged {
+                actions.onFocusChange(RegisterField.EMAIL, it.isFocused)
+            },
             label = stringResource(R.string.register_email_label),
             leadingIcon = Icons.Outlined.Email,
+            errorMessage = emailErrorMessage(uiState.emailError),
             keyboardType = KeyboardType.Email,
         )
         AppTextField(
             value = uiState.phone,
             onValueChange = actions.onPhoneChange,
+            modifier = Modifier.onFocusChanged {
+                actions.onFocusChange(RegisterField.PHONE, it.isFocused)
+            },
             label = stringResource(R.string.register_phone_label),
             leadingIcon = Icons.Outlined.Phone,
+            errorMessage = phoneErrorMessage(uiState.phoneError),
             keyboardType = KeyboardType.Phone,
         )
         AppTextField(
             value = uiState.password,
             onValueChange = actions.onPasswordChange,
+            modifier = Modifier.onFocusChanged {
+                actions.onFocusChange(RegisterField.PASSWORD, it.isFocused)
+            },
             label = stringResource(R.string.register_password_label),
             leadingIcon = Icons.Outlined.Lock,
+            errorMessage = passwordErrorMessage(uiState.passwordError),
             isPassword = true,
         )
-        // Solo aparece cuando hay un nivel calculado.
+        // Se calcula en el estado: aparece apenas hay algo escrito en la contraseña.
         uiState.passwordStrength?.let { PasswordStrengthBar(strength = it) }
         AppTextField(
             value = uiState.confirmPassword,
             onValueChange = actions.onConfirmPasswordChange,
+            modifier = Modifier.onFocusChanged {
+                actions.onFocusChange(RegisterField.CONFIRM_PASSWORD, it.isFocused)
+            },
             label = stringResource(R.string.register_confirm_password_label),
             leadingIcon = Icons.Outlined.Lock,
+            errorMessage = confirmPasswordErrorMessage(uiState.confirmPasswordError),
             isPassword = true,
             imeAction = ImeAction.Done,
-            keyboardActions = KeyboardActions(
-                onDone = { if (uiState.isPersonalDataFilled) actions.onNextClick() }
-            ),
+            // El ViewModel vuelve a validar: la acción se ignora si el formulario no es válido.
+            keyboardActions = KeyboardActions(onDone = { actions.onNextClick() }),
         )
     }
 
@@ -251,7 +270,8 @@ private fun PersonalDataStep(uiState: RegisterUiState, actions: RegisterActions)
     PrimaryButton(
         text = stringResource(R.string.register_next_button),
         onClick = actions.onNextClick,
-        enabled = uiState.isPersonalDataFilled,
+        // Habilitado solo con todos los campos válidos.
+        enabled = uiState.isPersonalDataValid,
     )
 
     Spacer(Modifier.height(16.dp))
@@ -312,11 +332,72 @@ private fun LocationStep(uiState: RegisterUiState, actions: RegisterActions) {
 
     Spacer(Modifier.height(16.dp))
 
+    // Error del intento de registro. liveRegion: TalkBack lo anuncia solo al aparecer.
+    registerErrorMessage(uiState.registerError)?.let { message ->
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = AppTheme.colors.stateError,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { liveRegion = LiveRegionMode.Polite },
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+
     PrimaryButton(
         text = stringResource(R.string.register_create_button),
         onClick = actions.onCreateAccountClick,
-        enabled = uiState.isLocationDataFilled,
+        // Deshabilitado mientras hay una petición en curso.
+        enabled = uiState.isLocationDataFilled && !uiState.isLoading,
     )
+}
+
+// Traducen el tipo de error (lógica) al texto del recurso (presentación).
+// Viven aquí y no en el ViewModel porque stringResource necesita el contexto de Compose.
+@Composable
+private fun nameErrorMessage(error: FieldError?): String? = when (error) {
+    null -> null
+    FieldError.EMPTY -> stringResource(R.string.register_error_name_empty)
+    else -> stringResource(R.string.register_error_name_invalid)
+}
+
+@Composable
+private fun emailErrorMessage(error: FieldError?): String? = when (error) {
+    null -> null
+    FieldError.EMPTY -> stringResource(R.string.register_error_email_empty)
+    FieldError.TAKEN -> stringResource(R.string.register_error_email_taken)
+    else -> stringResource(R.string.register_error_email_invalid)
+}
+
+@Composable
+private fun phoneErrorMessage(error: FieldError?): String? = when (error) {
+    null -> null
+    FieldError.EMPTY -> stringResource(R.string.register_error_phone_empty)
+    FieldError.TAKEN -> stringResource(R.string.register_error_phone_taken)
+    else -> stringResource(R.string.register_error_phone_invalid)
+}
+
+@Composable
+private fun passwordErrorMessage(error: FieldError?): String? = when (error) {
+    null -> null
+    FieldError.EMPTY -> stringResource(R.string.register_error_password_empty)
+    else -> stringResource(R.string.register_error_password_weak)
+}
+
+@Composable
+private fun confirmPasswordErrorMessage(error: FieldError?): String? = when (error) {
+    null -> null
+    FieldError.EMPTY -> stringResource(R.string.register_error_confirm_empty)
+    else -> stringResource(R.string.register_error_password_mismatch)
+}
+
+@Composable
+private fun registerErrorMessage(error: RegisterError?): String? = when (error) {
+    null -> null
+    RegisterError.LOCATION -> stringResource(R.string.register_error_location)
+    RegisterError.GENERIC -> stringResource(R.string.register_error_generic)
 }
 
 @Preview(name = "Fase 1 vacía", showBackground = true, heightDp = 900)
@@ -336,9 +417,48 @@ private fun RegisterStep1FilledPreview() {
                 fullName = "Nicolás Cabrera Serrano",
                 email = "nicolas@correo.com",
                 phone = "3064819209",
-                password = "12345678",
-                confirmPassword = "12345678",
-                passwordStrength = PasswordStrength.MEDIUM,
+                // Con esta contraseña la barra de seguridad sale en "Media".
+                password = "Secreta123",
+                confirmPassword = "Secreta123",
+            ),
+            actions = RegisterActions(),
+        )
+    }
+}
+
+@Preview(name = "Fase 1 campos vacíos", showBackground = true, heightDp = 1100)
+@Composable
+private fun RegisterStep1EmptyErrorsPreview() {
+    PetAdoptionAppTheme {
+        RegisterContent(
+            uiState = RegisterUiState(
+                nameError = FieldError.EMPTY,
+                emailError = FieldError.EMPTY,
+                phoneError = FieldError.EMPTY,
+                passwordError = FieldError.EMPTY,
+                confirmPasswordError = FieldError.EMPTY,
+            ),
+            actions = RegisterActions(),
+        )
+    }
+}
+
+@Preview(name = "Fase 1 formato inválido", showBackground = true, heightDp = 1100)
+@Composable
+private fun RegisterStep1InvalidErrorsPreview() {
+    PetAdoptionAppTheme {
+        RegisterContent(
+            uiState = RegisterUiState(
+                fullName = "A",
+                email = "ana@",
+                phone = "123",
+                password = "abc",
+                confirmPassword = "xyz",
+                nameError = FieldError.INVALID,
+                emailError = FieldError.INVALID,
+                phoneError = FieldError.INVALID,
+                passwordError = FieldError.WEAK,
+                confirmPasswordError = FieldError.MISMATCH,
             ),
             actions = RegisterActions(),
         )
@@ -355,6 +475,23 @@ private fun RegisterStep2Preview() {
                 city = "Bogotá D.C",
                 address = "Calle 20 Norte",
                 termsAccepted = true,
+            ),
+            actions = RegisterActions(),
+        )
+    }
+}
+
+@Preview(name = "Fase 2 con error", showBackground = true, heightDp = 900)
+@Composable
+private fun RegisterStep2ErrorPreview() {
+    PetAdoptionAppTheme {
+        RegisterContent(
+            uiState = RegisterUiState(
+                step = 2,
+                city = "Bogotá D.C",
+                address = "Calle 20 Norte",
+                termsAccepted = true,
+                registerError = RegisterError.GENERIC,
             ),
             actions = RegisterActions(),
         )

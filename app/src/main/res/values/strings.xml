@@ -30,16 +30,13 @@
         <string name="login_error_email_empty">Debe llenar el campo correo</string>
         <string name="login_error_email_invalid">Ingresa un correo válido</string>
         <string name="login_error_password_empty">Debe llenar el campo contraseña</string>
+        <!-- Mensajes error para el logueo -->
+        <string name="login_error_invalid_credentials">Correo o contraseña incorrectos.</string>
+        <string name="login_error_inactive_moderator">Tu cuenta de moderador está inactiva o suspendida. Contacta al administrador.</string>
+        <string name="login_error_account_deleted">Esta cuenta fue eliminada.</string>
+        <string name="login_error_generic">No pudimos iniciar sesión. Inténtalo de nuevo.</string>
 
-    <!--Comunes-->
-        <string name="common_back">Volver</string>
-        <string name="common_step_indicator">Paso %1$d de %2$d</string>
-        <string name="common_password_strength">Seguridad: %1$s</string>
-        <string name="common_strength_weak">Baja</string>
-        <string name="common_strength_medium">Media</string>
-        <string name="common_strength_strong">Alta</string>
-
-    <!--Strings de la pantalla de Registro-->
+    <!--Strings nativos de la pantalla de Registrar Cuenta -->
         <string name="register_title">Crear cuenta</string>
         <string name="register_name_label">Nombre completo*</string>
         <string name="register_email_label">Correo electrónico*</string>
@@ -53,7 +50,7 @@
         <string name="register_city_label">Ciudad*</string>
         <string name="register_address_label">Dirección*</string>
         <string name="register_set_location">Establecer mi ubicación</string>
-    <!--%1$s = marcador de Términos y Condiciones, %2$s = marcador de Políticas de Adopción-->
+        <!--%1$s = marcador de Términos y Condiciones, %2$s = marcador de Políticas de Adopción-->
         <string name="register_terms_template">Acepto los %1$s y las %2$s de la app.</string>
         <string name="register_terms_link">Términos y Condiciones</string>
         <string name="register_policies_link">Políticas de Adopción</string>
@@ -61,6 +58,31 @@
         <string name="register_success_title">Cuenta creada</string>
         <string name="register_success_message">¡Bienvenido! Tu cuenta ya está lista para encontrar mascotas cerca de ti.</string>
         <string name="register_success_button">Aceptar</string>
+        <!-- Errores de registro de Cuenta-->
+        <string name="register_error_name_empty">Debe llenar el campo nombre</string>
+        <string name="register_error_email_empty">Debe llenar el campo correo</string>
+        <string name="register_error_phone_empty">Debe llenar el campo teléfono</string>
+        <string name="register_error_password_empty">Debe llenar el campo contraseña</string>
+        <string name="register_error_confirm_empty">Debe confirmar la contraseña</string>
+        <!--Errores del registro-->
+        <string name="register_error_name_invalid">Ingresa tu nombre completo</string>
+        <string name="register_error_email_invalid">Ingresa un correo válido</string>
+        <string name="register_error_email_taken">Este correo ya está registrado</string>
+        <string name="register_error_phone_invalid">Ingresa un teléfono válido (7 a 15 dígitos)</string>
+        <string name="register_error_phone_taken">Este teléfono ya está asociado a otra cuenta</string>
+        <string name="register_error_password_weak">Mínimo 8 caracteres, con un número y una mayúscula</string>
+        <string name="register_error_password_mismatch">Las contraseñas no coinciden</string>
+        <string name="register_error_location">Selecciona una ubicación válida</string>
+        <string name="register_error_generic">No pudimos crear tu cuenta. Inténtalo de nuevo.</string>
+
+    <!--Comunes-->
+        <string name="common_back">Volver</string>
+        <string name="common_step_indicator">Paso %1$d de %2$d</string>
+        <string name="common_password_strength">Seguridad: %1$s</string>
+        <string name="common_strength_weak">Baja</string>
+        <string name="common_strength_medium">Media</string>
+        <string name="common_strength_strong">Alta</string>
+
 
     <!--Strings de la pantalla Recuperar contraseña-->
     <string name="recover_title">Recuperar contraseña</string>
