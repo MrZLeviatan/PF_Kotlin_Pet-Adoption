@@ -8,12 +8,11 @@ package co.edu.uniquindio.petadoptionapp.domain.model.reputation
  los puntos mediante funciones, así nunca queda desincronizado.
 
  Es inmutable: [addPoints] y [unlockBadge] devuelven una copia nueva.
-
- - points Puntos acumulados por participar.
- - unlockedBadges Insignias desbloqueadas; cada una apunta al catálogo mediante su `badgeId`.
  */
 data class Reputation(
+    // Puntos acumulados por participar.
     val points: Int = 0,
+    // Insignias desbloqueadas; cada una apunta al catálogo mediante su `badgeId`.
     val unlockedBadges: List<UnlockedBadge> = emptyList()
 ) {
 
