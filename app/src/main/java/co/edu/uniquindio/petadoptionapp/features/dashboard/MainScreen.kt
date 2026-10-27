@@ -25,6 +25,8 @@ fun MainScreen(
     onNotificationsClick: () -> Unit = {},
     onMetricsClick: () -> Unit,
     onSettingsClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
 
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -40,7 +42,9 @@ fun MainScreen(
                 onPostClick = onPostClick,
                 onNotificationsClick = onNotificationsClick,
                 onMetricsClick = onMetricsClick,
-                onSettingsClick = onSettingsClick
+                onSettingsClick = onSettingsClick,
+                onEditProfileClick = onEditProfileClick,
+                onUserClick = onUserClick
             )
         }
     }
@@ -55,6 +59,8 @@ private fun MainContent(
     onNotificationsClick: () -> Unit,
     onMetricsClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onEditProfileClick: () -> Unit,
+    onUserClick: (String) -> Unit,
 ) {
     // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
@@ -102,7 +108,9 @@ private fun MainContent(
             onPostClick = onPostClick,
             onNotificationsClick = onNotificationsClick,
             onMetricsClick = onMetricsClick,
-            onSettingsClick = onSettingsClick
+            onSettingsClick = onSettingsClick,
+            onEditProfileClick = onEditProfileClick,
+            onUserClick = onUserClick
         )
     }
 }
@@ -110,11 +118,11 @@ private fun MainContent(
 @Preview(name = "Usuario", showBackground = true)
 @Composable
 private fun MainUserPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}, {}, {}) }
 }
 
 @Preview(name = "Moderador", showBackground = true)
 @Composable
 private fun MainModeratorPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}, {}, {}) }
 }

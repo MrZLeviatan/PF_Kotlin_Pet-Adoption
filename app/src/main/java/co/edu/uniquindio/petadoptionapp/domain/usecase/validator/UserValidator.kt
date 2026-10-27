@@ -13,7 +13,7 @@ object UserValidator {
     const val MIN_USERNAME_LENGTH = 3
 
     // Define el tamaño mínimo que debe tener un teléfono.
-    const val MIN_PHONE_LENGTH = 7
+    const val MIN_PHONE_LENGTH = 8
 
     // Define el tamaño máximo que puede tener un teléfono.
     const val MAX_PHONE_LENGTH = 15

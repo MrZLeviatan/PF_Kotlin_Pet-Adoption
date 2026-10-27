@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Carpetas que el FileProvider puede compartir con otras apps: solo las imágenes de "shared" en la caché. -->
+<paths>
+    <cache-path name="shared_images" path="shared/" />
+</paths>

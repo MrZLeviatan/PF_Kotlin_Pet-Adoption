@@ -4,6 +4,7 @@ import android.R.attr.padding
 import android.content.Intent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -11,7 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import kotlinx.coroutines.launch
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.util.shareImage
 import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.newpassword.NewPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword.RecoverPasswordScreen
@@ -24,7 +27,9 @@ import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScre
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.metric.MetricsScreen
+import co.edu.uniquindio.petadoptionapp.features.user.profile.edit.EditProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.settings.SettingsScreen
+import co.edu.uniquindio.petadoptionapp.features.user.publicprofile.UserProfileScreen
 
 // Componente raíz de navegación encargada de configurar las rutas principales de toda la aplicación.
 @Composable
@@ -94,14 +99,21 @@ fun AppNavigation() {
         composable<MainRoutes.Metrics> {
             val context = LocalContext.current
             val shareText = stringResource(R.string.metrics_share_text)
+            val scope = rememberCoroutineScope()
             MetricsScreen(
                 onBack = { navController.popBackStack() },
-                onShareClick = {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, shareText)
+                onShare = { screenshot ->
+                    if (screenshot != null) {
+                        // Captura de las métricas + el texto de invitación.
+                        scope.launch { context.shareImage(screenshot, "mis_metricas", shareText) }
+                    } else {
+                        // Sin captura: se comparte solo el texto.
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(Intent.createChooser(intent, null))
                     }
-                    context.startActivity(Intent.createChooser(intent, null))
                 }
             )
         }
@@ -127,7 +139,25 @@ fun AppNavigation() {
                 onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) },
                 onNotificationsClick = { navController.navigate(MainRoutes.Notifications) },
                 onMetricsClick = { navController.navigate(MainRoutes.Metrics) },
-                onSettingsClick = { navController.navigate(MainRoutes.Settings) }
+                onSettingsClick = { navController.navigate(MainRoutes.Settings) },
+                onEditProfileClick = { navController.navigate(MainRoutes.EditProfile) },
+                onUserClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) }
+            )
+        }
+
+        // Perfil de otra persona (sin barra). El userId lo lee el ViewModel de la ruta.
+        composable<MainRoutes.UserProfile> {
+            UserProfileScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+            )
+        }
+
+        // Editar perfil (sin barra): al guardar vuelve al perfil, que se actualiza solo.
+        composable<MainRoutes.EditProfile> {
+            EditProfileScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() }
             )
         }
 

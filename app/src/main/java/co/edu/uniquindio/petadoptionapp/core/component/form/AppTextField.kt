@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -20,6 +22,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,6 +42,11 @@ El texto escrito usa `bodyLarge` (Rubik Regular) por defecto en Material.
 
 La descripción del campo es una etiqueta flotante: se ve dentro del campo mientras
 está vacío y sin foco, y sube al borde superior al enfocarlo o escribir.
+
+Opcionales:
+- `readOnly = true`: muestra el valor con un candado y no deja editarlo (ej. el correo).
+- `required = true`: añade un asterisco rojo a la etiqueta.
+- `textStyle`: cambia la letra del texto escrito y de la etiqueta (ej. más pequeña en un diálogo).
  */
 @Composable
 fun AppTextField(
@@ -49,15 +60,21 @@ fun AppTextField(
     keyboardType: KeyboardType = KeyboardType.Text, // Tipo de teclado virtual que se mostrará (texto, número, email, etc.)
     imeAction: ImeAction = ImeAction.Next,      // Acción del botón inferior del teclado (Siguiente, Hecho, Buscar, etc.)
     keyboardActions: KeyboardActions = KeyboardActions.Default, // Acciones personalizadas al presionar los botones del teclado
+    readOnly: Boolean = false,
+    required: Boolean = false,
+    textStyle: TextStyle? = null,               // null: la letra por defecto de Material (bodyLarge)
 ) {
     // Visibilidad como estado interno: ninguna pantalla debe preocuparse por esto.
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    val errorColor = AppTheme.colors.stateError
 
     // Dibuja el campo de texto con borde oficial de Material Design 3
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
+        readOnly = readOnly,
+        textStyle = textStyle ?: LocalTextStyle.current,
         singleLine = true,          // Limita el campo a una sola línea de texto
         isError = errorMessage != null,
         supportingText = errorMessage?.let { { Text(text = it) } },
@@ -66,30 +83,39 @@ fun AppTextField(
         // y además TalkBack sigue leyendo la descripción cuando el campo ya tiene texto.
         label = {
             Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
+                text = buildAnnotatedString {
+                    append(label)
+                    if (required) withStyle(SpanStyle(color = errorColor)) { append("*") }
+                },
+                style = textStyle ?: MaterialTheme.typography.bodyLarge,
             )
         },
         leadingIcon = {
             // Decorativo: la etiqueta ya describe el campo.
             Icon(imageVector = leadingIcon, contentDescription = null)
         },
-        // Si es contraseña, muestra un icono interactivo al final para alternar la visibilidad del texto
-        trailingIcon = if (isPassword) {
-            {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Outlined.VisibilityOff
-                        else Icons.Outlined.Visibility,
-                        // Este sí es interactivo: TalkBack debe anunciar su acción.
-                        contentDescription = stringResource(
-                            if (passwordVisible) R.string.common_hide_password
-                            else R.string.common_show_password
-                        ),
-                    )
+        // Contraseña: botón de mostrar/ocultar. Solo lectura: candado que avisa que no se edita.
+        trailingIcon = when {
+            isPassword -> {
+                {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Outlined.VisibilityOff
+                            else Icons.Outlined.Visibility,
+                            // Este sí es interactivo: TalkBack debe anunciar su acción.
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.common_hide_password
+                                else R.string.common_show_password
+                            ),
+                        )
+                    }
                 }
             }
-        } else null,
+            readOnly -> {
+                { Icon(Icons.Outlined.Lock, contentDescription = stringResource(R.string.common_not_editable)) }
+            }
+            else -> null
+        },
         // Oculta los caracteres con asteriscos/puntos si es contraseña y la visibilidad está desactivada
         visualTransformation = if (isPassword && !passwordVisible) {
             PasswordVisualTransformation()

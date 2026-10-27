@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.features.user.profile.metric
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,13 +11,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -24,8 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,23 +42,33 @@ import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.BadgeRequirementType
+import co.edu.uniquindio.petadoptionapp.features.user.profile.icon
 import co.edu.uniquindio.petadoptionapp.features.user.profile.levelName
 import java.text.DateFormat
 import java.util.Date
+import kotlinx.coroutines.launch
 
 private val ScreenHorizontalPadding = 24.dp
 
 /**
 Pantalla de métricas: nivel, estado de publicaciones e insignias conseguidas.
 Conecta el [MetricsViewModel] con la UI; [MetricsContent] solo dibuja.
+
+"Compartir" envía una captura de las tarjetas: se graba lo que ya se dibujó en pantalla
+(un GraphicsLayer de Compose), sin librerías extra. Si la captura falla, se pasa `null`
+y quien comparte puede enviar solo el texto.
  */
 @Composable
 fun MetricsScreen(
     onBack: () -> Unit,
-    onShareClick: () -> Unit,
+    onShare: (Bitmap?) -> Unit,
     viewModel: MetricsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Capa donde se graba el contenido de la pantalla para la captura.
+    val captureLayer = rememberGraphicsLayer()
+    val scope = rememberCoroutineScope()
 
     // Al volver a la pantalla se recalculan las publicaciones.
     LifecycleResumeEffect(Unit) {
@@ -67,7 +76,22 @@ fun MetricsScreen(
         onPauseOrDispose { }
     }
 
-    MetricsContent(uiState = uiState, onBack = onBack, onShareClick = onShareClick)
+    MetricsContent(
+        uiState = uiState,
+        onBack = onBack,
+        onShareClick = {
+            scope.launch {
+                // Puede fallar con imágenes de hardware en Android antiguos: en ese caso se comparte sin imagen.
+                val bitmap = runCatching { captureLayer.toImageBitmap().asAndroidBitmap() }.getOrNull()
+                onShare(bitmap)
+            }
+        },
+        // Graba todo el contenido desplazable (no solo la parte visible) con su fondo.
+        contentModifier = Modifier.drawWithContent {
+            captureLayer.record { this@drawWithContent.drawContent() }
+            drawLayer(captureLayer)
+        },
+    )
 }
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
@@ -76,6 +100,8 @@ private fun MetricsContent(
     uiState: MetricsUiState,
     onBack: () -> Unit,
     onShareClick: () -> Unit,
+    // Se aplica al contenido desplazable; la pantalla real lo usa para la captura.
+    contentModifier: Modifier = Modifier,
 ) {
     val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
 
@@ -106,6 +132,9 @@ private fun MetricsContent(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
+                .then(contentModifier)
+                // El fondo va dentro de lo grabado: así la captura no sale transparente.
+                .background(AppTheme.colors.background)
                 .padding(horizontal = ScreenHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -181,16 +210,6 @@ private fun MetricsContent(
             }
         }
     }
-}
-
-// El icono es presentación: depende del tipo de logro de la insignia.
-private fun BadgeRequirementType.icon(): ImageVector = when (this) {
-    BadgeRequirementType.POSTS_CREATED -> Icons.Outlined.Description
-    BadgeRequirementType.POSTS_VERIFIED -> Icons.Outlined.VerifiedUser
-    BadgeRequirementType.POSTS_RESOLVED -> Icons.Outlined.Star
-    BadgeRequirementType.COMMENTS_WRITTEN -> Icons.Outlined.ChatBubbleOutline
-    BadgeRequirementType.VOTES_RECEIVED -> Icons.Outlined.FavoriteBorder
-    BadgeRequirementType.TOTAL_POINTS -> Icons.Outlined.WorkspacePremium
 }
 
 @Preview(name = "Con datos", showBackground = true, heightDp = 1300)

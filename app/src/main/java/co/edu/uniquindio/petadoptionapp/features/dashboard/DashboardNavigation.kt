@@ -40,7 +40,12 @@ fun DashboardNavigation(
     ) {
         // Usuario
         composable<DashboardRoutes.HomeUser> {
-            HomeUserScreen(padding = padding, onPostClick = onPostClick, onNotificationsClick = onNotificationsClick)
+            HomeUserScreen(
+                padding = padding,
+                onPostClick = onPostClick,
+                onUserClick = onUserClick,
+                onNotificationsClick = onNotificationsClick
+            )
         }
         composable<DashboardRoutes.Explore> { PlaceholderScreen("Explore", padding) }
 

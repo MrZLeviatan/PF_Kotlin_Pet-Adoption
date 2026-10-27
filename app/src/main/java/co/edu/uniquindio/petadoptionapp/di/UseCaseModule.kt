@@ -32,6 +32,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkNotifica
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetFeedUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostStatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetUserPostsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.EvaluateMyBadgesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.LoadBadgesUseCase
@@ -270,6 +271,15 @@ object UseCaseModule {
         requireOwnUser: RequireOwnUserUseCase,
     ): UpdateSettingsUseCase = UpdateSettingsUseCase(userRepository, requireOwnUser)
 
+    // Editar perfil
+
+    @Provides
+    @ViewModelScoped
+    fun providesUpdateProfileUseCase(
+        userRepository: UserRepository,
+        requireOwnUser: RequireOwnUserUseCase,
+    ): UpdateProfileUseCase = UpdateProfileUseCase(userRepository, requireOwnUser)
+
     @Provides
     @ViewModelScoped
     fun providesChangePasswordUseCase(
@@ -284,6 +294,23 @@ object UseCaseModule {
         postRepository: PostRepository,
         requireOwnUser: RequireOwnUserUseCase,
     ): DeleteAccountUseCase = DeleteAccountUseCase(authRepository, userRepository, postRepository, requireOwnUser)
+
+
+    // Perfil de otra persona
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetUserProfileUseCase(
+        userRepository: UserRepository,
+    ): GetUserProfileUseCase = GetUserProfileUseCase(userRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetUserPostsUseCase(
+        postRepository: PostRepository,
+        userRepository: UserRepository,
+        authRepository: AuthRepository,
+    ): GetUserPostsUseCase = GetUserPostsUseCase(postRepository, userRepository, authRepository)
 
 
     // Home Moderador

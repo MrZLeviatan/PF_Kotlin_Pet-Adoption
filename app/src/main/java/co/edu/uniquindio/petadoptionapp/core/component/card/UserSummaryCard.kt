@@ -22,11 +22,12 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 /**
  Tarjeta con el avatar, el nombre y la ubicación del usuario.
  El avatar sale de [name]; [displayName] permite mostrar otro texto ("Username: ana_77").
+ Con [location] en `null` no se muestra la línea de ubicación (ej. perfil de otra persona).
  */
 @Composable
 fun UserSummaryCard(
     name: String,
-    location: String,
+    location: String?,
     modifier: Modifier = Modifier,
     displayName: String = name,
     photoUrl: String? = null,
@@ -49,13 +50,15 @@ fun UserSummaryCard(
             textAlign = TextAlign.Center,
         )
 
-        Spacer(Modifier.height(4.dp))
+        if (location != null) {
+            Spacer(Modifier.height(4.dp))
 
-        IconTextRow(
-            icon = Icons.Outlined.LocationOn,
-            text = location,
-            spacing = 4.dp,
-        )
+            IconTextRow(
+                icon = Icons.Outlined.LocationOn,
+                text = location,
+                spacing = 4.dp,
+            )
+        }
     }
 }
 

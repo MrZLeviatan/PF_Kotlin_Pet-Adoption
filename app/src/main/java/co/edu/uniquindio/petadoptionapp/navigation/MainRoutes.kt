@@ -41,6 +41,9 @@ sealed class MainRoutes {
     // Configuración de la cuenta (seguridad, privacidad, eliminar cuenta)
     @Serializable data object Settings : MainRoutes()
 
+    // Editar los datos del perfil (nombre, teléfono, ubicación)
+    @Serializable data object EditProfile : MainRoutes()
+
     @Serializable data object Notifications : MainRoutes()
 
 

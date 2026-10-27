@@ -24,10 +24,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
@@ -45,6 +47,11 @@ import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 private val ScreenHorizontalPadding = 24.dp
+
+// Letra de los campos dentro de los diálogos: la misma Rubik Regular de las pantallas, pero a 14 sp en vez de 16,
+// porque el diálogo es más angosto. Para otro tamaño basta con cambiar este estilo.
+private val DialogFieldTextStyle: TextStyle
+    @Composable get() = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp, lineHeight = 20.sp)
 
 /**
 Pantalla de configuración: seguridad (contraseña y A2F), privacidad del perfil y eliminar cuenta.
@@ -226,6 +233,7 @@ private fun ChangePasswordDialog(dialog: PasswordDialogState, actions: SettingsA
             label = stringResource(R.string.settings_current_password),
             leadingIcon = Icons.Outlined.Lock,
             isPassword = true,
+            textStyle = DialogFieldTextStyle,
         )
         AppTextField(
             value = dialog.newPassword,
@@ -233,6 +241,7 @@ private fun ChangePasswordDialog(dialog: PasswordDialogState, actions: SettingsA
             label = stringResource(R.string.settings_new_password),
             leadingIcon = Icons.Outlined.Key,
             isPassword = true,
+            textStyle = DialogFieldTextStyle,
         )
         AppTextField(
             value = dialog.confirmPassword,
@@ -240,6 +249,7 @@ private fun ChangePasswordDialog(dialog: PasswordDialogState, actions: SettingsA
             label = stringResource(R.string.settings_confirm_password),
             leadingIcon = Icons.Outlined.Key,
             isPassword = true,
+            textStyle = DialogFieldTextStyle,
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(onDone = { actions.onPasswordConfirm() }),
         )
@@ -265,6 +275,7 @@ private fun DeleteAccountDialog(dialog: DeleteDialogState, actions: SettingsActi
             label = stringResource(R.string.settings_current_password),
             leadingIcon = Icons.Outlined.Lock,
             isPassword = true,
+            textStyle = DialogFieldTextStyle,
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(onDone = { actions.onDeleteConfirm() }),
         )

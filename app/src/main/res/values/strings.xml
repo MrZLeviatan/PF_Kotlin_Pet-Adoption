@@ -68,7 +68,7 @@
         <string name="register_error_name_invalid">Ingresa tu nombre completo</string>
         <string name="register_error_email_invalid">Ingresa un correo válido</string>
         <string name="register_error_email_taken">Este correo ya está registrado</string>
-        <string name="register_error_phone_invalid">Ingresa un teléfono válido (7 a 15 dígitos)</string>
+        <string name="register_error_phone_invalid">Ingresa un teléfono válido (8 a 15 dígitos)</string>
         <string name="register_error_phone_taken">Este teléfono ya está asociado a otra cuenta</string>
         <string name="register_error_password_weak">Mínimo 8 caracteres, con un número y una mayúscula</string>
         <string name="register_error_password_mismatch">Las contraseñas no coinciden</string>
@@ -318,4 +318,32 @@
     <string name="settings_error_wrong_password">La contraseña no es correcta</string>
     <string name="settings_error_same_password">La nueva contraseña debe ser distinta de la actual</string>
     <string name="settings_error_generic">Algo salió mal. Intenta de nuevo.</string>
+
+    <!-- Lo anuncia TalkBack en el candado de un campo de solo lectura -->
+    <string name="common_not_editable">No se puede editar</string>
+
+    <!-- Editar perfil (el asterisco de obligatorio lo pone AppTextField) -->
+    <string name="edit_profile_title">Editar Perfil</string>
+    <string name="edit_profile_name">Nombre completo</string>
+    <string name="edit_profile_email">Correo electrónico</string>
+    <string name="edit_profile_phone">Teléfono</string>
+    <string name="edit_profile_city">Ciudad</string>
+    <string name="edit_profile_address">Dirección</string>
+    <string name="edit_profile_save">Guardar Cambios</string>
+    <string name="edit_profile_error_city">Debe llenar el campo ciudad</string>
+    <string name="edit_profile_error_address">Debe llenar el campo dirección</string>
+    <string name="edit_profile_success_title">Perfil actualizado</string>
+    <string name="edit_profile_success_message">Tus datos se guardaron correctamente.</string>
+    <string name="edit_profile_success_button">Aceptar</string>
+
+    <!-- Perfil de otra persona -->
+    <string name="user_profile_title">Perfil</string>
+    <string name="user_profile_username">@%1$s</string>
+    <string name="user_profile_private">Este perfil es privado. Solo puedes ver su alias y su foto.</string>
+    <string name="user_profile_contact">Contacto</string>
+    <string name="user_profile_badges_empty">Aún no tiene insignias</string>
+    <string name="user_profile_posts">Publicaciones activas</string>
+    <string name="user_profile_posts_empty">No tiene publicaciones activas</string>
+    <string name="user_profile_not_found">Este perfil no existe o fue eliminado</string>
+    <string name="user_profile_error">No se pudo cargar el perfil. Intenta de nuevo.</string>
 </resources>
