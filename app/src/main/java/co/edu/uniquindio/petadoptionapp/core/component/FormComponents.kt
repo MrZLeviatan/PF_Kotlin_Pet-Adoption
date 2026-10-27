@@ -249,34 +249,6 @@ fun SwitchRow(
     }
 }
 
-// Botón de acción principal redondeado que cambia de color según su estado de habilitación.
-@Composable
-fun PrimaryButton(
-    text: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        // Asigna el ancho máximo y una altura fija de 52dp.
-        modifier = modifier.fillMaxWidth().height(52.dp),
-        // Da una forma completamente redondeada tipo píldora a los bordes del botón.
-        shape = RoundedCornerShape(50),
-        // Configura los colores del contenedor y texto tanto para cuando está activo como deshabilitado.
-        colors = ButtonDefaults.buttonColors(
-            containerColor = ItemSeleccionado,
-            contentColor = TextoMarron,
-            disabledContainerColor = BotonDeshabilitado,
-            disabledContentColor = TextoMarron
-        )
-    ) {
-        // Texto interior del botón con tipografía en negrita.
-        Text(text, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-    }
-}
-
 // Componente en forma de superficie contenedora de avisos informativos con icono incorporado.
 @Composable
 fun InfoTip(icon: ImageVector, text: String) {

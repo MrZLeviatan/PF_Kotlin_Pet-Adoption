@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import co.edu.uniquindio.petadoptionapp.core.component.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 // Importación de los temas a usar
 import co.edu.uniquindio.petadoptionapp.core.theme.*
 
@@ -86,7 +86,12 @@ fun PublicationSentDialog(
                 // Inserta un espacio vertical de 24dp antes de los botones de acción.
                 Spacer(modifier = Modifier.height(24.dp))
                 // Botón principal interactivo para redirigir a ver la publicación enviada.
-                PrimaryButton(text = "Ver mi Publicación", enabled = true, onClick = onViewPost)
+                PrimaryButton(
+                    text = "Ver mi Publicación",
+                    onClick = onViewPost,
+                    modifier = Modifier.height(52.dp),
+                    textStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                )
 
                 // Inserta un espacio vertical de 12dp entre ambos botones.
                 Spacer(modifier = Modifier.height(12.dp))

@@ -1,44 +1,117 @@
 package co.edu.uniquindio.petadoptionapp.features.user.profile.metric
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.BadgeRequirementType
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.UserLevel
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostStatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.EvaluateMyBadgesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.LoadBadgesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.ObserveBadgesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-/** Tipo de insignia. La pantalla decide el icono según el tipo. */
-enum class BadgeType { GUARDIAN, PROFILE_COMPLETE, VERIFIED_CONTACT }
-
+// Insignia ya desbloqueada, lista para dibujar (nombre y descripción vienen del catálogo).
 data class BadgeUi(
-    val type: BadgeType,
-    val title: String,
+    val id: String,
+    val name: String,
     val description: String,
-    val tag: String,
+    val requirementType: BadgeRequirementType,
+    val unlockedAt: Long,
 )
 
-/**
-Estado de la pantalla. Los valores por defecto son datos QUEMADOS de prueba.
-Los textos de las insignias viven aquí y no en strings.xml porque vendrán del backend.
-TODO: reemplazar por datos reales cuando existan los casos de uso (usuario, métricas, insignias).
- */
+// Estado de la pantalla: datos neutros; los textos fijos los pone la UI con strings.xml.
 data class MetricsUiState(
-    val userName: String = "Nicolás C.S",
-    val location: String = "Armenia, Colombia",
-    val levelName: String = "Guardián de Huellas",
-    val levelNumber: Int = 5,
-    val points: Int = 3_240,
-    val nextLevelPoints: Int = 4_500,
-    val activePosts: Int = 12,
-    val reviewPosts: Int = 3,
-    val finishedPosts: Int = 8,
-    val badges: List<BadgeUi> = listOf(
-        BadgeUi(BadgeType.GUARDIAN, "Guardián de Huellas", "Nivel 5 alcanzado", "LVL 5"),
-        BadgeUi(BadgeType.PROFILE_COMPLETE, "Perfil Completo", "Datos personales actualizados", "100%"),
-        BadgeUi(BadgeType.VERIFIED_CONTACT, "Contacto Verificado", "Teléfono y correo confirmados", "Verificado"),
-    ),
+    val userName: String = "",
+    val photoUrl: String? = null,
+    val location: String = "",
+    val level: UserLevel = UserLevel.ANIMAL_FRIEND,
+    val levelNumber: Int = 1,
+    val points: Int = 0,
+    val nextLevelPoints: Int? = null,   // null en el nivel máximo
+    val activePosts: Int = 0,
+    val reviewPosts: Int = 0,
+    val finishedPosts: Int = 0,
+    val badges: List<BadgeUi> = emptyList(),
+    val hasError: Boolean = false,
 )
 
-class MetricsViewModel : ViewModel() {
+@HiltViewModel
+class MetricsViewModel @Inject constructor(
+    observeCurrentUser: ObserveCurrentUserUseCase,
+    observeBadges: ObserveBadgesUseCase,
+    private val loadBadges: LoadBadgesUseCase,
+    private val evaluateMyBadges: EvaluateMyBadgesUseCase,
+    private val getPostStats: GetPostStatsUseCase,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MetricsUiState())
     val uiState: StateFlow<MetricsUiState> = _uiState.asStateFlow()
+
+    init {
+        // Perfil + catálogo: si cambian puntos o insignias, la pantalla se actualiza sola.
+        viewModelScope.launch {
+            combine(observeCurrentUser(), observeBadges()) { user, catalog -> user to catalog }
+                .collect { (user, catalog) ->
+                    if (user == null) return@collect
+                    val reputation = user.reputation
+                    val level = reputation.level()
+                    val next = UserLevel.entries.getOrNull(level.ordinal + 1)
+
+                    // Cruza cada insignia ganada con su ficha del catálogo.
+                    val badges = reputation.unlockedBadges.mapNotNull { unlocked ->
+                        catalog.firstOrNull { it.id == unlocked.badgeId }?.let { badge ->
+                            BadgeUi(badge.id, badge.name, badge.description,
+                                badge.requirementType, unlocked.unlockedAt)
+                        }
+                    }.sortedByDescending { it.unlockedAt }
+
+                    _uiState.update {
+                        it.copy(
+                            userName = user.account.userName,
+                            photoUrl = user.photoUrl,
+                            location = listOf(user.location.city, user.location.country)
+                                .filter { p -> p.isNotBlank() }.joinToString(", "),
+                            level = level,
+                            levelNumber = reputation.levelNumber(),
+                            points = reputation.points,
+                            nextLevelPoints = next?.minPoints,
+                            badges = badges,
+                        )
+                    }
+                }
+        }
+
+        // Carga el catálogo y revisa si ya cumple alguna insignia nueva.
+        viewModelScope.launch {
+            loadBadges()
+            evaluateMyBadges()
+        }
+        refresh()
+    }
+
+    // Recalcula las publicaciones (se llama también al volver a la pantalla).
+    fun refresh() {
+        viewModelScope.launch {
+            getPostStats()
+                .onSuccess { stats ->
+                    _uiState.update {
+                        it.copy(
+                            activePosts = stats.active,
+                            reviewPosts = stats.pendingVerification,
+                            finishedPosts = stats.finished,
+                            hasError = false,
+                        )
+                    }
+                }
+                .onFailure { _uiState.update { s -> s.copy(hasError = true) } }
+        }
+    }
 }

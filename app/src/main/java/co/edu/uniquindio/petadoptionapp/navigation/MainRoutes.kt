@@ -35,6 +35,12 @@ sealed class MainRoutes {
     @Serializable
     data object NewPassword : MainRoutes()
 
+
+    @Serializable data object Metrics : MainRoutes()
+
+    // Configuración de la cuenta (seguridad, privacidad, eliminar cuenta)
+    @Serializable data object Settings : MainRoutes()
+
     @Serializable data object Notifications : MainRoutes()
 
 

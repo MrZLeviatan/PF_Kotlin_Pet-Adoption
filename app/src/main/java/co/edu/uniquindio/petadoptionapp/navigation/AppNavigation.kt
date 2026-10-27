@@ -1,13 +1,17 @@
 package co.edu.uniquindio.petadoptionapp.navigation
 
 import android.R.attr.padding
+import android.content.Intent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.newpassword.NewPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword.RecoverPasswordScreen
@@ -19,6 +23,8 @@ import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
+import co.edu.uniquindio.petadoptionapp.features.user.profile.metric.MetricsScreen
+import co.edu.uniquindio.petadoptionapp.features.user.profile.settings.SettingsScreen
 
 // Componente raíz de navegación encargada de configurar las rutas principales de toda la aplicación.
 @Composable
@@ -85,6 +91,21 @@ fun AppNavigation() {
             )
         }
 
+        composable<MainRoutes.Metrics> {
+            val context = LocalContext.current
+            val shareText = stringResource(R.string.metrics_share_text)
+            MetricsScreen(
+                onBack = { navController.popBackStack() },
+                onShareClick = {
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                    }
+                    context.startActivity(Intent.createChooser(intent, null))
+                }
+            )
+        }
+
 
 
         composable<MainRoutes.NewPassword> {
@@ -104,7 +125,22 @@ fun AppNavigation() {
             MainScreen(
                 onCreatePost = { navController.navigate(MainRoutes.CreatePost) },
                 onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) },
-                onNotificationsClick = { navController.navigate(MainRoutes.Notifications) }
+                onNotificationsClick = { navController.navigate(MainRoutes.Notifications) },
+                onMetricsClick = { navController.navigate(MainRoutes.Metrics) },
+                onSettingsClick = { navController.navigate(MainRoutes.Settings) }
+            )
+        }
+
+        // Configuración (sin barra).
+        composable<MainRoutes.Settings> {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onAccountDeleted = {
+                    navController.navigate(MainRoutes.Login) {
+                        // Sin sesión no se puede volver a ninguna pantalla anterior: se limpia toda la pila.
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                }
             )
         }
 

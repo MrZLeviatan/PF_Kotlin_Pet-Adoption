@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -37,6 +35,7 @@ import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.card.NotificationCard
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
 import co.edu.uniquindio.petadoptionapp.core.component.navigation.AppChipRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
@@ -128,18 +127,23 @@ private fun NotificationsContent(
             // Error de carga, o mensaje de lista vacía.
             if (uiState.hasError) {
                 item(key = "error") {
-                    Text(
+                    StatusMessage(
                         text = stringResource(R.string.notifications_error),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = AppTheme.colors.stateError,
-                        textAlign = TextAlign.Center,
+                        isError = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 48.dp),
                     )
                 }
             } else if (notifications.isEmpty() && !uiState.isLoading) {
-                item(key = "empty") { EmptyState() }
+                item(key = "empty") {
+                    StatusMessage(
+                        text = stringResource(R.string.notifications_empty),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                    )
+                }
             }
 
             items(notifications, key = { it.id }) { notification ->
@@ -163,19 +167,6 @@ private fun NotificationsContent(
             }
         }
     }
-}
-
-@Composable
-private fun EmptyState() {
-    Text(
-        text = stringResource(R.string.notifications_empty),
-        style = MaterialTheme.typography.bodyMedium,
-        color = AppTheme.colors.textPrimary,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-    )
 }
 
 // Minutos → "Hace 2 min", horas → "Hace 3 h", 24 a 47 h → "Ayer", después "Hace X días".

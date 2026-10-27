@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,9 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -51,9 +47,10 @@ import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrengthBar
 import co.edu.uniquindio.petadoptionapp.core.component.form.TermsCheckbox
-import co.edu.uniquindio.petadoptionapp.core.component.icon.PawCircle
 import co.edu.uniquindio.petadoptionapp.core.component.indicator.StepIndicator
-import co.edu.uniquindio.petadoptionapp.core.component.text.LinkText
+import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
+import co.edu.uniquindio.petadoptionapp.core.component.text.PawTitle
+import co.edu.uniquindio.petadoptionapp.core.component.text.TextWithLink
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -161,7 +158,8 @@ private fun RegisterContent(
         }
 
         Spacer(Modifier.height(8.dp))
-        RegisterHeader()
+        // Logo (huella) y título de la pantalla.
+        PawTitle(text = stringResource(R.string.register_title))
         Spacer(Modifier.height(16.dp))
         StepIndicator(currentStep = uiState.step, totalSteps = RegisterUiState.TOTAL_STEPS)
         Spacer(Modifier.height(24.dp))
@@ -182,21 +180,6 @@ private fun RegisterContent(
     }
 }
 
-// Logo (huella) y título de la pantalla.
-@Composable
-private fun RegisterHeader() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        PawCircle(size = 40.dp, containerColor = AppTheme.colors.surfaceTag)
-        Text(
-            text = stringResource(R.string.register_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = AppTheme.colors.textPrimary,
-        )
-    }
-}
 
 // Fase 1: datos personales.
 @Composable
@@ -276,20 +259,11 @@ private fun PersonalDataStep(uiState: RegisterUiState, actions: RegisterActions)
 
     Spacer(Modifier.height(16.dp))
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-    ) {
-        Text(
-            text = stringResource(R.string.register_have_account),
-            style = MaterialTheme.typography.bodyMedium,
-            color = AppTheme.colors.textPrimary,
-        )
-        LinkText(
-            text = stringResource(R.string.register_login_link),
-            onClick = actions.onLoginClick,
-        )
-    }
+    TextWithLink(
+        text = stringResource(R.string.register_have_account),
+        linkText = stringResource(R.string.register_login_link),
+        onLinkClick = actions.onLoginClick,
+    )
 }
 
 // Fase 2: ubicación y términos.
@@ -334,15 +308,7 @@ private fun LocationStep(uiState: RegisterUiState, actions: RegisterActions) {
 
     // Error del intento de registro. liveRegion: TalkBack lo anuncia solo al aparecer.
     registerErrorMessage(uiState.registerError)?.let { message ->
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodySmall,
-            color = AppTheme.colors.stateError,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .semantics { liveRegion = LiveRegionMode.Polite },
-        )
+        ErrorText(text = message, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
     }
 

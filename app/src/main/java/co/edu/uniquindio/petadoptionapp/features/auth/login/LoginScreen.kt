@@ -2,9 +2,7 @@ package co.edu.uniquindio.petadoptionapp.features.auth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,19 +33,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
-import co.edu.uniquindio.petadoptionapp.core.component.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.icon.OrDivider
+import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
 import co.edu.uniquindio.petadoptionapp.core.component.text.LinkText
+import co.edu.uniquindio.petadoptionapp.core.component.text.TextWithLink
 import co.edu.uniquindio.petadoptionapp.core.component.text.WelcomeTitle
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
@@ -180,20 +178,17 @@ private fun LoginContent(
         // liveRegion: TalkBack anuncia el error solo al aparecer.
         loginErrorMessage(uiState.loginError)?.let { message ->
             Spacer(Modifier.height(12.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = AppTheme.colors.stateError,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
+            ErrorText(text = message)
         }
 
         PrimaryButton(
             text = stringResource(R.string.login_button),
             onClick = onLoginClick,
+            // Alto y texto propios del diseño de esta pantalla (52 dp, 16 sp en negrita).
+            modifier = Modifier.height(52.dp),
             // Habilitado solo con ambos campos válidos y sin una petición en curso.
             enabled = uiState.isFormValid && !uiState.isLoading,
+            textStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
         )
 
         Spacer(Modifier.height(15.dp))
@@ -211,20 +206,11 @@ private fun LoginContent(
             text = stringResource(R.string.login_divider_or)
         )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        ) {
-            Text(
-                text = stringResource(R.string.login_no_account),
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppTheme.colors.textPrimary,
-            )
-            LinkText(
-                text = stringResource(R.string.login_create_account),
-                onClick = onRegisterClick,
-            )
-        }
+        TextWithLink(
+            text = stringResource(R.string.login_no_account),
+            linkText = stringResource(R.string.login_create_account),
+            onLinkClick = onRegisterClick,
+        )
     }
 }
 

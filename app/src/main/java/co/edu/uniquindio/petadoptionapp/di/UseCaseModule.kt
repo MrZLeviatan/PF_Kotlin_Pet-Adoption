@@ -31,7 +31,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkAllNotif
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkNotificationReadUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetFeedUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostStatsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.EvaluateMyBadgesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.LoadBadgesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.ObserveBadgesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
@@ -231,6 +233,57 @@ object UseCaseModule {
         notify: NotifyUseCase
     ): AwardPointsUseCase = AwardPointsUseCase(reputationRepository, notify)
 
+    // Metricas
+
+    @Provides
+    @ViewModelScoped
+    fun providesEvaluateMyBadgesUseCase(
+        reputationRepository: ReputationRepository,
+        userRepository: UserRepository,
+        postRepository: PostRepository,
+        requiredUser: RequireUserUseCase,
+        notify: NotifyUseCase
+    ): EvaluateMyBadgesUseCase = EvaluateMyBadgesUseCase(reputationRepository, userRepository, postRepository, requiredUser, notify)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetPostStatusUseCase(
+        postRepository: PostRepository,
+        requiredUser: RequireUserUseCase
+    ): GetPostStatsUseCase = GetPostStatsUseCase(postRepository, requiredUser)
+
+
+
+    // Configuración
+
+    @Provides
+    @ViewModelScoped
+    fun providesRequireOwnUserUseCase(
+        authRepository: AuthRepository,
+    ): RequireOwnUserUseCase = RequireOwnUserUseCase(authRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesUpdateSettingsUseCase(
+        userRepository: UserRepository,
+        requireOwnUser: RequireOwnUserUseCase,
+    ): UpdateSettingsUseCase = UpdateSettingsUseCase(userRepository, requireOwnUser)
+
+    @Provides
+    @ViewModelScoped
+    fun providesChangePasswordUseCase(
+        authRepository: AuthRepository,
+    ): ChangePasswordUseCase = ChangePasswordUseCase(authRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesDeleteAccountUseCase(
+        authRepository: AuthRepository,
+        userRepository: UserRepository,
+        postRepository: PostRepository,
+        requireOwnUser: RequireOwnUserUseCase,
+    ): DeleteAccountUseCase = DeleteAccountUseCase(authRepository, userRepository, postRepository, requireOwnUser)
 
 
     // Home Moderador

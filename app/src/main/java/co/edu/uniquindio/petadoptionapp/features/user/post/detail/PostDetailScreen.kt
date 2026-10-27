@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,10 +37,9 @@ import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -61,9 +61,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.BordeMarron
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoAviso
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoChip
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoClaro
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoCrema
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
@@ -247,57 +250,58 @@ private fun RoundIconButton(
 // Tarjeta con etiquetas, título, ubicación y fecha
 @Composable
 private fun PostTitleCard(post: PostDetailInfo) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = FondoMarron)
+    AppCard(
+        containerColor = AppTheme.colors.brand,
+        borderColor = null,
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-
-            // Etiquetas: tipo y verificado
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DetailTag(text = post.type, icon = Icons.Outlined.Pets)
-                if (post.verified) {
-                    DetailTag(text = "Verificado", icon = Icons.Filled.CheckCircle, iconColor = Color(0xFF2E7D32))
-                }
+        // Etiquetas: tipo y verificado
+        val tagStyle = LocalTextStyle.current.copy(fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            IconTag(text = post.type, icon = Icons.Outlined.Pets, textStyle = tagStyle)
+            if (post.verified) {
+                IconTag(
+                    text = "Verificado",
+                    icon = Icons.Filled.CheckCircle,
+                    iconColor = Color(0xFF2E7D32),
+                    textStyle = tagStyle
+                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Título grande
-            Text(post.title, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            IconText(icon = Icons.Outlined.LocationOn, text = post.location)
-            Spacer(modifier = Modifier.height(6.dp))
-            IconText(icon = Icons.Outlined.CalendarMonth, text = post.publishedAgo)
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Título grande
+        Text(post.title, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        DetailIconText(icon = Icons.Outlined.LocationOn, text = post.location)
+        Spacer(modifier = Modifier.height(6.dp))
+        DetailIconText(icon = Icons.Outlined.CalendarMonth, text = post.publishedAgo)
     }
 }
 
 // Tarjeta con los datos de la mascota en 2 columnas
 @Composable
 private fun PostInfoCard(post: PostDetailInfo) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = FondoMarron)
+    AppCard(
+        containerColor = AppTheme.colors.brand,
+        borderColor = null,
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Primera fila: Tipo y Raza
-            Row(modifier = Modifier.fillMaxWidth()) {
-                InfoCell("Tipo", post.animalType, Icons.Outlined.Pets, Modifier.weight(1f))
-                InfoCell("Raza", post.breed, Icons.Outlined.Sell, Modifier.weight(1f))
-            }
+        // Primera fila: Tipo y Raza
+        Row(modifier = Modifier.fillMaxWidth()) {
+            InfoCell("Tipo", post.animalType, Icons.Outlined.Pets, Modifier.weight(1f))
+            InfoCell("Raza", post.breed, Icons.Outlined.Sell, Modifier.weight(1f))
+        }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = BordeMarron)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = BordeMarron)
 
-            // Segunda fila: Tamaño y Vacunas
-            Row(modifier = Modifier.fillMaxWidth()) {
-                InfoCell("Tamaño", post.size, Icons.Outlined.Straighten, Modifier.weight(1f))
-                InfoCell("Vacunas", post.vaccines, Icons.Outlined.TaskAlt, Modifier.weight(1f))
-            }
+        // Segunda fila: Tamaño y Vacunas
+        Row(modifier = Modifier.fillMaxWidth()) {
+            InfoCell("Tamaño", post.size, Icons.Outlined.Straighten, Modifier.weight(1f))
+            InfoCell("Vacunas", post.vaccines, Icons.Outlined.TaskAlt, Modifier.weight(1f))
         }
     }
 }
@@ -377,7 +381,7 @@ private fun PostLocation(post: PostDetailInfo) {
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        IconText(icon = Icons.Outlined.LocationOn, text = post.approxLocation, bold = true)
+        DetailIconText(icon = Icons.Outlined.LocationOn, text = post.approxLocation, bold = true)
     }
 }
 
@@ -487,33 +491,18 @@ private fun Avatar(initials: String, size: Dp) {
     }
 }
 
-// Etiqueta pequeña con ícono y texto (Adopción, Verificado)
+// Línea con ícono a la izquierda y texto a la derecha, con el tamaño propio del detalle
 @Composable
-private fun DetailTag(text: String, icon: ImageVector, iconColor: Color = TextoMarron) {
-    Surface(shape = RoundedCornerShape(8.dp), color = FondoChip) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(14.dp))
-            Text(text, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextoMarron)
-        }
-    }
-}
-
-// Línea con ícono a la izquierda y texto a la derecha
-@Composable
-private fun IconText(icon: ImageVector, text: String, bold: Boolean = false) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Icon(icon, contentDescription = null, tint = TextoMarron, modifier = Modifier.size(18.dp))
-        Text(
-            text = text,
+private fun DetailIconText(icon: ImageVector, text: String, bold: Boolean = false) {
+    IconTextRow(
+        icon = icon,
+        text = text,
+        iconSize = 18.dp,
+        style = LocalTextStyle.current.copy(
             fontSize = 14.sp,
-            color = TextoMarron,
             fontWeight = if (bold) FontWeight.Bold else FontWeight.Medium
         )
-    }
+    )
 }
 
 @Preview(showBackground = true)

@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +39,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.card.PostMetaLine
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostSummaryCard
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
 import co.edu.uniquindio.petadoptionapp.core.component.navigation.AppTabRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -110,7 +110,14 @@ private fun MyPostsContent(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (sections.isEmpty()) {
-                item(key = "empty") { EmptyState() }
+                item(key = "empty") {
+                    StatusMessage(
+                        text = stringResource(R.string.my_posts_empty),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                    )
+                }
             }
 
             sections.forEach { (status, posts) ->
@@ -224,19 +231,6 @@ private fun PendingFooter(onDelete: () -> Unit) {
             color = AppTheme.colors.textPrimary,
         )
     }
-}
-
-@Composable
-private fun EmptyState() {
-    Text(
-        text = stringResource(R.string.my_posts_empty),
-        style = MaterialTheme.typography.bodyMedium,
-        color = AppTheme.colors.textPrimary,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-    )
 }
 
 // Menos de 24 horas se muestra en horas; desde ahí, en días.

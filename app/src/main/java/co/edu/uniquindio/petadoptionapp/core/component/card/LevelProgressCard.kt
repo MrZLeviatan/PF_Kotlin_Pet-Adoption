@@ -31,23 +31,27 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import java.text.NumberFormat
 import kotlin.math.roundToInt
 
-/** Tarjeta de nivel: nombre, insignia "LVL", puntos y barra de progreso hacia el siguiente nivel. */
+/**
+ Tarjeta de nivel: nombre, insignia "LVL", puntos y barra de progreso hacia el siguiente nivel.
+ Con [nextLevelPoints] en `null` (nivel máximo) muestra "Nivel máximo alcanzado".
+ [progress] va de 0 a 1; si no se pasa, se calcula como puntos / meta.
+ Con [onClick] la tarjeta es tocable (en Perfil abre las métricas); sin él es solo informativa.
+ */
 @Composable
 fun LevelProgressCard(
     levelName: String,
     levelNumber: Int,
     points: Int,
-    nextLevelPoints: Int,
+    nextLevelPoints: Int?,
     modifier: Modifier = Modifier,
+    progress: Float = defaultProgress(points, nextLevelPoints),
+    onClick: (() -> Unit)? = null,
+    onClickLabel: String? = null,
 ) {
-    // coerceIn evita valores fuera de rango si los puntos superan la meta.
-    val progress = if (nextLevelPoints == 0) 0f
-    else (points.toFloat() / nextLevelPoints).coerceIn(0f, 1f)
-
     // Formato según el idioma del teléfono (3.240 en Colombia, 3,240 en inglés).
     val formatter = remember { NumberFormat.getIntegerInstance() }
 
-    AppCard(modifier = modifier) {
+    AppCard(modifier = modifier, onClick = onClick, onClickLabel = onClickLabel) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -100,12 +104,21 @@ fun LevelProgressCard(
                 color = AppTheme.colors.textPrimary,
             )
             Text(
-                text = stringResource(R.string.profile_points_short, formatter.format(nextLevelPoints)),
+                text = nextLevelPoints
+                    ?.let { stringResource(R.string.profile_points_short, formatter.format(it)) }
+                    ?: stringResource(R.string.profile_progress_max),
                 style = MaterialTheme.typography.labelSmall,
                 color = AppTheme.colors.textPrimary,
             )
         }
     }
+}
+
+// Avance hacia la meta; coerceIn evita valores fuera de rango si los puntos la superan.
+private fun defaultProgress(points: Int, nextLevelPoints: Int?): Float = when (nextLevelPoints) {
+    null -> 1f
+    0 -> 0f
+    else -> (points.toFloat() / nextLevelPoints).coerceIn(0f, 1f)
 }
 
 // Insignia "LVL 5".

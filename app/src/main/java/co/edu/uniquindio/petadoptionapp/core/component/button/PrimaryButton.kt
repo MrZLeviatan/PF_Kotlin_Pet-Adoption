@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 
@@ -27,6 +29,8 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     // Estado de habilitación del botón (por defecto activo)
     enabled: Boolean = true,
+    // Estilo del texto; por defecto el mismo `labelLarge` que usa Material
+    textStyle: TextStyle = MaterialTheme.typography.labelLarge,
 ) {
     // Dibuja el botón oficial de Material 3 con los parámetros provistos
     Button(
@@ -44,6 +48,6 @@ fun PrimaryButton(
         ),
     ) {
         // Muestra el texto recibido dentro del botón
-        Text(text = text)
+        Text(text = text, style = textStyle)
     }
 }

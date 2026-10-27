@@ -1,13 +1,10 @@
 package co.edu.uniquindio.petadoptionapp.core.component.card
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,24 +13,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import co.edu.uniquindio.petadoptionapp.core.component.avatar.InitialAvatar
+import co.edu.uniquindio.petadoptionapp.core.component.icon.InitialAvatar
+import co.edu.uniquindio.petadoptionapp.core.component.icon.UserAvatar
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
-/** Tarjeta con el avatar, el nombre y la ubicación del usuario. */
+/**
+ Tarjeta con el avatar, el nombre y la ubicación del usuario.
+ El avatar sale de [name]; [displayName] permite mostrar otro texto ("Username: ana_77").
+ */
 @Composable
 fun UserSummaryCard(
     name: String,
     location: String,
     modifier: Modifier = Modifier,
+    displayName: String = name,
+    photoUrl: String? = null,
+    contentPadding: PaddingValues = PaddingValues(20.dp),
 ) {
-    AppCard(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        InitialAvatar(name = name, size = 88.dp)
+    AppCard(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = contentPadding,
+    ) {
+
+        UserAvatar(name = name, photoUrl = photoUrl, size = 88.dp)
 
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = name,
+            text = displayName,
             style = MaterialTheme.typography.headlineSmall,
             color = AppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
@@ -41,22 +51,11 @@ fun UserSummaryCard(
 
         Spacer(Modifier.height(4.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.LocationOn,
-                contentDescription = null,
-                tint = AppTheme.colors.textPrimary,
-                modifier = Modifier.size(16.dp),
-            )
-            Text(
-                text = location,
-                style = MaterialTheme.typography.bodyMedium,
-                color = AppTheme.colors.textPrimary,
-            )
-        }
+        IconTextRow(
+            icon = Icons.Outlined.LocationOn,
+            text = location,
+            spacing = 4.dp,
+        )
     }
 }
 

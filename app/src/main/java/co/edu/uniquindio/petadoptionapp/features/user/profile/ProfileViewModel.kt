@@ -27,6 +27,7 @@ data class ProfileUiState(
     val currentLevelPoints: Int = 0,
     // Puntos del siguiente nivel; null cuando ya está en el nivel máximo.
     val nextLevelPoints: Int? = null,
+    val photoUrl: String? = null
 ) {
     val isMaxLevel: Boolean get() = nextLevelPoints == null
 
@@ -70,6 +71,7 @@ class ProfileViewModel @Inject constructor(
                         points = reputation.points,
                         currentLevelPoints = level.minPoints,
                         nextLevelPoints = next?.minPoints,
+                        photoUrl = user.photoUrl,
                     )
                 }
             }

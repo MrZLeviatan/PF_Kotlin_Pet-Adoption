@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +38,8 @@ import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import kotlinx.coroutines.delay
-import co.edu.uniquindio.petadoptionapp.core.component.icon.PawCircle
+import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
+import co.edu.uniquindio.petadoptionapp.core.component.text.PawTitle
 
 
 // Tiempo que se muestra la marca antes de navegar (Posteriormente se configura con la demora de conexión a los sistemas)
@@ -124,19 +124,11 @@ private fun SplashContent() {
 private fun BrandHeader() {
     // Columna interna para agrupar el logo arriba y el lema abajo
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // Fila para poner el icono de la huella al lado del nombre de la app
-        Row(
-            verticalAlignment = Alignment.CenterVertically,     // Alinea verticalmente el icono y el texto al centro
-            horizontalArrangement = Arrangement.spacedBy(10.dp), // Deja un espacio de 10 dp entre el icono y el texto
-        ) {
-            PawCircle(size = 40.dp, containerColor = AppTheme.colors.surfaceTag) // Dibuja el círculo con la huella (tamaño 40 dp)
-            Text(
-                text = stringResource(R.string.app_name_pantallas),       // Muestra el nombre de la app obtenido de los recursos
-                // Título general
-                style = MaterialTheme.typography.headlineLarge, // Aplica el estilo tipográfico de título grande
-                color = AppTheme.colors.textPrimary,            // Pinta el texto con el color principal del tema
-            )
-        }
+        // Huella al lado del nombre de la app
+        PawTitle(
+            text = stringResource(R.string.app_name_pantallas),
+            style = MaterialTheme.typography.headlineLarge,
+        )
         // Espacio vertical de 12 dp entre el título y el lema
         Spacer(Modifier.height(12.dp))
 
@@ -153,28 +145,21 @@ private fun BrandHeader() {
 // Tarjeta informativa sobre adopción responsable.
 @Composable
 private fun ResponsibleAdoptionCard() {
-    // Columna que actúa como tarjeta con fondo y esquinas redondeadas
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppTheme.colors.surfaceTag, RoundedCornerShape(CardCornerRadius))
-            .padding(20.dp),
+    // Tarjeta sin borde, con el fondo de las etiquetas
+    AppCard(
         horizontalAlignment = Alignment.CenterHorizontally,
+        containerColor = AppTheme.colors.surfaceTag,
+        borderColor = null,
     ) {
-        // Fila para el título de la tarjeta (icono de huella pequeño + texto)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // El círculo usa `surface` (blanco)
-            PawCircle(size = 28.dp, containerColor = AppTheme.colors.surface)
-            Text(
-                // El string se guarda normal y se pasa a mayúsculas aquí, para que TalkBack lo lea como una frase.
-                text = stringResource(R.string.splash_notice_title).uppercase(),
-                style = MaterialTheme.typography.titleSmall,
-                color = AppTheme.colors.textPrimary,
-            )
-        }
+        // Título de la tarjeta: huella pequeña sobre `surface` (blanco) + texto.
+        // El string se guarda normal y se pasa a mayúsculas aquí, para que TalkBack lo lea como una frase.
+        PawTitle(
+            text = stringResource(R.string.splash_notice_title).uppercase(),
+            style = MaterialTheme.typography.titleSmall,
+            pawSize = 28.dp,
+            pawContainerColor = AppTheme.colors.surface,
+            spacing = 8.dp,
+        )
 
         Spacer(Modifier.height(10.dp))
 

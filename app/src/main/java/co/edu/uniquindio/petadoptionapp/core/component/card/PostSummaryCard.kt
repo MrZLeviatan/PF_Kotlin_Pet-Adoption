@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -109,22 +109,13 @@ fun PostSummaryCard(
                 )
 
                 metaLines.forEach { line ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Icon(
-                            imageVector = line.icon,
-                            contentDescription = null,
-                            tint = AppTheme.colors.textPrimary,
-                            modifier = Modifier.size(14.dp),
-                        )
-                        Text(
-                            text = line.text,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = AppTheme.colors.textPrimary,
-                        )
-                    }
+                    IconTextRow(
+                        icon = line.icon,
+                        text = line.text,
+                        iconSize = 14.dp,
+                        spacing = 6.dp,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
         }

@@ -23,6 +23,9 @@ fun MainScreen(
     onCreatePost: () -> Unit = {},
     onPostClick: (String) -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onMetricsClick: () -> Unit,
+    onSettingsClick: () -> Unit = {},
+
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val role by viewModel.role.collectAsStateWithLifecycle()
@@ -35,7 +38,9 @@ fun MainScreen(
                 role = currentRole,
                 onCreatePost = onCreatePost,
                 onPostClick = onPostClick,
-                onNotificationsClick = onNotificationsClick
+                onNotificationsClick = onNotificationsClick,
+                onMetricsClick = onMetricsClick,
+                onSettingsClick = onSettingsClick
             )
         }
     }
@@ -47,7 +52,9 @@ private fun MainContent(
     role: UserRole,
     onCreatePost: () -> Unit,
     onPostClick: (String) -> Unit,
-    onNotificationsClick: () -> Unit
+    onNotificationsClick: () -> Unit,
+    onMetricsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
@@ -93,8 +100,9 @@ private fun MainContent(
             padding = padding,
             role = role,
             onPostClick = onPostClick,
-            onNotificationsClick = onNotificationsClick
-
+            onNotificationsClick = onNotificationsClick,
+            onMetricsClick = onMetricsClick,
+            onSettingsClick = onSettingsClick
         )
     }
 }
@@ -102,11 +110,11 @@ private fun MainContent(
 @Preview(name = "Usuario", showBackground = true)
 @Composable
 private fun MainUserPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}) }
 }
 
 @Preview(name = "Moderador", showBackground = true)
 @Composable
 private fun MainModeratorPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}) }
 }

@@ -5,10 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,11 +19,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import co.edu.uniquindio.petadoptionapp.core.component.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
+import co.edu.uniquindio.petadoptionapp.core.component.indicator.StepIndicator
+import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.FondoCrema
 import co.edu.uniquindio.petadoptionapp.core.theme.TextoMarron
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.component.PublicationSentDialog
-import co.edu.uniquindio.petadoptionapp.features.user.post.create.component.StepIndicator
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.step.StepInfoContent
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.step.StepLocationContent
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.step.StepPetContent
@@ -61,29 +61,19 @@ fun CreatePostScreen(
             // Desplaza el contenido hacia arriba cuando aparece el teclado virtual en pantalla.
             .imePadding()
     ) {
-        // --- Barra superior: icono de flecha atrás a la izquierda + título centrado ---
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)) {
-            IconButton(
-                onClick = {
-                    // Si está más allá del paso 1, retrocede al paso anterior.
-                    if (state.step > 1) viewModel.previousStep()
-                    // Si está en el primer paso, limpia el formulario y sale de la pantalla.
-                    else { viewModel.resetForm(); onBack() }
-                },
-                modifier = Modifier.align(Alignment.CenterStart)
-            ) {
-                // Icono de flecha hacia atrás en tono marrón.
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = TextoMarron)
-            }
-            // Título principal de la barra superior centrado.
-            Text(
-                text = "Nueva publicación",
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextoMarron
-            )
-        }
+        // --- Barra superior: flecha atrás a la izquierda + título centrado ---
+        // El padding vertical de 4 dp más los 56 dp de la barra dan el mismo alto de 64 dp.
+        AppTopBar(
+            title = "Nueva publicación",
+            onBack = {
+                // Si está más allá del paso 1, retrocede al paso anterior.
+                if (state.step > 1) viewModel.previousStep()
+                // Si está en el primer paso, limpia el formulario y sale de la pantalla.
+                else { viewModel.resetForm(); onBack() }
+            },
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            titleStyle = LocalTextStyle.current.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        )
 
         // --- Contenido con soporte para desplazamiento vertical ---
         Column(
@@ -97,7 +87,16 @@ fun CreatePostScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Muestra el indicador visual con las barras de progreso del paso actual.
-            StepIndicator(currentStep = state.step)
+            StepIndicator(
+                currentStep = state.step,
+                totalSteps = 4,
+                completedColor = AppTheme.colors.brand,
+                segmentWidth = 32.dp,
+                segmentHeight = 5.dp,
+                segmentSpacing = 6.dp,
+                labelSpacing = 4.dp,
+                labelStyle = LocalTextStyle.current.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            )
 
             // Inserta un espacio vertical de 8dp.
             Spacer(modifier = Modifier.height(8.dp))
@@ -130,7 +129,10 @@ fun CreatePostScreen(
             text = if (state.step == 4) "Publicar" else "Continuar",
             enabled = state.isStepValid,
             onClick = viewModel::onNextClick,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .height(52.dp),
+            textStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold)
         )
     }
 

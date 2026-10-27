@@ -185,25 +185,32 @@
         <string name="profile_location_empty">Sin ubicación</string>
         <string name="profile_username">Username: %1$s</string>
 
+    <!-- String nativos de las metricas / dashboard Usuario-->
+        <string name="profile_metrics">Mis métricas</string>
+        <string name="metrics_badge_unlocked">Desbloqueada el %1$s</string>
+        <string name="metrics_badges_empty">Aún no tienes insignias</string>
+        <string name="metrics_error">No se pudieron cargar tus métricas</string>
+        <string name="metrics_share_text">Estoy ayudando a mascotas en Pet Adoption. ¡Únete!</string>
+
 
     <!--Strings de la pantalla Recuperar contraseña-->
-    <string name="recover_title">Recuperar contraseña</string>
-    <string name="recover_subtitle">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</string>
-    <string name="recover_email_label">Correo electrónico</string>
-    <string name="recover_send_button">Enviar enlace de recuperación</string>
-    <string name="recover_success_title">Correo enviado</string>
-    <string name="recover_success_message">Hemos enviado un enlace de recuperación a tu correo electrónico. Haz clic en el enlace para restablecer tu contraseña.</string>
-    <string name="recover_success_button">Aceptar</string>
+        <string name="recover_title">Recuperar contraseña</string>
+        <string name="recover_subtitle">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</string>
+        <string name="recover_email_label">Correo electrónico</string>
+        <string name="recover_send_button">Enviar enlace de recuperación</string>
+        <string name="recover_success_title">Correo enviado</string>
+        <string name="recover_success_message">Hemos enviado un enlace de recuperación a tu correo electrónico. Haz clic en el enlace para restablecer tu contraseña.</string>
+        <string name="recover_success_button">Aceptar</string>
 
     <!--Strings de la pantalla Nueva contraseña-->
-    <string name="new_password_title">Nueva contraseña</string>
-    <string name="new_password_subtitle">Ingresa tu nueva contraseña y la confirmación de esta.</string>
-    <string name="new_password_label">Contraseña*</string>
-    <string name="new_password_confirm_label">Confirmar contraseña*</string>
-    <string name="new_password_button">Confirmar nueva contraseña</string>
-    <string name="new_password_success_title">Contraseña actualizada</string>
-    <string name="new_password_success_message">Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión con tus nuevos datos.</string>
-    <string name="new_password_success_button">Aceptar</string>
+        <string name="new_password_title">Nueva contraseña</string>
+        <string name="new_password_subtitle">Ingresa tu nueva contraseña y la confirmación de esta.</string>
+        <string name="new_password_label">Contraseña*</string>
+        <string name="new_password_confirm_label">Confirmar contraseña*</string>
+        <string name="new_password_button">Confirmar nueva contraseña</string>
+        <string name="new_password_success_title">Contraseña actualizada</string>
+        <string name="new_password_success_message">Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión con tus nuevos datos.</string>
+        <string name="new_password_success_button">Aceptar</string>
 
 
 
@@ -278,4 +285,37 @@
 
     <!-- Strings en base a los comentarios de los post-->
         <string name="comment_deleted">Comentario eliminado</string>
+
+
+    <!-- Comunes -->
+    <string name="common_cancel">Cancelar</string>
+
+    <!-- Perfil: acción de la tarjeta de nivel (la anuncia TalkBack) -->
+    <string name="profile_open_metrics">ver métricas</string>
+
+    <!-- Configuración -->
+    <string name="settings_security">Seguridad</string>
+    <string name="settings_change_password">Cambiar contraseña</string>
+    <string name="settings_two_factor">Verificación en dos pasos</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_public_profile">Perfil público</string>
+    <string name="settings_delete_account">Eliminar cuenta</string>
+    <string name="settings_delete_warning">Esta acción es permanente y requiere confirmación</string>
+    <string name="settings_error_save">No se pudo guardar el cambio. Intenta de nuevo.</string>
+
+    <string name="settings_current_password">Contraseña actual</string>
+    <string name="settings_new_password">Nueva contraseña</string>
+    <string name="settings_confirm_password">Confirmar nueva contraseña</string>
+    <string name="settings_password_save">Guardar contraseña</string>
+    <string name="settings_password_success_title">Contraseña actualizada</string>
+    <string name="settings_password_success_message">Tu contraseña se cambió correctamente.</string>
+    <string name="settings_password_success_button">Aceptar</string>
+
+    <string name="settings_delete_title">¿Eliminar tu cuenta?</string>
+    <string name="settings_delete_message">Tus publicaciones dejarán de mostrarse y tus datos personales se borrarán. Escribe tu contraseña para confirmar.</string>
+    <string name="settings_delete_confirm">Eliminar definitivamente</string>
+
+    <string name="settings_error_wrong_password">La contraseña no es correcta</string>
+    <string name="settings_error_same_password">La nueva contraseña debe ser distinta de la actual</string>
+    <string name="settings_error_generic">Algo salió mal. Intenta de nuevo.</string>
 </resources>

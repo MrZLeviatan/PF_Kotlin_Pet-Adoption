@@ -44,7 +44,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,16 +54,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
@@ -181,12 +181,7 @@ private fun HomeUserContent(
 @Composable
 private fun ColumnScope.CenteredMessage(text: String, isError: Boolean = false) {
     Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (isError) AppTheme.colors.stateError else AppTheme.colors.textPrimary,
-            textAlign = TextAlign.Center
-        )
+        StatusMessage(text = text, isError = isError)
     }
 }
 
@@ -340,22 +335,28 @@ private fun FeedPostCard(post: FeedPost, onClick: () -> Unit, onImportantClick: 
 
         Column(modifier = Modifier.padding(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FeedTag(text = post.categoryName, icon = Icons.Outlined.Pets)
+                IconTag(
+                    text = post.categoryName,
+                    icon = Icons.Outlined.Pets,
+                    containerColor = AppTheme.colors.background
+                )
 
                 // Sin ubicación del usuario no hay distancia que mostrar.
                 post.distanceKm?.let {
-                    FeedTag(
+                    IconTag(
                         text = stringResource(R.string.home_distance_km, it.toString()),
                         icon = Icons.Filled.LocationOn,
-                        iconColor = AppTheme.colors.stateError
+                        iconColor = AppTheme.colors.stateError,
+                        containerColor = AppTheme.colors.background
                     )
                 }
 
                 // Etiqueta que indica que la publicación es del usuario actual.
                 if (post.isOwn) {
-                    FeedTag(
+                    IconTag(
                         text = stringResource(R.string.home_own_post),
-                        icon = Icons.Outlined.Person
+                        icon = Icons.Outlined.Person,
+                        containerColor = AppTheme.colors.background
                     )
                 }
             }
@@ -371,20 +372,26 @@ private fun FeedPostCard(post: FeedPost, onClick: () -> Unit, onImportantClick: 
             Spacer(Modifier.height(6.dp))
 
             // Los textos se arman aquí porque stringResource necesita el contexto de Compose.
-            FeedInfoRow(
-                Icons.Outlined.Pets,
-                stringResource(
+            IconTextRow(
+                icon = Icons.Outlined.Pets,
+                text = stringResource(
                     R.string.home_info_animal,
                     post.animalName.orEmpty(),
                     post.breed.ifBlank { stringResource(R.string.home_breed_unknown) },
                     sizeText(post.size)
-                )
+                ),
+                modifier = Modifier.padding(vertical = 2.dp)
             )
-            FeedInfoRow(Icons.Outlined.VerifiedUser, vaccinesText(post.vaccinated))
-            FeedInfoRow(
-                Icons.Outlined.FavoriteBorder,
-                stringResource(R.string.home_interested, post.importantCount),
-                bold = true
+            IconTextRow(
+                icon = Icons.Outlined.VerifiedUser,
+                text = vaccinesText(post.vaccinated),
+                modifier = Modifier.padding(vertical = 2.dp)
+            )
+            IconTextRow(
+                icon = Icons.Outlined.FavoriteBorder,
+                text = stringResource(R.string.home_interested, post.importantCount),
+                modifier = Modifier.padding(vertical = 2.dp),
+                style = MaterialTheme.typography.titleSmall
             )
 
             Spacer(Modifier.height(12.dp))
@@ -415,38 +422,6 @@ private fun FeedPostCard(post: FeedPost, onClick: () -> Unit, onImportantClick: 
                 )
             }
         }
-    }
-}
-
-// Etiqueta pequeña con ícono y texto.
-@Composable
-private fun FeedTag(text: String, icon: ImageVector, iconColor: Color = AppTheme.colors.textPrimary) {
-    Surface(shape = RoundedCornerShape(8.dp), color = AppTheme.colors.background) {   // CAMBIAR: fondo del chip
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(14.dp))
-            Text(text, style = MaterialTheme.typography.labelMedium, color = AppTheme.colors.textPrimary)
-        }
-    }
-}
-
-// Una línea de información con ícono.
-@Composable
-private fun FeedInfoRow(icon: ImageVector, text: String, bold: Boolean = false) {
-    Row(
-        modifier = Modifier.padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(icon, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
-        Text(
-            text = text,
-            style = if (bold) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
-            color = AppTheme.colors.textPrimary
-        )
     }
 }
 

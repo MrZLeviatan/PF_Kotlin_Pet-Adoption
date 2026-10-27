@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
@@ -40,15 +42,22 @@ fun StepIndicator(
     currentColor: Color = AppTheme.colors.stateSelected,
     // Pasos que faltan
     pendingColor: Color = AppTheme.colors.stateDisabled,
+    // Tamaño de cada barra y separación entre ellas
+    segmentWidth: Dp = 28.dp,
+    segmentHeight: Dp = 4.dp,
+    segmentSpacing: Dp = 4.dp,
+    // Espacio entre las barras y el texto, y estilo del texto
+    labelSpacing: Dp = 6.dp,
+    labelStyle: TextStyle = MaterialTheme.typography.labelSmall,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(segmentSpacing)) {
             repeat(totalSteps) { index ->
                 val step = index + 1
                 Box(
                     modifier = Modifier
-                        .width(28.dp)
-                        .height(4.dp)
+                        .width(segmentWidth)
+                        .height(segmentHeight)
                         .background(
                             color = when {
                                 step < currentStep -> completedColor
@@ -60,12 +69,12 @@ fun StepIndicator(
                 )
             }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(labelSpacing))
         Text(
             // Se guarda normal y se pasa a mayúsculas aquí, para que TalkBack lo lea como frase.
             text = stringResource(R.string.common_step_indicator, currentStep, totalSteps)
                 .uppercase(),
-            style = MaterialTheme.typography.labelSmall,
+            style = labelStyle,
             color = AppTheme.colors.textPrimary,
         )
     }

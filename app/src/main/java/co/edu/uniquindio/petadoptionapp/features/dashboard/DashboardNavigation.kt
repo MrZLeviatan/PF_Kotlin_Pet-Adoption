@@ -27,7 +27,8 @@ fun DashboardNavigation(
     onMyPostsClick: () -> Unit = {},
     onMyLikesClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onMetricsClick: () -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -57,6 +58,8 @@ fun DashboardNavigation(
                 onMyLikesClick = onMyLikesClick,
                 onEditProfileClick = onEditProfileClick,
                 onSettingsClick = onSettingsClick,
+                onMetricsClick = onMetricsClick,
+
                 modifier = Modifier.padding(padding)   // evita que la barra inferior tape el contenido
             )
         }
