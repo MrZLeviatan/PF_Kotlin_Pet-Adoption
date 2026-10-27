@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.user.metrics
+package co.edu.uniquindio.petadoptionapp.features.user.profile.metric
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

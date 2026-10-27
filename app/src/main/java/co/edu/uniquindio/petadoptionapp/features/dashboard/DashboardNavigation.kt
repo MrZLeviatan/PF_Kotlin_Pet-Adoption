@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.features.user.home.HomeUserScreen
+import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 
 // Rutas internas del dashboard según el rol.
 @Composable
@@ -21,7 +22,12 @@ fun DashboardNavigation(
     padding: PaddingValues,
     role: UserRole,
     onPostClick: (String) -> Unit = {},
-    onNotificationsClick: () -> Unit = {}
+    onNotificationsClick: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
+    onMyPostsClick: () -> Unit = {},
+    onMyLikesClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -44,6 +50,16 @@ fun DashboardNavigation(
         // Compartidas
         composable<DashboardRoutes.Messages> { PlaceholderScreen("Messages", padding) }
         composable<DashboardRoutes.Profile> { PlaceholderScreen("Profile", padding) }
+
+        composable<DashboardRoutes.Profile> {
+            ProfileScreen(
+                onMyPostsClick = onMyPostsClick,
+                onMyLikesClick = onMyLikesClick,
+                onEditProfileClick = onEditProfileClick,
+                onSettingsClick = onSettingsClick,
+                modifier = Modifier.padding(padding)   // evita que la barra inferior tape el contenido
+            )
+        }
     }
 }
 

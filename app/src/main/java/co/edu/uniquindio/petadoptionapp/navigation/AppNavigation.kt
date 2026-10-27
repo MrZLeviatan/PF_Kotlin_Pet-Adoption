@@ -1,6 +1,9 @@
 package co.edu.uniquindio.petadoptionapp.navigation
 
+import android.R.attr.padding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -9,11 +12,13 @@ import co.edu.uniquindio.petadoptionapp.features.auth.login.LoginScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.newpassword.NewPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword.RecoverPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.register.RegisterScreen
+import co.edu.uniquindio.petadoptionapp.features.dashboard.DashboardRoutes
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.notification.NotificationsScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
+import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 
 // Componente raíz de navegación encargada de configurar las rutas principales de toda la aplicación.
 @Composable
@@ -36,6 +41,8 @@ fun AppNavigation() {
                 }
             )
         }
+
+
 
         composable<MainRoutes.Login> {
             LoginScreen(

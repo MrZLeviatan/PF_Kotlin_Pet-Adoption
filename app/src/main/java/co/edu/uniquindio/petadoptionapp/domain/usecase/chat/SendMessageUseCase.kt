@@ -17,7 +17,7 @@ class SendMessageUseCase(
     suspend operator fun invoke(chatId: String, text: String): Result<Message> {
 
         // 1. Formato del texto, sin internet.
-        // Valida que el texto del mensaje cumpla con las reglas permitidas y retorna un fallo si no es válido.
+        // Válida que el texto del mensaje cumpla con las reglas permitidas y retorna un fallo si no es válido.
         if (!ChatValidator.isMessageValid(text)) return Result.failure(ChatException.InvalidMessage)
 
         // 2. La persona debe participar en el chat.

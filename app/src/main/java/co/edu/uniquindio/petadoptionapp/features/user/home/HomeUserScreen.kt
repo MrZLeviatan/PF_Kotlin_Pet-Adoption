@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.StarBorder
@@ -340,12 +341,21 @@ private fun FeedPostCard(post: FeedPost, onClick: () -> Unit, onImportantClick: 
         Column(modifier = Modifier.padding(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FeedTag(text = post.categoryName, icon = Icons.Outlined.Pets)
+
                 // Sin ubicación del usuario no hay distancia que mostrar.
                 post.distanceKm?.let {
                     FeedTag(
                         text = stringResource(R.string.home_distance_km, it.toString()),
                         icon = Icons.Filled.LocationOn,
                         iconColor = AppTheme.colors.stateError
+                    )
+                }
+
+                // Etiqueta que indica que la publicación es del usuario actual.
+                if (post.isOwn) {
+                    FeedTag(
+                        text = stringResource(R.string.home_own_post),
+                        icon = Icons.Outlined.Person
                     )
                 }
             }

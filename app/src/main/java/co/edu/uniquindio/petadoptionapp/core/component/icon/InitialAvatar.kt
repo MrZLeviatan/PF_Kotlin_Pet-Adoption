@@ -1,5 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.core.component.avatar
-
+package co.edu.uniquindio.petadoptionapp.core.component.icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box

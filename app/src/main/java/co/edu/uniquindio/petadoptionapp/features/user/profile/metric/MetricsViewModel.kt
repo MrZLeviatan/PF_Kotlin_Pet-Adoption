@@ -1,4 +1,4 @@
-package co.edu.uniquindio.petadoptionapp.features.user.metrics
+package co.edu.uniquindio.petadoptionapp.features.user.profile.metric
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

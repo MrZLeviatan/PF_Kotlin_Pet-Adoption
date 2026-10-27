@@ -117,6 +117,7 @@
         <string name="home_error_generic">No se pudo cargar el feed</string>
         <string name="home_users_empty">No se encontraron personas</string>
         <string name="home_user_photo_description">Foto de %1$s</string>
+        <string name="home_own_post">Tu publicación</string>
 
 
     <!--Strings nativos de la pantalla Notificaciones-->
@@ -169,6 +170,20 @@
         <string name="notif_someone">Alguien</string>
 
 
+    <!--Strings nativos de la pantalla Mi Perfil-->
+        <string name="profile_level_label">Nivel actual</string>
+        <string name="profile_level_badge">LVL %1$d</string>
+        <string name="profile_points">%1$s puntos acumulados</string>
+        <string name="profile_progress">Progreso: %1$d%%</string>
+        <string name="profile_points_short">%1$s pts</string>
+        <string name="profile_diary_title">Mi Diario Comunidad</string>
+        <string name="profile_my_posts">Mis publicaciones</string>
+        <string name="profile_my_likes">Me gusta</string>
+        <string name="profile_edit">Editar perfil</string>
+        <string name="profile_settings">Configuración</string>
+        <string name="profile_progress_max">Nivel máximo alcanzado</string>
+        <string name="profile_location_empty">Sin ubicación</string>
+        <string name="profile_username">Username: %1$s</string>
 
 
     <!--Strings de la pantalla Recuperar contraseña-->
@@ -191,17 +206,7 @@
     <string name="new_password_success_button">Aceptar</string>
 
 
-    <!--Strings de la pantalla Mi Perfil-->
-    <string name="profile_level_label">Nivel actual</string>
-    <string name="profile_level_badge">LVL %1$d</string>
-    <string name="profile_points">%1$s puntos acumulados</string>
-    <string name="profile_progress">Progreso: %1$d%%</string>
-    <string name="profile_points_short">%1$s pts</string>
-    <string name="profile_diary_title">Mi Diario Comunidad</string>
-    <string name="profile_my_posts">Mis publicaciones</string>
-    <string name="profile_my_likes">Me gusta</string>
-    <string name="profile_edit">Editar perfil</string>
-    <string name="profile_settings">Configuración</string>
+
 
 
     <!--Comunes-->

@@ -24,8 +24,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Singleton
 
-// Une cada interfaz del dominio con su implementación.
-// Anota la clase abstracta como un módulo de Dagger e indica a Hilt que se instale en el componente Singleton.
+/**
+Une cada interfaz del dominio con su implementación.
+Anota la clase abstracta como un módulo de Dagger e indica a Hilt que se instale en el componente Singleton.
+*/
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {

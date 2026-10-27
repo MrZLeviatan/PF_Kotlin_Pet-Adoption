@@ -32,17 +32,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.avatar.InitialAvatar
 import co.edu.uniquindio.petadoptionapp.core.component.button.MenuActionButton
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import co.edu.uniquindio.petadoptionapp.domain.model.reputation.UserLevel
+import coil3.compose.AsyncImage
 import java.text.NumberFormat
 
 private val ScreenHorizontalPadding = 24.dp
@@ -60,7 +65,7 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = viewModel(),
+    viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -150,10 +155,11 @@ private fun UserCard(uiState: ProfileUiState) {
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = uiState.userName,
+            text = stringResource(R.string.profile_username, uiState.userName),
             style = MaterialTheme.typography.headlineSmall,
             color = AppTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
+
         )
 
         Spacer(Modifier.height(4.dp))
@@ -169,7 +175,7 @@ private fun UserCard(uiState: ProfileUiState) {
                 modifier = Modifier.size(16.dp),
             )
             Text(
-                text = uiState.location,
+                text = uiState.location.ifBlank { stringResource(R.string.profile_location_empty) },
                 style = MaterialTheme.typography.bodyMedium,
                 color = AppTheme.colors.textPrimary,
             )
@@ -183,7 +189,11 @@ private fun LevelCard(uiState: ProfileUiState) {
     // Formato según el idioma del teléfono (3.240 en Colombia, 3,240 en inglés).
     val formatter = remember { NumberFormat.getIntegerInstance() }
     val points = formatter.format(uiState.points)
-    val nextLevelPoints = formatter.format(uiState.nextLevelPoints)
+
+    // Texto de la derecha de la barra: puntos del siguiente nivel o aviso de nivel máximo.
+    val nextText = uiState.nextLevelPoints?.let {
+        stringResource(R.string.profile_points_short, formatter.format(it))
+    } ?: stringResource(R.string.profile_progress_max)
 
     Column(
         modifier = Modifier
@@ -204,7 +214,7 @@ private fun LevelCard(uiState: ProfileUiState) {
                     color = AppTheme.colors.textPrimary,
                 )
                 Text(
-                    text = uiState.levelName,
+                    text = levelName(uiState.level),
                     style = MaterialTheme.typography.titleMedium,
                     color = AppTheme.colors.textPrimary,
                 )
@@ -244,7 +254,7 @@ private fun LevelCard(uiState: ProfileUiState) {
                 color = AppTheme.colors.textPrimary,
             )
             Text(
-                text = stringResource(R.string.profile_points_short, nextLevelPoints),
+                text = nextText,
                 style = MaterialTheme.typography.labelSmall,
                 color = AppTheme.colors.textPrimary,
             )
@@ -276,12 +286,31 @@ private fun LevelBadge(level: Int) {
     }
 }
 
-@Preview(name = "Datos de prueba", showBackground = true, heightDp = 800)
+// Traduce el nivel del dominio al texto del recurso.
+@Composable
+private fun levelName(level: UserLevel): String = stringResource(
+    when (level) {
+        UserLevel.ANIMAL_FRIEND -> R.string.level_animal_friend
+        UserLevel.PROTECTOR -> R.string.level_protector
+        UserLevel.GUARDIAN -> R.string.level_guardian
+        UserLevel.PET_HERO -> R.string.level_pet_hero
+    }
+)
+
+@Preview(name = "Nivel intermedio", showBackground = true, heightDp = 800)
 @Composable
 private fun ProfileContentPreview() {
     PetAdoptionAppTheme {
         ProfileContent(
-            uiState = ProfileUiState(),
+            uiState = ProfileUiState(
+                userName = "ana_77",
+                location = "Armenia, Colombia",
+                level = UserLevel.PROTECTOR,
+                levelNumber = 2,
+                points = 150,
+                currentLevelPoints = 100,
+                nextLevelPoints = 300,
+            ),
             onMyPostsClick = {},
             onMyLikesClick = {},
             onEditProfileClick = {},
@@ -290,15 +319,19 @@ private fun ProfileContentPreview() {
     }
 }
 
-@Preview(name = "Nombre largo", showBackground = true, heightDp = 800)
+@Preview(name = "Nivel máximo y nombre largo", showBackground = true, heightDp = 800)
 @Composable
-private fun ProfileContentLongNamePreview() {
+private fun ProfileContentMaxLevelPreview() {
     PetAdoptionAppTheme {
         ProfileContent(
             uiState = ProfileUiState(
                 userName = "María Fernanda Rodríguez Hernández",
                 location = "San José de Cúcuta, Colombia",
-                points = 4_500,
+                level = UserLevel.PET_HERO,
+                levelNumber = 4,
+                points = 900,
+                currentLevelPoints = 700,
+                nextLevelPoints = null,
             ),
             onMyPostsClick = {},
             onMyLikesClick = {},
