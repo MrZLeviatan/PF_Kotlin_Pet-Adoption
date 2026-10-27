@@ -55,6 +55,12 @@ sealed class MainRoutes {
     @Serializable
     data class PostDetail(val postId: String) : MainRoutes()
 
+    // Todos los comentarios de una publicación, para comentar y responder (sin barra)
+    @Serializable data class PostComments(val postId: String) : MainRoutes()
+
+    // Publicaciones del usuario, agrupadas por estado (sin barra)
+    @Serializable data object MyPosts : MainRoutes()
+
     @Serializable data class UserProfile(val userId: String) : MainRoutes()
 
 }

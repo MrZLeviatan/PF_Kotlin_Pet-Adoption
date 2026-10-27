@@ -346,4 +346,71 @@
     <string name="user_profile_posts_empty">No tiene publicaciones activas</string>
     <string name="user_profile_not_found">Este perfil no existe o fue eliminado</string>
     <string name="user_profile_error">No se pudo cargar el perfil. Intenta de nuevo.</string>
+
+    <!-- Perfil de otra persona: contacto -->
+    <string name="user_profile_contact_subtitle">Comunícate directamente con esta persona</string>
+    <string name="user_profile_name">Nombre</string>
+    <string name="user_profile_phone">Teléfono</string>
+    <string name="user_profile_call">Llamar a %1$s</string>
+
+    <!-- Mis publicaciones: acciones y estados -->
+    <string name="my_posts_error">No se pudieron cargar tus publicaciones. Intenta de nuevo.</string>
+    <string name="my_posts_action_error">No se pudo completar la acción. Intenta de nuevo.</string>
+    <string name="my_posts_finish_title">¿Finalizar publicación?</string>
+    <string name="my_posts_finish_message">¿Deseas darle fin a esta publicación? Ya no aparecerá en el inicio.</string>
+    <string name="my_posts_delete_title">¿Eliminar publicación?</string>
+    <string name="my_posts_delete_message">La publicación dejará de mostrarse y no se puede deshacer.</string>
+    <string name="my_posts_dialog_accept">Aceptar</string>
+    <string name="my_posts_section_rejected">Rechazadas (%1$d)</string>
+    <string name="my_posts_rejected_reason">Motivo: %1$s</string>
+
+    <!-- Detalle de publicación -->
+    <string name="post_detail_not_found">Esta publicación no existe o ya no está disponible</string>
+    <string name="post_detail_photo">Foto %1$d de %2$d</string>
+    <string name="post_detail_edit">Editar publicación</string>
+    <string name="post_detail_delete">Eliminar publicación</string>
+    <string name="post_detail_delete_title">¿Eliminar publicación?</string>
+    <string name="post_detail_delete_message">La publicación dejará de mostrarse y no se puede deshacer.</string>
+    <string name="post_detail_interest">Me interesa adoptar</string>
+    <string name="post_detail_interest_sent">Solicitud enviada</string>
+    <string name="post_detail_important">Es importante</string>
+    <string name="post_detail_verified">Verificado</string>
+    <string name="post_detail_unknown">Sin información</string>
+    <string name="post_detail_type">Tipo</string>
+    <string name="post_detail_breed">Raza</string>
+    <string name="post_detail_size">Tamaño</string>
+    <string name="post_detail_vaccines">Vacunas</string>
+    <string name="post_detail_vaccines_yes">Al día</string>
+    <string name="post_detail_vaccines_no">Pendientes</string>
+    <string name="post_detail_about">Descripción</string>
+    <string name="post_detail_location">Ubicación aproximada</string>
+    <string name="post_detail_comments">Comentarios (%1$d)</string>
+    <string name="post_detail_see_all">Ver todos</string>
+    <string name="post_detail_no_comments">Aún no hay comentarios. ¡Sé el primero!</string>
+    <string name="post_detail_comments_closed">Los comentarios se abren cuando la publicación sea verificada</string>
+    <string name="post_detail_msg_interest_sent">Le avisamos al autor de tu interés. Revisa tus mensajes.</string>
+    <string name="post_detail_msg_already_requested">Ya enviaste una solicitud para esta publicación</string>
+    <string name="post_detail_msg_error">No se pudo completar la acción. Intenta de nuevo.</string>
+    <string name="post_detail_msg_comment_error">No se pudo publicar el comentario. Intenta de nuevo.</string>
+    <string name="post_finished_notice">Esta publicación fue finalizada: ya no se puede editar ni eliminar.</string>
+    <string name="post_share_text">Mira esta publicación en Huellas: %1$s</string>
+
+    <!-- Comentarios -->
+    <string name="comments_title">Comentarios (%1$d)</string>
+    <string name="comments_error">No se pudieron cargar los comentarios. Intenta de nuevo.</string>
+    <string name="comments_load_more">Ver más comentarios</string>
+    <string name="comment_reply">Responder</string>
+    <string name="comment_edited">Editado</string>
+    <string name="comment_like">Me gusta</string>
+    <string name="comment_unlike">Quitar me gusta</string>
+    <string name="comment_hide_replies">Ocultar respuestas</string>
+    <plurals name="comment_view_replies">
+        <item quantity="one">Ver %1$d respuesta</item>
+        <item quantity="other">Ver %1$d respuestas</item>
+    </plurals>
+    <string name="comment_replying_to">Respondiendo a @%1$s</string>
+    <string name="comment_cancel_reply">Cancelar respuesta</string>
+    <string name="comment_placeholder">Escribe un comentario…</string>
+    <string name="comment_send">Enviar comentario</string>
+    <string name="comment_time_now">Ahora</string>
 </resources>

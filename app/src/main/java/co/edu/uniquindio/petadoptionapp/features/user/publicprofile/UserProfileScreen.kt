@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ContactPhone
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -34,7 +37,8 @@ import co.edu.uniquindio.petadoptionapp.core.component.card.PostSummaryCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.SectionCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.UserSummaryCard
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
-import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.InfoRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.InfoRowAction
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
@@ -59,10 +63,11 @@ Conecta el [UserProfileViewModel] con la UI; [UserProfileContent] solo dibuja.
 fun UserProfileScreen(
     onBack: () -> Unit,
     onPostClick: (postId: String) -> Unit,
+    onCallClick: (phone: String) -> Unit,
     viewModel: UserProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    UserProfileContent(uiState = uiState, onBack = onBack, onPostClick = onPostClick)
+    UserProfileContent(uiState = uiState, onBack = onBack, onPostClick = onPostClick, onCallClick = onCallClick)
 }
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
@@ -71,6 +76,7 @@ private fun UserProfileContent(
     uiState: UserProfileUiState,
     onBack: () -> Unit,
     onPostClick: (String) -> Unit,
+    onCallClick: (String) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -88,13 +94,13 @@ private fun UserProfileContent(
             uiState.isLoading -> Unit
             uiState.notFound -> CenteredMessage(stringResource(R.string.user_profile_not_found))
             uiState.hasError -> CenteredMessage(stringResource(R.string.user_profile_error), isError = true)
-            else -> ProfileBody(uiState = uiState, onPostClick = onPostClick)
+            else -> ProfileBody(uiState = uiState, onPostClick = onPostClick, onCallClick = onCallClick)
         }
     }
 }
 
 @Composable
-private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Unit) {
+private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Unit, onCallClick: (String) -> Unit) {
     val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
 
     Column(
@@ -120,12 +126,7 @@ private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Un
 
         // Contacto: solo si el perfil lo deja ver.
         if (uiState.name != null || uiState.phone != null) {
-            SectionCard(title = stringResource(R.string.user_profile_contact), icon = Icons.Outlined.Person) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    uiState.name?.let { IconTextRow(icon = Icons.Outlined.Person, text = it) }
-                    uiState.phone?.let { IconTextRow(icon = Icons.Outlined.Phone, text = it) }
-                }
-            }
+            ContactCard(name = uiState.name, phone = uiState.phone, onCallClick = onCallClick)
         }
 
         // Nivel e insignias: dependen de la misma regla de privacidad (reputación).
@@ -172,6 +173,42 @@ private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Un
         }
     }
 }
+
+// Tarjeta de contacto: cada dato con su icono y etiqueta; el teléfono trae el botón de llamar.
+@Composable
+private fun ContactCard(name: String?, phone: String?, onCallClick: (String) -> Unit) {
+    SectionCard(
+        title = stringResource(R.string.user_profile_contact),
+        subtitle = stringResource(R.string.user_profile_contact_subtitle),
+        icon = Icons.Outlined.ContactPhone,
+    ) {
+        name?.let {
+            InfoRow(icon = Icons.Outlined.Person, label = stringResource(R.string.user_profile_name), value = it)
+        }
+        if (name != null && phone != null) {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = AppTheme.colors.surfaceTag)
+        }
+        phone?.let {
+            val formatted = formatPhone(it)
+            InfoRow(
+                icon = Icons.Outlined.Phone,
+                label = stringResource(R.string.user_profile_phone),
+                value = formatted,
+                trailing = {
+                    InfoRowAction(
+                        icon = Icons.Outlined.Call,
+                        contentDescription = stringResource(R.string.user_profile_call, formatted),
+                        onClick = { onCallClick(it) },
+                    )
+                },
+            )
+        }
+    }
+}
+
+// "3001234567" → "300 123 4567" (formato de celular en Colombia); otros largos se dejan igual.
+private fun formatPhone(phone: String): String =
+    if (phone.length == 10) "${phone.take(3)} ${phone.substring(3, 6)} ${phone.takeLast(4)}" else phone
 
 @Composable
 private fun PublicPostItem(post: PublicPostUi, onClick: () -> Unit) {

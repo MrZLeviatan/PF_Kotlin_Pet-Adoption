@@ -29,19 +29,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.TextActionButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostMetaLine
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostSummaryCard
+import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppConfirmDialog
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
 import co.edu.uniquindio.petadoptionapp.core.component.navigation.AppTabRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import coil3.compose.rememberAsyncImagePainter
 
 private val ScreenHorizontalPadding = 24.dp
 
@@ -54,29 +61,46 @@ No decide a dónde navegar: avisa y AppNavigation resuelve el destino.
 fun MyPostsScreen(
     onBack: () -> Unit,
     onPostClick: (postId: String) -> Unit,
-    viewModel: MyPostsViewModel = viewModel(),
+    viewModel: MyPostsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Al volver (por ejemplo, desde el detalle) se recarga por si algo cambió.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose { }
+    }
+
     MyPostsContent(
         uiState = uiState,
-        onBack = onBack,
-        onFilterSelected = viewModel::onFilterSelected,
-        onPostClick = onPostClick,
-        onFinishPost = viewModel::onFinishPost,
-        onDeletePost = viewModel::onDeletePost,
+        actions = MyPostsActions(
+            onBack = onBack,
+            onFilterSelected = viewModel::onFilterSelected,
+            onPostClick = onPostClick,
+            onFinishPost = viewModel::onFinishPost,
+            onDeletePost = viewModel::onDeletePost,
+            onConfirmAction = viewModel::onConfirmAction,
+            onDismissAction = viewModel::onDismissAction,
+        ),
     )
 }
+
+// Agrupa las acciones de la pantalla (mismo patrón que Registro y Configuración).
+private data class MyPostsActions(
+    val onBack: () -> Unit = {},
+    val onFilterSelected: (PostFilter) -> Unit = {},
+    val onPostClick: (String) -> Unit = {},
+    val onFinishPost: (String) -> Unit = {},
+    val onDeletePost: (String) -> Unit = {},
+    val onConfirmAction: () -> Unit = {},
+    val onDismissAction: () -> Unit = {},
+)
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
 @Composable
 private fun MyPostsContent(
     uiState: MyPostsUiState,
-    onBack: () -> Unit,
-    onFilterSelected: (PostFilter) -> Unit,
-    onPostClick: (String) -> Unit,
-    onFinishPost: (String) -> Unit,
-    onDeletePost: (String) -> Unit,
+    actions: MyPostsActions,
 ) {
     val filters = PostFilter.entries
     val tabLabels = filters.map { filter ->
@@ -92,14 +116,14 @@ private fun MyPostsContent(
     ) {
         AppTopBar(
             title = stringResource(R.string.my_posts_title),
-            onBack = onBack,
+            onBack = actions.onBack,
             modifier = Modifier.padding(horizontal = 8.dp),
         )
 
         AppTabRow(
             tabs = tabLabels,
             selectedIndex = filters.indexOf(uiState.filter),
-            onTabSelected = { index -> onFilterSelected(filters[index]) },
+            onTabSelected = { index -> actions.onFilterSelected(filters[index]) },
         )
 
         LazyColumn(
@@ -109,8 +133,24 @@ private fun MyPostsContent(
             contentPadding = PaddingValues(horizontal = ScreenHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (sections.isEmpty()) {
-                item(key = "empty") {
+            if (uiState.actionError) {
+                item(key = "action-error") {
+                    ErrorText(text = stringResource(R.string.my_posts_action_error), modifier = Modifier.fillMaxWidth())
+                }
+            }
+
+            when {
+                uiState.isLoading -> Unit
+                uiState.hasError -> item(key = "error") {
+                    StatusMessage(
+                        text = stringResource(R.string.my_posts_error),
+                        isError = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                    )
+                }
+                sections.isEmpty() -> item(key = "empty") {
                     StatusMessage(
                         text = stringResource(R.string.my_posts_empty),
                         modifier = Modifier
@@ -127,13 +167,27 @@ private fun MyPostsContent(
                 items(posts, key = { it.id }) { post ->
                     MyPostItem(
                         post = post,
-                        onClick = { onPostClick(post.id) },
-                        onFinish = { onFinishPost(post.id) },
-                        onDelete = { onDeletePost(post.id) },
+                        onClick = { actions.onPostClick(post.id) },
+                        onFinish = { actions.onFinishPost(post.id) },
+                        onDelete = { actions.onDeletePost(post.id) },
                     )
                 }
             }
         }
+    }
+
+    // Confirmación antes de finalizar o eliminar (el caso de uso se llama al aceptar).
+    uiState.pendingAction?.let { action ->
+        val isFinish = action is PendingPostAction.Finish
+        AppConfirmDialog(
+            title = stringResource(if (isFinish) R.string.my_posts_finish_title else R.string.my_posts_delete_title),
+            message = stringResource(if (isFinish) R.string.my_posts_finish_message else R.string.my_posts_delete_message),
+            confirmText = stringResource(R.string.my_posts_dialog_accept),
+            cancelText = stringResource(R.string.common_cancel),
+            onConfirm = actions.onConfirmAction,
+            onDismiss = actions.onDismissAction,
+            isLoading = uiState.isProcessing,
+        )
     }
 }
 
@@ -167,10 +221,11 @@ private fun MyPostItem(
     onDelete: () -> Unit,
 ) {
     val ago = agoText(post.ageHours)
-    val isPending = post.status == PostStatusUi.PENDING
+    // Sin verificar (pendiente o rechazada) se dice "Enviado"; ya publicada, "Publicado".
+    val notPublished = post.status == PostStatusUi.PENDING || post.status == PostStatusUi.REJECTED
 
     val dateText = stringResource(
-        if (isPending) R.string.my_posts_sent else R.string.my_posts_published,
+        if (notPublished) R.string.my_posts_sent else R.string.my_posts_published,
         ago,
     )
     val interestedText = pluralStringResource(
@@ -179,22 +234,32 @@ private fun MyPostItem(
         post.interestedCount,
     )
 
-    // Una publicación en revisión aún no recibe interesados: no se muestra esa línea.
+    // Una publicación sin publicar aún no recibe interesados: no se muestra esa línea.
     val metaLines = buildList {
         add(PostMetaLine(Icons.Outlined.CalendarToday, dateText))
-        if (!isPending) add(PostMetaLine(Icons.Outlined.FavoriteBorder, interestedText))
+        if (!notPublished) add(PostMetaLine(Icons.Outlined.FavoriteBorder, interestedText))
     }
 
     val footer: (@Composable () -> Unit)? = when (post.status) {
         PostStatusUi.ACTIVE -> ({ ActiveFooter(onFinish = onFinish) })
-        PostStatusUi.PENDING -> ({ PendingFooter(onDelete = onDelete) })
-        PostStatusUi.FINISHED -> null
+        PostStatusUi.PENDING -> ({ DeleteFooter(onDelete = onDelete, note = stringResource(R.string.my_posts_not_editable)) })
+        PostStatusUi.REJECTED -> ({
+            DeleteFooter(
+                onDelete = onDelete,
+                note = post.rejectionReason?.let { stringResource(R.string.my_posts_rejected_reason, it) }.orEmpty(),
+            )
+        })
+        // Finalizada: sin acciones, solo el aviso (no se edita ni se elimina).
+        PostStatusUi.FINISHED -> ({ FinishedFooter() })
     }
 
+    // Mientras carga (o si falla) se ve la imagen local.
+    val fallback = painterResource(R.drawable.hero_image)
+    val photo = rememberAsyncImagePainter(model = post.photoUrl, placeholder = fallback, error = fallback)
+
     PostSummaryCard(
-        // TODO: cargar la foto real desde una URL (Coil). Por ahora, imagen local de prueba.
-        image = painterResource(R.drawable.hero_image),
-        typeLabel = stringResource(post.type.labelRes()),
+        image = if (post.photoUrl == null) fallback else photo,
+        typeLabel = post.categoryName,
         statusColor = post.status.color(),
         title = post.title,
         metaLines = metaLines,
@@ -213,11 +278,23 @@ private fun ActiveFooter(onFinish: () -> Unit) {
     )
 }
 
+// Aviso fijo de las finalizadas: el caso ya se cerró y la publicación queda como historial.
 @Composable
-private fun PendingFooter(onDelete: () -> Unit) {
+private fun FinishedFooter() {
+    IconTextRow(
+        icon = Icons.Outlined.CheckCircle,
+        text = stringResource(R.string.post_finished_notice),
+        modifier = Modifier.padding(vertical = 12.dp),
+        style = MaterialTheme.typography.labelMedium,
+    )
+}
+
+// Eliminar a la izquierda y una nota a la derecha ("No editable en revisión" o el motivo del rechazo).
+@Composable
+private fun DeleteFooter(onDelete: () -> Unit, note: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TextActionButton(
@@ -226,9 +303,13 @@ private fun PendingFooter(onDelete: () -> Unit) {
             onClick = onDelete,
         )
         Text(
-            text = stringResource(R.string.my_posts_not_editable),
+            text = note,
             style = MaterialTheme.typography.labelSmall,
             color = AppTheme.colors.textPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.End,
         )
     }
 }
@@ -243,11 +324,12 @@ private fun agoText(ageHours: Int): String =
         pluralStringResource(R.plurals.common_time_days_ago, days, days)
     }
 
-// Traducen el tipo (lógica) al texto, color o recurso (presentación).
+// Traducen el estado (lógica) al texto, color o recurso (presentación).
 @Composable
 private fun PostStatusUi.color() = when (this) {
     PostStatusUi.ACTIVE -> AppTheme.colors.stateSuccess
     PostStatusUi.PENDING -> AppTheme.colors.stateWarning
+    PostStatusUi.REJECTED -> AppTheme.colors.stateError
     PostStatusUi.FINISHED -> AppTheme.colors.stateDisabled
 }
 
@@ -255,13 +337,8 @@ private fun PostStatusUi.color() = when (this) {
 private fun PostStatusUi.sectionTitleRes() = when (this) {
     PostStatusUi.ACTIVE -> R.string.my_posts_section_active
     PostStatusUi.PENDING -> R.string.my_posts_section_pending
+    PostStatusUi.REJECTED -> R.string.my_posts_section_rejected
     PostStatusUi.FINISHED -> R.string.my_posts_section_finished
-}
-
-@StringRes
-private fun PostTypeUi.labelRes() = when (this) {
-    PostTypeUi.ADOPTION -> R.string.my_posts_type_adoption
-    PostTypeUi.LOST -> R.string.my_posts_type_lost
 }
 
 @StringRes
@@ -272,26 +349,37 @@ private fun PostFilter.tabLabelRes() = when (this) {
     PostFilter.FINISHED -> R.string.my_posts_tab_finished
 }
 
-@Preview(name = "Todas", showBackground = true, heightDp = 800)
+// Datos de ejemplo solo para las previews.
+private val previewPosts = listOf(
+    MyPostUi("1", "Adopción", PostStatusUi.ACTIVE, "Luna busca un hogar lleno de amor", null, ageHours = 72, interestedCount = 12),
+    MyPostUi("2", "Perdidos", PostStatusUi.ACTIVE, "Max, Chihuahua perdido en Usaquén", null, ageHours = 24, interestedCount = 5),
+    MyPostUi("3", "Adopción", PostStatusUi.PENDING, "Simón, gatito juguetón de 8 meses", null, ageHours = 2),
+    MyPostUi("4", "Adopción", PostStatusUi.REJECTED, "Cachorros a la venta", null, ageHours = 30,
+        rejectionReason = "No se permite la venta de animales"),
+)
+
+@Preview(name = "Todas", showBackground = true, heightDp = 1100)
 @Composable
 private fun MyPostsAllPreview() {
     PetAdoptionAppTheme {
         MyPostsContent(
-            uiState = MyPostsUiState(),
-            onBack = {}, onFilterSelected = {}, onPostClick = {},
-            onFinishPost = {}, onDeletePost = {},
+            uiState = MyPostsUiState(posts = previewPosts, isLoading = false),
+            actions = MyPostsActions(),
         )
     }
 }
 
-@Preview(name = "Solo activas", showBackground = true, heightDp = 800)
+@Preview(name = "Confirmar finalizar", showBackground = true, heightDp = 800)
 @Composable
-private fun MyPostsActivePreview() {
+private fun MyPostsFinishDialogPreview() {
     PetAdoptionAppTheme {
         MyPostsContent(
-            uiState = MyPostsUiState(filter = PostFilter.ACTIVE),
-            onBack = {}, onFilterSelected = {}, onPostClick = {},
-            onFinishPost = {}, onDeletePost = {},
+            uiState = MyPostsUiState(
+                posts = previewPosts,
+                isLoading = false,
+                pendingAction = PendingPostAction.Finish("1"),
+            ),
+            actions = MyPostsActions(),
         )
     }
 }
@@ -301,9 +389,8 @@ private fun MyPostsActivePreview() {
 private fun MyPostsFinishedEmptyPreview() {
     PetAdoptionAppTheme {
         MyPostsContent(
-            uiState = MyPostsUiState(filter = PostFilter.FINISHED),
-            onBack = {}, onFilterSelected = {}, onPostClick = {},
-            onFinishPost = {}, onDeletePost = {},
+            uiState = MyPostsUiState(filter = PostFilter.FINISHED, posts = previewPosts, isLoading = false),
+            actions = MyPostsActions(),
         )
     }
 }

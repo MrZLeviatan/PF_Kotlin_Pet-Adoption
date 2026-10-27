@@ -27,6 +27,7 @@ fun MainScreen(
     onSettingsClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
     onUserClick: (String) -> Unit = {},
+    onMyPostsClick: () -> Unit = {},
 
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -44,7 +45,8 @@ fun MainScreen(
                 onMetricsClick = onMetricsClick,
                 onSettingsClick = onSettingsClick,
                 onEditProfileClick = onEditProfileClick,
-                onUserClick = onUserClick
+                onUserClick = onUserClick,
+                onMyPostsClick = onMyPostsClick
             )
         }
     }
@@ -61,6 +63,7 @@ private fun MainContent(
     onSettingsClick: () -> Unit,
     onEditProfileClick: () -> Unit,
     onUserClick: (String) -> Unit,
+    onMyPostsClick: () -> Unit,
 ) {
     // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
@@ -110,7 +113,8 @@ private fun MainContent(
             onMetricsClick = onMetricsClick,
             onSettingsClick = onSettingsClick,
             onEditProfileClick = onEditProfileClick,
-            onUserClick = onUserClick
+            onUserClick = onUserClick,
+            onMyPostsClick = onMyPostsClick
         )
     }
 }
@@ -118,11 +122,11 @@ private fun MainContent(
 @Preview(name = "Usuario", showBackground = true)
 @Composable
 private fun MainUserPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}, {}, {}, {}) }
 }
 
 @Preview(name = "Moderador", showBackground = true)
 @Composable
 private fun MainModeratorPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}, {}, {}, {}) }
 }

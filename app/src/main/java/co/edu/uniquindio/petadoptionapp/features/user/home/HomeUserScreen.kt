@@ -92,8 +92,9 @@ fun HomeUserScreen(
     val importantErrorMessage = stringResource(R.string.home_error_important)
 
     // Cada vez que la pantalla vuelve a primer plano, recarga el contador de no leídas.
+    // Al volver (por ejemplo, del detalle) se actualizan votos, contadores y la campana.
     LifecycleResumeEffect(Unit) {
-        viewModel.refreshUnreadCount()
+        viewModel.refresh()
         onPauseOrDispose { }
     }
 

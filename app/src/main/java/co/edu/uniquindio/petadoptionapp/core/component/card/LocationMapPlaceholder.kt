@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
@@ -35,24 +36,27 @@ private val MapCornerRadius = 16.dp
 Cuadro provisional donde irá el mapa.
 TODO (Mapbox): reemplazar el contenido del Box por el MapView; el botón
 "Establecer mi ubicación" se queda como overlay y la firma no cambia.
+Con [onSetLocationClick] en `null` es solo de lectura: el recuadro vacío, sin botón
+(ej. la ubicación aproximada de una publicación).
  */
 @Composable
 fun LocationMapPlaceholder(
-    onSetLocationClick: () -> Unit,
+    onSetLocationClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    height: Dp = 110.dp,
 ) {
     val shape = RoundedCornerShape(MapCornerRadius)
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(110.dp)
+            .height(height)
             .clip(shape)
             .background(AppTheme.colors.surfaceTag)
             .border(1.dp, AppTheme.colors.border, shape),
         contentAlignment = Alignment.Center,
     ) {
-        Button(
+        if (onSetLocationClick != null) Button(
             onClick = onSetLocationClick,
             shape = CircleShape,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),

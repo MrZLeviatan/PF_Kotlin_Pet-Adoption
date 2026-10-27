@@ -17,7 +17,4 @@ sealed class CommentException : Exception() {
 
     // Ocurre cuando la persona no es el autor (ni moderador) del comentario.
     object NotAllowed : CommentException()
-
-    // Ocurre cuando alguien intenta dar like a su propio comentario.
-    object CannotLikeOwnComment : CommentException()
 }

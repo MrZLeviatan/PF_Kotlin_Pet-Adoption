@@ -25,6 +25,8 @@ fun DangerButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    // Por defecto en mayúsculas ("ELIMINAR CUENTA"); en diálogos se usa normal ("Cancelar").
+    uppercase: Boolean = true,
 ) {
     OutlinedButton(
         onClick = onClick,
@@ -39,7 +41,7 @@ fun DangerButton(
             contentColor = AppTheme.colors.stateError,
         ),
     ) {
-        Text(text = text.uppercase(), style = MaterialTheme.typography.labelLarge)
+        Text(text = if (uppercase) text.uppercase() else text, style = MaterialTheme.typography.labelLarge)
     }
 }
 

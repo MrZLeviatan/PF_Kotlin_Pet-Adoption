@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.navigation
 
 import android.R.attr.padding
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,6 +25,8 @@ import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.notification.NotificationsScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
+import co.edu.uniquindio.petadoptionapp.features.user.myposts.MyPostsScreen
+import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.metric.MetricsScreen
@@ -141,15 +144,21 @@ fun AppNavigation() {
                 onMetricsClick = { navController.navigate(MainRoutes.Metrics) },
                 onSettingsClick = { navController.navigate(MainRoutes.Settings) },
                 onEditProfileClick = { navController.navigate(MainRoutes.EditProfile) },
-                onUserClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) }
+                onUserClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
+                onMyPostsClick = { navController.navigate(MainRoutes.MyPosts) }
             )
         }
 
         // Perfil de otra persona (sin barra). El userId lo lee el ViewModel de la ruta.
         composable<MainRoutes.UserProfile> {
+            val context = LocalContext.current
             UserProfileScreen(
                 onBack = { navController.popBackStack() },
-                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) },
+                onCallClick = { phone ->
+                    // ACTION_DIAL solo abre el marcador con el número: no llama ni pide permisos.
+                    context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
+                }
             )
         }
 
@@ -184,11 +193,35 @@ fun AppNavigation() {
         }
 
         // Detalle de la publicación (sin barra).
+        // El postId lo lee el ViewModel de la ruta. Cambia según sea del usuario o de otra persona.
         composable<MainRoutes.PostDetail> {
-            val args = it.toRoute<MainRoutes.PostDetail>()
+            val context = LocalContext.current
             PostDetailScreen(
-                postId = args.postId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onShare = { title ->
+                    // Por ahora se comparte solo un texto con el título de la publicación.
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.post_share_text, title))
+                    }
+                    context.startActivity(Intent.createChooser(intent, null))
+                },
+                onOpenComments = { postId -> navController.navigate(MainRoutes.PostComments(postId)) },
+                // TODO: pantalla de editar publicación (UpdatePostUseCase ya existe).
+                onEditPost = { }
+            )
+        }
+
+        // Todos los comentarios (sin barra).
+        composable<MainRoutes.PostComments> {
+            CommentsScreen(onBack = { navController.popBackStack() })
+        }
+
+        // Mis publicaciones (sin barra).
+        composable<MainRoutes.MyPosts> {
+            MyPostsScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
             )
         }
     }

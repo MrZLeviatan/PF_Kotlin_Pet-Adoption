@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.features.user.post.detail
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,9 +25,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Pets
@@ -40,268 +45,486 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
+import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
+import co.edu.uniquindio.petadoptionapp.core.component.card.NoticeBanner
+import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppConfirmDialog
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
-import co.edu.uniquindio.petadoptionapp.core.theme.BordeMarron
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoAviso
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoClaro
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoCrema
-import co.edu.uniquindio.petadoptionapp.core.theme.FondoMarron
-import co.edu.uniquindio.petadoptionapp.core.theme.ItemSeleccionado
-import co.edu.uniquindio.petadoptionapp.core.theme.TextoMarron
+import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
+import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentInputBar
+import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentThread
+import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentUi
+import coil3.compose.AsyncImage
+import java.util.Locale
 
-// Publicación quemada (de mentira).
-private val burnedDetail = PostDetailInfo(
-    id = "1",
-    imageUrls = listOf(
-        "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
-    ),
-    type = "Adopción",
-    verified = true,
-    title = "Luna busca un hogar lleno de amor",
-    location = "Bogotá, Chapinero • 1.2 km",
-    publishedAgo = "Publicado hace 3 días",
-    animalType = "Perro",
-    breed = "Mestiza (Labrador)",
-    size = "Mediana (15 kg)",
-    vaccines = "Al día",
-    descriptionTitle = "Sobre Luna",
-    description = "Luna es una perrita mestiza de aproximadamente 2 años. Fue rescatada de la calle hace 6 meses. Es cariñosa, juguetona y se lleva muy bien con niños y otros perros. Está esterilizada, desparasitada y con todas sus vacunas al día. Busca una familia responsable que le dé mucho amor.",
-    approxLocation = "Chapinero, Bogotá • Colombia",
-    totalComments = 8,
-    comments = listOf(
-        PostComment("1", "María García", "MG", "hace 2h", "Qué hermosa Luna! Me encantaría conocerla. ¿Tienen horarios de visita?", 3),
-        PostComment("2", "Carlos Rodríguez", "CR", "hace 5h", "Ya contacté a la fundación. Luna es increíble, muy sociable y cariñosa. Recomiendo visitarla.", 7),
-        PostComment("3", "Ana Martínez", "AM", "hace 1d", "Ojalá encuentre pronto un hogar, es preciosa.", 1)
-    )
-)
-
+/**
+Detalle de una publicación. Cambia según quién la mira:
+- El dueño ve "Editar" y "Eliminar".
+- Los demás ven "Me interesa adoptar" (si la categoría lo permite) y "Es importante".
+Los comentarios se ven de a tres; "Ver todos" abre la pantalla completa para comentar y responder.
+Conecta el [PostDetailViewModel] con la UI; [PostDetailContent] solo dibuja.
+ */
 @Composable
 fun PostDetailScreen(
-    postId: String,                              // Id de la publicación a mostrar (después servirá para buscarla)
-    onBack: () -> Unit = {},                     // Volver al feed
-    viewModel: PostDetailViewModel = viewModel()
+    onBack: () -> Unit,
+    onShare: (title: String) -> Unit,
+    onOpenComments: (postId: String) -> Unit,
+    onEditPost: (postId: String) -> Unit,
+    viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
-    // Observa el estado: cada vez que cambia, la pantalla se redibuja
-    val state by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentOnBack by rememberUpdatedState(onBack)
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Se ejecuta al abrir la pantalla: entrega la publicación quemada al ViewModel
-    LaunchedEffect(postId) {
-        viewModel.setPost(burnedDetail)
+    // Al volver (por ejemplo, de la pantalla de comentarios) se recarga.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose { }
     }
 
-    // Si la publicación aún no llega, muestra solo el fondo
-    val post = state.post
-    if (post == null) {
-        Box(modifier = Modifier.fillMaxSize().background(FondoCrema))
-        return
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                PostDetailEvent.Deleted -> currentOnBack()
+            }
+        }
     }
+
+    val messageText = uiState.message?.let { detailMessageText(it) }
+    LaunchedEffect(uiState.message) {
+        if (messageText != null) {
+            snackbarHostState.showSnackbar(messageText)
+            viewModel.onMessageShown()
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        PostDetailContent(
+            uiState = uiState,
+            actions = PostDetailActions(
+                onBack = onBack,
+                onShare = { uiState.post?.let { onShare(it.title) } },
+                onEdit = { uiState.post?.let { onEditPost(it.id) } },
+                onDelete = viewModel::onDeleteClick,
+                onDeleteConfirm = viewModel::onDeleteConfirm,
+                onDeleteDismiss = viewModel::onDeleteDismiss,
+                onImportant = viewModel::onImportantClick,
+                onAdoptionInterest = viewModel::onAdoptionInterestClick,
+                onOpenComments = { uiState.post?.let { onOpenComments(it.id) } },
+                onCommentLike = viewModel::onCommentLike,
+                onReply = viewModel::onReplyClick,
+                onCancelReply = viewModel::onCancelReply,
+                onToggleReplies = viewModel::onToggleReplies,
+                onCommentTextChange = viewModel::onCommentTextChange,
+                onSendComment = viewModel::onSendComment,
+            ),
+        )
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 96.dp),
+        )
+    }
+}
+
+// Agrupa las acciones de la pantalla (mismo patrón que Registro y Configuración).
+private data class PostDetailActions(
+    val onBack: () -> Unit = {},
+    val onShare: () -> Unit = {},
+    val onEdit: () -> Unit = {},
+    val onDelete: () -> Unit = {},
+    val onDeleteConfirm: () -> Unit = {},
+    val onDeleteDismiss: () -> Unit = {},
+    val onImportant: () -> Unit = {},
+    val onAdoptionInterest: () -> Unit = {},
+    val onOpenComments: () -> Unit = {},
+    val onCommentLike: (String) -> Unit = {},
+    val onReply: (CommentUi) -> Unit = {},
+    val onCancelReply: () -> Unit = {},
+    val onToggleReplies: (String) -> Unit = {},
+    val onCommentTextChange: (String) -> Unit = {},
+    val onSendComment: () -> Unit = {},
+)
+
+// Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
+@Composable
+private fun PostDetailContent(
+    uiState: PostDetailUiState,
+    actions: PostDetailActions,
+) {
+    val post = uiState.post
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(FondoCrema)
+            .background(AppTheme.colors.background)
             .statusBarsPadding()      // La foto empieza debajo de la barra de estado
-            .imePadding()             // Sube todo cuando aparece el teclado
+            .imePadding(),            // Sube la barra de comentario cuando aparece el teclado
     ) {
-        // 1) Galería fija arriba
-        PostImageHeader(imageUrls = post.imageUrls, onBack = onBack)
+        if (post == null) {
+            // Cargando o no encontrada: solo la flecha para volver y, si aplica, el aviso.
+            RoundIconButton(
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                description = stringResource(R.string.common_back),
+                onClick = actions.onBack,
+                modifier = Modifier.padding(12.dp),
+            )
+            if (uiState.notFound) {
+                StatusMessage(
+                    text = stringResource(R.string.post_detail_not_found),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(48.dp),
+                )
+            }
+            return@Column
+        }
 
-        // 2) Contenido con scroll en el medio (weight = ocupa el espacio que sobra)
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)    // 16dp entre secciones
+                .verticalScroll(rememberScrollState()),
         ) {
-            PostTitleCard(post)
-            PostInfoCard(post)
-            PostActions()
-            PostDescription(post)
-            PostLocation(post)
-            HorizontalDivider(color = BordeMarron.copy(alpha = 0.5f))
-            PostComments(totalComments = state.totalComments, comments = state.comments)
-        }
+            PostImageHeader(imageUrls = post.photoUrls, onBack = actions.onBack, onShare = actions.onShare)
 
-        // 3) Barra de comentarios fija abajo
-        CommentInputBar(
-            userInitials = state.userInitials,
-            text = state.commentText,
-            onTextChange = viewModel::onCommentTextChange,
-            onSend = viewModel::onSendComment
-        )
-    }
-}
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                // Finalizada: aviso en lugar de acciones (no se edita ni se elimina).
+                if (post.isFinished) {
+                    NoticeBanner(
+                        message = stringResource(R.string.post_finished_notice),
+                        icon = Icons.Outlined.CheckCircle,
+                    )
+                } else if (uiState.isOwner) {
+                    // El dueño tiene sus acciones arriba; los demás, debajo de los datos (como en el diseño).
+                    OwnerActions(onEdit = actions.onEdit, onDelete = actions.onDelete)
+                }
 
-// Galería de fotos con botones, puntos y contador
-@Composable
-private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit) {
-    // Recuerda en qué foto está el usuario
-    val pagerState = rememberPagerState(pageCount = { imageUrls.size })
+                PostTitleCard(post)
+                PostInfoCard(post)
 
-    Box(modifier = Modifier.fillMaxWidth().height(230.dp)) {
+                if (!uiState.isOwner && post.isPublic) {
+                    VisitorActions(uiState = uiState, post = post, actions = actions)
+                }
 
-        // Permite deslizar entre fotos
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-            AsyncImage(
-                model = imageUrls[page],                      // Link de la foto
-                contentDescription = "Foto ${page + 1}",
-                contentScale = ContentScale.Crop,             // Llena el espacio sin deformar
-                placeholder = ColorPainter(Color.LightGray),  // Gris mientras carga
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // Botón volver (arriba a la izquierda)
-        RoundIconButton(
-            icon = Icons.AutoMirrored.Filled.ArrowBack,
-            description = "Volver",
-            onClick = onBack,
-            modifier = Modifier.align(Alignment.TopStart).padding(12.dp)
-        )
-
-        // Botón compartir (arriba a la derecha, aún sin acción)
-        RoundIconButton(
-            icon = Icons.Outlined.Share,
-            description = "Compartir",
-            onClick = { },
-            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
-        )
-
-        // Puntos indicadores (abajo a la izquierda)
-        Row(
-            modifier = Modifier.align(Alignment.BottomStart).padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            repeat(imageUrls.size) { index ->
-                val selected = index == pagerState.currentPage      // ¿Es la foto actual?
-                Box(
-                    modifier = Modifier
-                        .size(if (selected) 8.dp else 6.dp)          // El actual es más grande
-                        .background(
-                            if (selected) Color.White else Color.White.copy(alpha = 0.5f),
-                            CircleShape
-                        )
+                PostDescription(post)
+                PostLocation(post)
+                HorizontalDivider(color = AppTheme.colors.border.copy(alpha = 0.5f))
+                PostCommentsPreview(
+                    totalComments = post.commentCount,
+                    uiState = uiState,
+                    canComment = post.isPublic,
+                    actions = actions,
                 )
             }
         }
 
-        // Contador "2/5" (abajo a la derecha)
+        // Solo se comenta en publicaciones visibles al público (regla del caso de uso).
+        if (post.isPublic) {
+            CommentInputBar(
+                viewerName = uiState.viewerName,
+                viewerPhotoUrl = uiState.viewerPhotoUrl,
+                text = uiState.commentText,
+                onTextChange = actions.onCommentTextChange,
+                onSend = actions.onSendComment,
+                replyingTo = uiState.replyingTo?.authorName,
+                onCancelReply = actions.onCancelReply,
+                isSending = uiState.isSendingComment,
+            )
+        }
+    }
+
+    if (uiState.showDeleteDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.post_detail_delete_title),
+            message = stringResource(R.string.post_detail_delete_message),
+            confirmText = stringResource(R.string.my_posts_dialog_accept),
+            cancelText = stringResource(R.string.common_cancel),
+            onConfirm = actions.onDeleteConfirm,
+            onDismiss = actions.onDeleteDismiss,
+            isLoading = uiState.isDeleting,
+        )
+    }
+}
+
+@Composable
+private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare: () -> Unit) {
+    // Sin fotos se muestra la imagen local para no dejar el espacio vacío.
+    val pageCount = imageUrls.size.coerceAtLeast(1)
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(230.dp)) {
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            AsyncImage(
+                model = imageUrls.getOrNull(page),
+                contentDescription = stringResource(R.string.post_detail_photo, page + 1, pageCount),
+                contentScale = ContentScale.Crop,
+                placeholder = ColorPainter(AppTheme.colors.surfaceTag),
+                error = painterResource(R.drawable.hero_image),
+                fallback = painterResource(R.drawable.hero_image),
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+
+        RoundIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            description = stringResource(R.string.common_back),
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(12.dp),
+        )
+        RoundIconButton(
+            icon = Icons.Outlined.Share,
+            description = stringResource(R.string.common_share),
+            onClick = onShare,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(12.dp),
+        )
+
+        if (pageCount > 1) {
+            // Puntos: indican cuántas fotos hay y cuál se ve.
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                repeat(pageCount) { index ->
+                    val selected = index == pagerState.currentPage
+                    Box(
+                        modifier = Modifier
+                            .size(if (selected) 8.dp else 6.dp)
+                            .background(if (selected) Color.White else Color.White.copy(alpha = 0.5f), CircleShape),
+                    )
+                }
+            }
+        }
+
+        // Contador "2/5" sobre la foto: blanco sobre fondo oscuro para que se lea en cualquier imagen.
         Surface(
-            modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(12.dp),
             shape = RoundedCornerShape(50),
-            color = Color.Black.copy(alpha = 0.55f)
+            color = Color.Black.copy(alpha = 0.55f),
         ) {
             Text(
-                text = "${pagerState.currentPage + 1}/${imageUrls.size}",
+                text = "${pagerState.currentPage + 1}/$pageCount",
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 color = Color.White,
-                fontSize = 12.sp
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }
 }
 
-// Botón redondo claro con un ícono (volver, compartir)
+// Botón redondo claro sobre la foto (volver, compartir). Sí se anuncia: es interactivo.
 @Composable
 private fun RoundIconButton(
     icon: ImageVector,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         onClick = onClick,
         modifier = modifier.size(40.dp),
         shape = CircleShape,
-        color = FondoClaro
+        color = AppTheme.colors.background,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription = description, tint = TextoMarron, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = description, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(20.dp))
         }
+    }
+}
+
+// Dueño: editar (principal) y eliminar (delineado en rojo).
+@Composable
+private fun OwnerActions(onEdit: () -> Unit, onDelete: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        PillButton(
+            text = stringResource(R.string.post_detail_edit),
+            icon = Icons.Outlined.Edit,
+            onClick = onEdit,
+            containerColor = AppTheme.colors.actionPrimary,
+            contentColor = AppTheme.colors.onActionPrimary,
+            modifier = Modifier.weight(1f),
+        )
+        PillButton(
+            text = stringResource(R.string.post_detail_delete),
+            icon = Icons.Outlined.Delete,
+            onClick = onDelete,
+            containerColor = AppTheme.colors.surface,
+            contentColor = AppTheme.colors.stateError,
+            border = BorderStroke(1.dp, AppTheme.colors.stateError),
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// Otra persona: interés de adopción (si la categoría lo admite) y voto "Es importante".
+@Composable
+private fun VisitorActions(uiState: PostDetailUiState, post: PostDetailUi, actions: PostDetailActions) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (post.allowsAdoption) {
+            PillButton(
+                text = stringResource(
+                    if (uiState.adoptionRequested) R.string.post_detail_interest_sent else R.string.post_detail_interest
+                ),
+                icon = if (uiState.adoptionRequested) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                onClick = actions.onAdoptionInterest,
+                enabled = !uiState.adoptionRequested && !uiState.isSendingInterest,
+                containerColor = AppTheme.colors.actionPrimary,
+                contentColor = AppTheme.colors.onActionPrimary,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        // Colores invertidos cuando ya votó, igual que en el feed.
+        PillButton(
+            text = stringResource(R.string.post_detail_important),
+            icon = if (uiState.isVoted) Icons.Filled.Star else Icons.Outlined.StarBorder,
+            onClick = actions.onImportant,
+            enabled = !uiState.isTogglingImportant,
+            containerColor = if (uiState.isVoted) AppTheme.colors.textPrimary else AppTheme.colors.brand,
+            contentColor = if (uiState.isVoted) AppTheme.colors.background else AppTheme.colors.textPrimary,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+// Botón en forma de píldora con icono, para las acciones de la publicación.
+@Composable
+private fun PillButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    containerColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    border: BorderStroke? = null,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.heightIn(min = 48.dp),
+        shape = RoundedCornerShape(50),
+        border = border,
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor,
+            disabledContainerColor = containerColor.copy(alpha = 0.6f),
+            disabledContentColor = contentColor,
+        ),
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        // 12 sp: los textos del diseño ("Me interesa adoptar") caben completos en media pantalla.
+        Text(text, style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
 // Tarjeta con etiquetas, título, ubicación y fecha
 @Composable
-private fun PostTitleCard(post: PostDetailInfo) {
+private fun PostTitleCard(post: PostDetailUi) {
     AppCard(
         containerColor = AppTheme.colors.brand,
         borderColor = null,
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(16.dp),
     ) {
-        // Etiquetas: tipo y verificado
         val tagStyle = LocalTextStyle.current.copy(fontSize = 12.sp, fontWeight = FontWeight.Medium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconTag(text = post.type, icon = Icons.Outlined.Pets, textStyle = tagStyle)
-            if (post.verified) {
+            if (post.categoryName.isNotBlank()) {
+                IconTag(text = post.categoryName, icon = Icons.Outlined.Pets, textStyle = tagStyle)
+            }
+            if (post.isVerified) {
                 IconTag(
-                    text = "Verificado",
+                    text = stringResource(R.string.post_detail_verified),
                     icon = Icons.Filled.CheckCircle,
-                    iconColor = Color(0xFF2E7D32),
-                    textStyle = tagStyle
+                    iconColor = AppTheme.colors.stateSuccess,
+                    textStyle = tagStyle,
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Título grande
-        Text(post.title, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
+        Text(post.title, style = MaterialTheme.typography.headlineSmall, color = AppTheme.colors.textPrimary)
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        DetailIconText(icon = Icons.Outlined.LocationOn, text = post.location)
+        DetailIconText(icon = Icons.Outlined.LocationOn, text = locationText(post))
         Spacer(modifier = Modifier.height(6.dp))
-        DetailIconText(icon = Icons.Outlined.CalendarMonth, text = post.publishedAgo)
+        DetailIconText(
+            icon = Icons.Outlined.CalendarMonth,
+            text = stringResource(R.string.my_posts_published, agoText(post.ageHours)),
+        )
     }
 }
 
 // Tarjeta con los datos de la mascota en 2 columnas
 @Composable
-private fun PostInfoCard(post: PostDetailInfo) {
+private fun PostInfoCard(post: PostDetailUi) {
+    val unknown = stringResource(R.string.post_detail_unknown)
     AppCard(
         containerColor = AppTheme.colors.brand,
         borderColor = null,
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(16.dp),
     ) {
-        // Primera fila: Tipo y Raza
         Row(modifier = Modifier.fillMaxWidth()) {
-            InfoCell("Tipo", post.animalType, Icons.Outlined.Pets, Modifier.weight(1f))
-            InfoCell("Raza", post.breed, Icons.Outlined.Sell, Modifier.weight(1f))
+            InfoCell(stringResource(R.string.post_detail_type), post.animalTypeName ?: unknown, Icons.Outlined.Pets, Modifier.weight(1f))
+            InfoCell(stringResource(R.string.post_detail_breed), post.breed.ifBlank { unknown }, Icons.Outlined.Sell, Modifier.weight(1f))
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = BordeMarron)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = AppTheme.colors.border)
 
-        // Segunda fila: Tamaño y Vacunas
         Row(modifier = Modifier.fillMaxWidth()) {
-            InfoCell("Tamaño", post.size, Icons.Outlined.Straighten, Modifier.weight(1f))
-            InfoCell("Vacunas", post.vaccines, Icons.Outlined.TaskAlt, Modifier.weight(1f))
+            InfoCell(stringResource(R.string.post_detail_size), sizeText(post.size), Icons.Outlined.Straighten, Modifier.weight(1f))
+            InfoCell(stringResource(R.string.post_detail_vaccines), vaccinesText(post.vaccinated), Icons.Outlined.TaskAlt, Modifier.weight(1f))
         }
     }
 }
@@ -310,185 +533,109 @@ private fun PostInfoCard(post: PostDetailInfo) {
 @Composable
 private fun InfoCell(label: String, value: String, icon: ImageVector, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        // Cuadro claro con el ícono
         Box(
-            modifier = Modifier.size(36.dp).background(FondoClaro, RoundedCornerShape(10.dp)),
-            contentAlignment = Alignment.Center
+            modifier = Modifier
+                .size(36.dp)
+                .background(AppTheme.colors.background, RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = TextoMarron, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(20.dp))
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextoMarron)
-            Text(value, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = AppTheme.colors.textPrimary)
+            Text(value, style = MaterialTheme.typography.titleSmall, color = AppTheme.colors.textPrimary)
         }
     }
 }
 
-// Botones "Me Interesa Adoptar" y "Es Importante" (aún sin acción)
 @Composable
-private fun PostActions() {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(
-            onClick = { },
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = ItemSeleccionado, contentColor = TextoMarron)
-        ) {
-            Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("Me Interesa Adoptar", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-        }
-        Button(
-            onClick = { },
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = FondoMarron, contentColor = TextoMarron)
-        ) {
-            Icon(Icons.Outlined.StarBorder, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text("Es Importante", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-        }
-    }
-}
-
-// Título y texto de la descripción
-@Composable
-private fun PostDescription(post: PostDetailInfo) {
+private fun PostDescription(post: PostDetailUi) {
     Column {
-        Text(post.descriptionTitle, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
+        SectionTitle(stringResource(R.string.post_detail_about))
         Spacer(modifier = Modifier.height(8.dp))
-        Text(post.description, fontSize = 14.sp, lineHeight = 20.sp, color = TextoMarron)
+        Text(post.description, style = MaterialTheme.typography.bodyLarge, color = AppTheme.colors.textPrimary)
     }
 }
 
-// Ubicación aproximada con espacio reservado para el mapa
+// Por ahora el recuadro del mapa queda vacío (se agregará con Mapbox).
 @Composable
-private fun PostLocation(post: PostDetailInfo) {
+private fun PostLocation(post: PostDetailUi) {
     Column {
-        Text("Ubicación aproximada", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
+        SectionTitle(stringResource(R.string.post_detail_location))
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Espacio del mapa (aún no se implementa)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .background(FondoAviso, RoundedCornerShape(16.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Aquí irá el mapa", fontSize = 13.sp, color = TextoMarron)
-        }
-
+        LocationMapPlaceholder(onSetLocationClick = null, height = 140.dp)
         Spacer(modifier = Modifier.height(8.dp))
-        DetailIconText(icon = Icons.Outlined.LocationOn, text = post.approxLocation, bold = true)
-    }
-}
-
-// Encabezado "Comentarios (8)" y la lista de comentarios
-@Composable
-private fun PostComments(totalComments: Int, comments: List<PostComment>) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Comentarios ($totalComments)", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = TextoMarron)
-            Text("Ver todos", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextoMarron)
-        }
-
-        // Un comentario por cada elemento de la lista
-        comments.forEach { comment -> CommentItem(comment) }
-    }
-}
-
-// Un comentario: avatar a la izquierda y contenido a la derecha
-@Composable
-private fun CommentItem(comment: PostComment) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Avatar(initials = comment.initials, size = 36.dp)
-
-        Column {
-            // Nombre y hora
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(comment.author, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextoMarron)
-                Text("· ${comment.timeAgo}", fontSize = 12.sp, color = TextoMarron.copy(alpha = 0.7f))
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(comment.text, fontSize = 14.sp, color = TextoMarron)
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // "Me gusta" y "Responder" (aún sin acción)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = TextoMarron, modifier = Modifier.size(16.dp))
-                    Text("${comment.likes}", fontSize = 12.sp, color = TextoMarron)
-                }
-                Text("Responder", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextoMarron)
-            }
-        }
-    }
-}
-
-// Barra fija de abajo para escribir un comentario
-@Composable
-private fun CommentInputBar(
-    userInitials: String,
-    text: String,
-    onTextChange: (String) -> Unit,
-    onSend: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(FondoMarron)                   // Fondo marrón de la barra
-            .navigationBarsPadding()                   // El marrón llega hasta abajo, sin tapar botones del sistema
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Avatar del usuario
-        Avatar(initials = userInitials, size = 36.dp)
-
-        // Campo de texto en forma de pastilla
-        OutlinedTextField(
-            value = text,
-            onValueChange = onTextChange,
-            modifier = Modifier.weight(1f),
-            placeholder = { Text("Escribe un comentario...", fontSize = 14.sp) },
-            singleLine = true,
-            shape = RoundedCornerShape(50),
-            // Botón redondo amarillo de enviar, dentro del campo
-            trailingIcon = {
-                Surface(onClick = onSend, shape = CircleShape, color = ItemSeleccionado, modifier = Modifier.size(32.dp)) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.ArrowUpward, contentDescription = "Enviar", tint = TextoMarron, modifier = Modifier.size(18.dp))
-                    }
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FondoClaro,
-                unfocusedContainerColor = FondoClaro,
-                focusedBorderColor = Color.Transparent,     // Sin borde, como en el diseño
-                unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = TextoMarron,
-                unfocusedTextColor = TextoMarron
-            )
+        DetailIconText(
+            icon = Icons.Outlined.LocationOn,
+            text = listOf(post.address, post.city, post.country).filter { it.isNotBlank() }.joinToString(", "),
+            bold = true,
         )
     }
 }
 
-// Círculo amarillo con las iniciales de una persona
+// Vista previa de comentarios: los primeros tres, cada uno con su hilo, y "Ver todos" para la pantalla completa.
 @Composable
-private fun Avatar(initials: String, size: Dp) {
-    Box(
-        modifier = Modifier.size(size).background(ItemSeleccionado, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(initials, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextoMarron)
+private fun PostCommentsPreview(
+    totalComments: Int,
+    uiState: PostDetailUiState,
+    canComment: Boolean,
+    actions: PostDetailActions,
+) {
+    val comments = uiState.comments
+    val onSeeAll = actions.onOpenComments
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionTitle(stringResource(R.string.post_detail_comments, totalComments))
+            if (totalComments > 0) {
+                TextButton(onClick = onSeeAll) {
+                    Text(
+                        stringResource(R.string.post_detail_see_all),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = AppTheme.colors.textLink,
+                    )
+                }
+            }
+        }
+
+        if (comments.isEmpty()) {
+            StatusMessage(
+                text = stringResource(
+                    if (canComment) R.string.post_detail_no_comments else R.string.post_detail_comments_closed
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+            )
+        }
+
+        // "Ver N respuestas" va debajo de cada comentario; "Responder" usa la barra de abajo.
+        comments.forEach { comment ->
+            CommentThread(
+                comment = comment,
+                replies = uiState.replies,
+                expanded = uiState.expanded,
+                onLike = actions.onCommentLike,
+                onReply = actions.onReply,
+                onToggleReplies = actions.onToggleReplies,
+                canReply = canComment,
+            )
+        }
     }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = AppTheme.colors.textPrimary,
+        modifier = Modifier.semantics { heading() },
+    )
 }
 
 // Línea con ícono a la izquierda y texto a la derecha, con el tamaño propio del detalle
@@ -500,13 +647,89 @@ private fun DetailIconText(icon: ImageVector, text: String, bold: Boolean = fals
         iconSize = 18.dp,
         style = LocalTextStyle.current.copy(
             fontSize = 14.sp,
-            fontWeight = if (bold) FontWeight.Bold else FontWeight.Medium
-        )
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Medium,
+        ),
     )
 }
 
-@Preview(showBackground = true)
+// "Armenia, Centro • 1.2 km" (la distancia solo si ambos tienen coordenadas).
 @Composable
-fun PostDetailScreenPreview() {
-    PostDetailScreen(postId = "1")
+private fun locationText(post: PostDetailUi): String {
+    val place = listOf(post.city, post.address).filter { it.isNotBlank() }.joinToString(", ")
+    val distance = post.distanceKm?.let { stringResource(R.string.home_distance_km, String.format(Locale.US, "%.1f", it)) }
+    return listOfNotNull(place.ifBlank { null }, distance).joinToString(" • ")
+}
+
+// Menos de 24 horas se muestra en horas; desde ahí, en días.
+@Composable
+private fun agoText(ageHours: Int): String =
+    if (ageHours < 24) {
+        pluralStringResource(R.plurals.common_time_hours_ago, ageHours, ageHours)
+    } else {
+        val days = ageHours / 24
+        pluralStringResource(R.plurals.common_time_days_ago, days, days)
+    }
+
+@Composable
+private fun sizeText(size: AnimalSize?): String = when (size) {
+    null -> stringResource(R.string.post_detail_unknown)
+    AnimalSize.SMALL -> stringResource(R.string.home_size_small)
+    AnimalSize.MEDIUM -> stringResource(R.string.home_size_medium)
+    AnimalSize.LARGE -> stringResource(R.string.home_size_large)
+}
+
+@Composable
+private fun vaccinesText(vaccinated: Boolean?): String = when (vaccinated) {
+    true -> stringResource(R.string.post_detail_vaccines_yes)
+    false -> stringResource(R.string.post_detail_vaccines_no)
+    null -> stringResource(R.string.post_detail_unknown)
+}
+
+@Composable
+private fun detailMessageText(message: DetailMessage): String = stringResource(
+    when (message) {
+        DetailMessage.INTEREST_SENT -> R.string.post_detail_msg_interest_sent
+        DetailMessage.ALREADY_REQUESTED -> R.string.post_detail_msg_already_requested
+        DetailMessage.ACTION_ERROR -> R.string.post_detail_msg_error
+        DetailMessage.COMMENT_ERROR -> R.string.post_detail_msg_comment_error
+    }
+)
+
+// Datos de ejemplo solo para las previews.
+private val previewPost = PostDetailUi(
+    id = "p1", photoUrls = emptyList(), categoryName = "Adopción", isVerified = true,
+    title = "Luna busca un hogar lleno de amor", city = "Bogotá", address = "Chapinero", country = "Colombia",
+    distanceKm = 1.2, ageHours = 72, animalTypeName = "Perro", breed = "Mestiza (Labrador)",
+    size = AnimalSize.MEDIUM, vaccinated = true,
+    description = "Luna es una perrita mestiza de aproximadamente 2 años. Es cariñosa, juguetona y se lleva muy bien con niños y otros perros.",
+    commentCount = 8, importantCount = 12, isPublic = true, allowsAdoption = true, isFinished = false,
+)
+
+private val previewComments = listOf(
+    CommentUi("c1", null, 0, "u3", "María García", null, "¡Qué hermosa Luna! ¿Tienen horarios de visita?",
+        null, 120, 3, 1, isLiked = false, isOwn = false, isDeleted = false, isEdited = false),
+    CommentUi("c2", null, 0, "u4", "Carlos Rodríguez", null, "Ya contacté a la fundación. Recomiendo visitarla.",
+        null, 300, 7, 0, isLiked = true, isOwn = false, isDeleted = false, isEdited = false),
+)
+
+@Preview(name = "Publicación ajena", showBackground = true, heightDp = 1700)
+@Composable
+private fun PostDetailVisitorPreview() {
+    PetAdoptionAppTheme {
+        PostDetailContent(
+            uiState = PostDetailUiState(post = previewPost, comments = previewComments, isLoading = false, viewerName = "ana_77"),
+            actions = PostDetailActions(),
+        )
+    }
+}
+
+@Preview(name = "Mi publicación", showBackground = true, heightDp = 1700)
+@Composable
+private fun PostDetailOwnerPreview() {
+    PetAdoptionAppTheme {
+        PostDetailContent(
+            uiState = PostDetailUiState(post = previewPost, comments = previewComments, isOwner = true, isLoading = false),
+            actions = PostDetailActions(),
+        )
+    }
 }

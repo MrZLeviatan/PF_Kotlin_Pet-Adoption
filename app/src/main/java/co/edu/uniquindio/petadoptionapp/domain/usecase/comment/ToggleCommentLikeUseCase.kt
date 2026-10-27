@@ -7,7 +7,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
 Documenta el caso de uso que da o quita el "me gusta" a un comentario.
-No se permite dar like al propio comentario, así no se inflan los puntos de reputación.
+Un solo "me gusta" por persona y comentario: el id del registro es "comentarioId_usuarioId",
+así que tocar de nuevo lo quita en lugar de sumar otro. Como en Facebook, también se puede
+dar "me gusta" al comentario propio (los "me gusta" no dan puntos de reputación).
  */
 class ToggleCommentLikeUseCase(
     // Inyecta el repositorio de comentarios.
@@ -24,13 +26,9 @@ class ToggleCommentLikeUseCase(
 
         // El comentario debe existir y seguir activo.
         // Busca el comentario activo por su ID y retorna un fallo si no existe o no está activo.
-        val comment = commentRepository.findById(postId, commentId)
+        commentRepository.findById(postId, commentId)
             ?.takeIf { it.status == CommentStatus.ACTIVE }
             ?: return Result.failure(CommentException.CommentNotFound)
-
-        // No se da like al propio comentario.
-        // Comprueba si el usuario es el autor del comentario y retorna un fallo si intenta dar me gusta a su propio comentario.
-        if (comment.authorId == session.id) return Result.failure(CommentException.CannotLikeOwnComment)
 
         // Pendiente: puntos al autor (PointRules) solo cuando el resultado sea `true`.
         // Alterna el estado del "me gusta" en el repositorio utilizando el ID del usuario y retorna el resultado.

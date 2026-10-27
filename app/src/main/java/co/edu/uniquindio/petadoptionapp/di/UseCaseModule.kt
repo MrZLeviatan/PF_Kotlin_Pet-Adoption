@@ -47,6 +47,17 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.SearchUsersUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateSettingsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetMyPostsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.FinishPostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.DeletePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetCommentsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.CreateCommentUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.ToggleCommentLikeUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetLikedCommentsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.SendAdoptionInterestUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.GetMyAdoptionRequestUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -311,6 +322,90 @@ object UseCaseModule {
         userRepository: UserRepository,
         authRepository: AuthRepository,
     ): GetUserPostsUseCase = GetUserPostsUseCase(postRepository, userRepository, authRepository)
+
+
+    // Mis publicaciones y detalle
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyPostsUseCase(
+        postRepository: PostRepository,
+    ): GetMyPostsUseCase = GetMyPostsUseCase(postRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesFinishPostUseCase(
+        postRepository: PostRepository,
+        notify: NotifyUseCase,
+        awardPoints: AwardPointsUseCase,
+    ): FinishPostUseCase = FinishPostUseCase(postRepository, notify, awardPoints)
+
+    @Provides
+    @ViewModelScoped
+    fun providesDeletePostUseCase(
+        postRepository: PostRepository,
+    ): DeletePostUseCase = DeletePostUseCase(postRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetPostDetailUseCase(
+        postRepository: PostRepository,
+    ): GetPostDetailUseCase = GetPostDetailUseCase(postRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesSendAdoptionInterestUseCase(
+        chatRepository: ChatRepository,
+        postRepository: PostRepository,
+        catalogRepository: CatalogRepository,
+        requireUser: RequireUserUseCase,
+        notify: NotifyUseCase,
+    ): SendAdoptionInterestUseCase =
+        SendAdoptionInterestUseCase(chatRepository, postRepository, catalogRepository, requireUser, notify)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyAdoptionRequestUseCase(
+        chatRepository: ChatRepository,
+        requireUser: RequireUserUseCase,
+    ): GetMyAdoptionRequestUseCase = GetMyAdoptionRequestUseCase(chatRepository, requireUser)
+
+
+    // Comentarios
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetCommentsUseCase(
+        commentRepository: CommentRepository,
+        authRepository: AuthRepository,
+        getPostDetail: GetPostDetailUseCase,
+    ): GetCommentsUseCase = GetCommentsUseCase(commentRepository, authRepository, getPostDetail)
+
+    @Provides
+    @ViewModelScoped
+    fun providesCreateCommentUseCase(
+        commentRepository: CommentRepository,
+        postRepository: PostRepository,
+        userRepository: UserRepository,
+        requireUser: RequireUserUseCase,
+        notify: NotifyUseCase,
+        awardPoints: AwardPointsUseCase,
+    ): CreateCommentUseCase =
+        CreateCommentUseCase(commentRepository, postRepository, userRepository, requireUser, notify, awardPoints)
+
+    @Provides
+    @ViewModelScoped
+    fun providesToggleCommentLikeUseCase(
+        commentRepository: CommentRepository,
+        requireUser: RequireUserUseCase,
+    ): ToggleCommentLikeUseCase = ToggleCommentLikeUseCase(commentRepository, requireUser)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetLikedCommentsUseCase(
+        commentRepository: CommentRepository,
+        requireUser: RequireUserUseCase,
+    ): GetLikedCommentsUseCase = GetLikedCommentsUseCase(commentRepository, requireUser)
 
 
     // Home Moderador

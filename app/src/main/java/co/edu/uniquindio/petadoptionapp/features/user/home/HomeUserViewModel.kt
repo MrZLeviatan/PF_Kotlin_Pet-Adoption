@@ -143,6 +143,15 @@ class HomeUserViewModel @Inject constructor(
     // Recarga el contador de la campana; se llama cada vez que la pantalla vuelve a primer plano.
     fun refreshUnreadCount() = loadUnreadCount()
 
+    /**
+     Se llama al volver a la pantalla: recarga el feed (votos "Es importante" y contadores
+     que pudieron cambiar en el detalle) y la campana. La búsqueda escrita se conserva.
+     */
+    fun refresh() {
+        loadFeed()
+        loadUnreadCount()
+    }
+
     fun onQueryChange(value: String) {
         val searchingUsers = value.trimStart().startsWith("@")
         _uiState.update { it.copy(query = value, isSearchingUsers = searchingUsers) }
