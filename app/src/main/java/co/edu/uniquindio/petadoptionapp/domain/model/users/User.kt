@@ -24,7 +24,7 @@ data class User (
     val account: Account = Account(role = UserRole.USER),
     val name: String = "",
     val phone: String = "",
-    val photoUrl: String? = "",
+    val photoUrl: String? = "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
     // Locación geográfica del usuario.
     val location: Location = Location(),
     // Reputación (métricas) del usuario.

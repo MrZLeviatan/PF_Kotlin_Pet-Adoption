@@ -22,6 +22,7 @@ Pantalla contenedora: lee el rol de la sesión y muestra la barra y las pantalla
 fun MainScreen(
     onCreatePost: () -> Unit = {},
     onPostClick: (String) -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val role by viewModel.role.collectAsStateWithLifecycle()
@@ -33,7 +34,8 @@ fun MainScreen(
             MainContent(
                 role = currentRole,
                 onCreatePost = onCreatePost,
-                onPostClick = onPostClick
+                onPostClick = onPostClick,
+                onNotificationsClick = onNotificationsClick
             )
         }
     }
@@ -44,7 +46,8 @@ fun MainScreen(
 private fun MainContent(
     role: UserRole,
     onCreatePost: () -> Unit,
-    onPostClick: (String) -> Unit
+    onPostClick: (String) -> Unit,
+    onNotificationsClick: () -> Unit
 ) {
     // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
@@ -89,7 +92,9 @@ private fun MainContent(
             navController = navController,
             padding = padding,
             role = role,
-            onPostClick = onPostClick
+            onPostClick = onPostClick,
+            onNotificationsClick = onNotificationsClick
+
         )
     }
 }
@@ -97,11 +102,11 @@ private fun MainContent(
 @Preview(name = "Usuario", showBackground = true)
 @Composable
 private fun MainUserPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}) }
 }
 
 @Preview(name = "Moderador", showBackground = true)
 @Composable
 private fun MainModeratorPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}) }
 }

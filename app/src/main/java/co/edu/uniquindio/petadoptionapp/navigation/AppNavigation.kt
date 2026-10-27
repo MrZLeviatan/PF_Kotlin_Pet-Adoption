@@ -10,6 +10,7 @@ import co.edu.uniquindio.petadoptionapp.features.auth.newpassword.NewPasswordScr
 import co.edu.uniquindio.petadoptionapp.features.auth.recoverpassword.RecoverPasswordScreen
 import co.edu.uniquindio.petadoptionapp.features.auth.register.RegisterScreen
 import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
+import co.edu.uniquindio.petadoptionapp.features.notification.NotificationsScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
@@ -62,6 +63,13 @@ fun AppNavigation() {
             )
         }
 
+        composable<MainRoutes.Notifications> {
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenPost = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+            )
+        }
+
         composable<MainRoutes.RecoverPassword> {
             RecoverPasswordScreen(
                 onBack = { navController.popBackStack() },
@@ -88,7 +96,8 @@ fun AppNavigation() {
         composable<MainRoutes.Main> {
             MainScreen(
                 onCreatePost = { navController.navigate(MainRoutes.CreatePost) },
-                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) },
+                onNotificationsClick = { navController.navigate(MainRoutes.Notifications) }
             )
         }
 

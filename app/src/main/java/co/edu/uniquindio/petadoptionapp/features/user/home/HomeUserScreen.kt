@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Pets
@@ -40,10 +41,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
@@ -69,25 +75,51 @@ private val ScreenHorizontalPadding = 16.dp
 /**
 Pantalla de inicio del usuario.
 
-Conecta el [HomeUserViewModel] con la UI: observa el estado y reenvía las acciones.
-[HomeUserContent] solo dibuja.
+Conecta el [HomeUserViewModel] con la UI: observa el estado, reenvía las acciones
+y reacciona a los eventos de un solo uso. [HomeUserContent] solo dibuja.
  */
 @Composable
 fun HomeUserScreen(
     padding: PaddingValues = PaddingValues(),
     onPostClick: (String) -> Unit = {},
     onUserClick: (String) -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     viewModel: HomeUserViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val importantErrorMessage = stringResource(R.string.home_error_important)
 
-    HomeUserContent(
-        state = state,
-        padding = padding,
-        onQueryChange = viewModel::onQueryChange,
-        onPostClick = onPostClick,
-        onUserClick = onUserClick
-    )
+    // Cada vez que la pantalla vuelve a primer plano, recarga el contador de no leídas.
+    LifecycleResumeEffect(Unit) {
+        viewModel.refreshUnreadCount()
+        onPauseOrDispose { }
+    }
+
+    // Escucha los eventos de un solo uso.
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                HomeUserEvent.ImportantError -> snackbarHostState.showSnackbar(importantErrorMessage)
+            }
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        HomeUserContent(
+            state = state,
+            padding = padding,
+            onQueryChange = viewModel::onQueryChange,
+            onPostClick = onPostClick,
+            onUserClick = onUserClick,
+            onNotificationsClick = onNotificationsClick,
+            onImportantClick = viewModel::onImportantClick
+        )
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(padding)
+        )
+    }
 }
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
@@ -97,7 +129,9 @@ private fun HomeUserContent(
     padding: PaddingValues,
     onQueryChange: (String) -> Unit,
     onPostClick: (String) -> Unit,
-    onUserClick: (String) -> Unit
+    onUserClick: (String) -> Unit,
+    onNotificationsClick: () -> Unit,
+    onImportantClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -105,14 +139,18 @@ private fun HomeUserContent(
             .background(AppTheme.colors.background)
             .padding(padding)
     ) {
-        HomeHeader(userName = state.userName, city = state.city, notifications = state.notifications)
+        HomeHeader(
+            userName = state.userName,
+            city = state.city,
+            notifications = state.notifications,
+            onNotificationsClick = onNotificationsClick
+        )
 
         SearchField(query = state.query, onQueryChange = onQueryChange)
 
         when {
-            // Búsqueda de personas (empieza con @).
+            // Búsqueda de personas (el texto empieza con @).
             state.isSearchingUsers -> UserResults(users = state.users, onUserClick = onUserClick)
-            state.hasError -> CenteredMessage(stringResource(R.string.home_error_generic), isError = true)
             // Error al cargar el feed.
             state.hasError -> CenteredMessage(stringResource(R.string.home_error_generic), isError = true)
             // Buscó algo y no hay coincidencias.
@@ -127,7 +165,11 @@ private fun HomeUserContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(state.posts, key = { it.id }) { post ->
-                    FeedPostCard(post = post, onClick = { onPostClick(post.id) })
+                    FeedPostCard(
+                        post = post,
+                        onClick = { onPostClick(post.id) },
+                        onImportantClick = { onImportantClick(post.id) }
+                    )
                 }
             }
         }
@@ -136,10 +178,7 @@ private fun HomeUserContent(
 
 // Mensaje centrado que ocupa el espacio sobrante.
 @Composable
-private fun ColumnScopeMessage() {}
-
-@Composable
-private fun androidx.compose.foundation.layout.ColumnScope.CenteredMessage(text: String, isError: Boolean = false) {
+private fun ColumnScope.CenteredMessage(text: String, isError: Boolean = false) {
     Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
         Text(
             text = text,
@@ -149,68 +188,6 @@ private fun androidx.compose.foundation.layout.ColumnScope.CenteredMessage(text:
         )
     }
 }
-
-// Cabecera: saludo y ciudad a la izquierda, campana con contador a la derecha.
-@Composable
-private fun HomeHeader(userName: String, city: String, notifications: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = ScreenHorizontalPadding, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = stringResource(R.string.home_welcome, userName),
-                style = MaterialTheme.typography.headlineSmall,
-                color = AppTheme.colors.textPrimary
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = city,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppTheme.colors.textPrimary
-                )
-                Icon(
-                    imageVector = Icons.Filled.LocationOn,
-                    contentDescription = null,
-                    tint = AppTheme.colors.stateError,   // CAMBIAR si tienes un color propio para el pin
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-
-        // Botón circular con la campana.
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .background(AppTheme.colors.background, CircleShape)             // CAMBIAR: fondo claro
-                .border(1.dp, AppTheme.colors.textPrimary, CircleShape),        // CAMBIAR: color de borde
-            contentAlignment = Alignment.Center
-        ) {
-            BadgedBox(
-                modifier = Modifier.offset(x = (-1).dp),
-                badge = {
-                    // Sin notificaciones no se dibuja la insignia (evita mostrar un "0").
-                    if (notifications > 0) {
-                        Badge(
-                            containerColor = AppTheme.colors.textPrimary,       // CAMBIAR: color de acento
-                            contentColor = AppTheme.colors.background
-                        ) { Text(text = "$notifications") }
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = stringResource(R.string.home_notifications_description),
-                    tint = AppTheme.colors.textPrimary
-                )
-            }
-        }
-    }
-}
-
 
 // Lista de personas encontradas; al tocar una, abre su perfil.
 @Composable
@@ -250,8 +227,75 @@ private fun ColumnScope.UserResults(users: List<UserSummary>, onUserClick: (Stri
     }
 }
 
+// Cabecera: saludo y ciudad a la izquierda, campana con contador a la derecha.
+@Composable
+private fun HomeHeader(
+    userName: String,
+    city: String,
+    notifications: Int,
+    onNotificationsClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = ScreenHorizontalPadding, vertical = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = stringResource(R.string.home_welcome, userName),
+                style = MaterialTheme.typography.headlineSmall,
+                color = AppTheme.colors.textPrimary
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = city,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AppTheme.colors.textPrimary
+                )
+                Icon(
+                    imageVector = Icons.Filled.LocationOn,
+                    contentDescription = null,
+                    tint = AppTheme.colors.stateError,   // CAMBIAR si tienes un color propio para el pin
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
 
-// Buscador: el estado vive en el ViewModel.
+        // Botón circular con la campana; el clip va antes del clickable para que el efecto sea circular.
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onNotificationsClick)
+                .background(AppTheme.colors.background, CircleShape)        // CAMBIAR: fondo claro
+                .border(1.dp, AppTheme.colors.textPrimary, CircleShape),    // CAMBIAR: color de borde
+            contentAlignment = Alignment.Center
+        ) {
+            BadgedBox(
+                modifier = Modifier.offset(x = (-1).dp),
+                badge = {
+                    // Sin notificaciones no se dibuja la insignia (evita mostrar un "0").
+                    if (notifications > 0) {
+                        Badge(
+                            containerColor = AppTheme.colors.textPrimary,   // CAMBIAR: color de acento
+                            contentColor = AppTheme.colors.background
+                        ) { Text(text = "$notifications") }
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = stringResource(R.string.home_notifications_description),
+                    tint = AppTheme.colors.textPrimary
+                )
+            }
+        }
+    }
+}
+
+// Buscador de publicaciones (y de personas con @): el estado vive en el ViewModel.
 @Composable
 private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
     OutlinedTextField(
@@ -267,9 +311,9 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         singleLine = true,
         shape = RoundedCornerShape(24.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = AppTheme.colors.surface,
+            focusedContainerColor = AppTheme.colors.background,         // CAMBIAR: fondo del campo
             unfocusedContainerColor = AppTheme.colors.background,
-            focusedBorderColor = AppTheme.colors.textPrimary,
+            focusedBorderColor = AppTheme.colors.textPrimary,           // CAMBIAR: borde
             unfocusedBorderColor = AppTheme.colors.textPrimary
         )
     )
@@ -277,7 +321,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
 
 // Tarjeta de una publicación del feed.
 @Composable
-private fun FeedPostCard(post: FeedPost, onClick: () -> Unit) {
+private fun FeedPostCard(post: FeedPost, onClick: () -> Unit, onImportantClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -335,19 +379,30 @@ private fun FeedPostCard(post: FeedPost, onClick: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
 
-            // Botón "Es importante" (se conecta a ToggleImportantUseCase en el siguiente paso).
+            // Botón "Es importante": estrella llena y colores invertidos cuando ya votaste.
             Button(
-                onClick = { },
+                onClick = onImportantClick,
+                enabled = !post.isOwn,   // no se vota la propia publicación
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AppTheme.colors.stateSelected,
-                    contentColor = AppTheme.colors.textPrimary
-                )
+                    containerColor = if (post.voted) AppTheme.colors.textPrimary else AppTheme.colors.stateSelected,  // CAMBIAR: acento
+                    contentColor = if (post.voted) AppTheme.colors.background else AppTheme.colors.textPrimary
+                ),
+                border = BorderStroke(1.dp, AppTheme.colors.textPrimary)    // CAMBIAR: borde
             ) {
-                Icon(Icons.Outlined.StarBorder, contentDescription = null, modifier = Modifier.size(20.dp))
+                Icon(
+                    imageVector = if (post.voted) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.home_important_button), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    text = stringResource(
+                        if (post.voted) R.string.home_important_active else R.string.home_important_button
+                    ),
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
@@ -410,13 +465,30 @@ private fun HomeUserContentPreview() {
                 userName = "ana_77", city = "Armenia, Colombia", notifications = 2,
                 posts = listOf(
                     FeedPost("1", null, "Adopción", 1.2, "Perrito en adopción", "Perro", "Criollo",
-                        AnimalSize.MEDIUM, true, 3)
+                        AnimalSize.MEDIUM, true, 3),
+                    FeedPost("2", null, "Perdidos", 2.5, "Gato perdido", "Gato", "Mestizo",
+                        AnimalSize.SMALL, null, 4, voted = true)
                 )
             ),
             padding = PaddingValues(),
-            onQueryChange = {},
-            onPostClick = {},
-            onUserClick = {}
+            onQueryChange = {}, onPostClick = {}, onUserClick = {},
+            onNotificationsClick = {}, onImportantClick = {}
+        )
+    }
+}
+
+@Preview(name = "Búsqueda de personas", showBackground = true, heightDp = 600)
+@Composable
+private fun HomeUserSearchUsersPreview() {
+    PetAdoptionAppTheme {
+        HomeUserContent(
+            state = HomeUserUiState(
+                userName = "ana_77", query = "@lu", isSearchingUsers = true,
+                users = listOf(UserSummary("u2", "luis_9", null))
+            ),
+            padding = PaddingValues(),
+            onQueryChange = {}, onPostClick = {}, onUserClick = {},
+            onNotificationsClick = {}, onImportantClick = {}
         )
     }
 }
@@ -425,6 +497,11 @@ private fun HomeUserContentPreview() {
 @Composable
 private fun HomeUserEmptyPreview() {
     PetAdoptionAppTheme {
-        HomeUserContent(HomeUserUiState(userName = "ana_77"), PaddingValues(), {}, {}, {})
+        HomeUserContent(
+            state = HomeUserUiState(userName = "ana_77"),
+            padding = PaddingValues(),
+            onQueryChange = {}, onPostClick = {}, onUserClick = {},
+            onNotificationsClick = {}, onImportantClick = {}
+        )
     }
 }

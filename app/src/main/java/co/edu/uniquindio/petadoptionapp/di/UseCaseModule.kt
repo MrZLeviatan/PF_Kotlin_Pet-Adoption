@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.di
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.CatalogRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.CommentRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImportantVoteRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.NotificationRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.ReputationRepository
@@ -22,10 +23,17 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveAnimalType
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveCategoriesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.UpdateAnimalTypeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.UpdateCategoryUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyVotedPostIdsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.ToggleImportantUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.CountUnreadNotificationsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.GetNotificationsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkAllNotificationsReadUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkNotificationReadUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetFeedUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.LoadBadgesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.ObserveBadgesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.DeleteAccountUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetUserProfileUseCase
@@ -147,6 +155,82 @@ object UseCaseModule {
     fun providesRequireUserUseCase(
         authRepository: AuthRepository,
     ): RequireUserUseCase = RequireUserUseCase(authRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesToggleImportanUserUseCase(
+        voteRepository: ImportantVoteRepository,
+        postRepository: PostRepository,
+        requiredUser: RequireUserUseCase,
+        notify: NotifyUseCase,
+        awardPoints: AwardPointsUseCase,
+    ): ToggleImportantUseCase = ToggleImportantUseCase(voteRepository, postRepository, requiredUser, notify, awardPoints)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyVotedPostIdUseCase(
+        voteRepository: ImportantVoteRepository,
+        requiredUser: RequireUserUseCase,
+    ): GetMyVotedPostIdsUseCase = GetMyVotedPostIdsUseCase(voteRepository, requiredUser)
+
+
+
+    // Notificaciones
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetNotificationsUseCase(
+        notificationRepository: NotificationRepository,
+        authRepository: AuthRepository
+    ): GetNotificationsUseCase = GetNotificationsUseCase(notificationRepository, authRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesMarkNotificationReadUseCase(
+        notificationRepository: NotificationRepository,
+        authRepository: AuthRepository
+    ): MarkNotificationReadUseCase = MarkNotificationReadUseCase(notificationRepository, authRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesMarkAllNotificationsReadUseCase(
+        notificationRepository: NotificationRepository,
+        authRepository: AuthRepository
+    ): MarkAllNotificationsReadUseCase = MarkAllNotificationsReadUseCase(notificationRepository, authRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesLoadBadgesUseCase(
+        reputationRepository: ReputationRepository,
+    ): LoadBadgesUseCase = LoadBadgesUseCase(reputationRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesObserverBadgesUseCase(
+        reputationRepository: ReputationRepository,
+    ): ObserveBadgesUseCase = ObserveBadgesUseCase(reputationRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesNotifyUseCase(
+        notificationRepository: NotificationRepository,
+    ): NotifyUseCase = NotifyUseCase(notificationRepository)
+
+
+    @Provides
+    @ViewModelScoped
+    fun providesAwardPointsUseCase(
+        reputationRepository: ReputationRepository,
+        notify: NotifyUseCase
+    ): AwardPointsUseCase = AwardPointsUseCase(reputationRepository, notify)
+
 
 
     // Home Moderador

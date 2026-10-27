@@ -24,6 +24,8 @@ Cuando se conecte Firebase, esta información se carga una vez en Firestore y es
  */
 object SeedData {
 
+
+
     // Define los usuarios de prueba.
     val users = listOf(
         User(
@@ -143,30 +145,25 @@ object SeedData {
             BadgeRequirementType.COMMENTS_WRITTEN, 20)
     )
 
-    // Define las notificaciones de ejemplo para ana_77 (u1): mezcla leídas y sin leer.
+    // Define las notificaciones de ejemplo para ana_77 (u1): fechas relativas a "ahora".
+    private val now = System.currentTimeMillis()
+    private fun minutesAgo(minutes: Long) = now - minutes * 60_000L
+
     val notifications = listOf(
-        Notification(
-            id = "n1", recipientId = "u1", type = NotificationType.NEW_COMMENT,
-            actorId = "u2", actorName = "luis_9", postId = "p1", commentId = "c1",
-            read = false, createdAt = 5_000L
-        ),
-        Notification(
-            id = "n2", recipientId = "u1", type = NotificationType.POST_VERIFIED,
-            actorId = "m1", actorName = "mod_01", postId = "p1",
-            read = false, createdAt = 4_000L
-        ),
-        Notification(
-            id = "n3", recipientId = "u1", type = NotificationType.POST_IMPORTANT,
+        Notification(id = "n1", recipientId = "u1", type = NotificationType.NEW_COMMENT,
             actorId = "u2", actorName = "luis_9", postId = "p1",
-            read = false, createdAt = 3_000L
-        ),
-        Notification(
-            id = "n4", recipientId = "u1", type = NotificationType.BADGE_UNLOCKED,
-            extra = "first_post", read = true, createdAt = 2_000L
-        ),
-        Notification(
-            id = "n5", recipientId = "u1", type = NotificationType.LEVEL_UP,
-            extra = "PROTECTOR", read = true, createdAt = 1_000L
-        )
+            read = false, createdAt = minutesAgo(2)),
+        Notification(id = "n2", recipientId = "u1", type = NotificationType.POST_VERIFIED,
+            actorId = "m1", actorName = "mod_01", postId = "p1",
+            read = false, createdAt = minutesAgo(18)),
+        Notification(id = "n3", recipientId = "u1", type = NotificationType.POST_IMPORTANT,
+            actorId = "u2", actorName = "luis_9", postId = "p1",
+            read = false, createdAt = minutesAgo(120)),
+        Notification(id = "n4", recipientId = "u1", type = NotificationType.BADGE_UNLOCKED,
+            extra = "first_post", read = true, createdAt = minutesAgo(24 * 60)),
+        Notification(id = "n5", recipientId = "u1", type = NotificationType.LEVEL_UP,
+            extra = "PROTECTOR", read = true, createdAt = minutesAgo(3 * 24 * 60))
     )
+
+
 }

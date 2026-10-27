@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.data.repository.memory
 
+import co.edu.uniquindio.petadoptionapp.data.repository.send.SeedData
 import co.edu.uniquindio.petadoptionapp.domain.error.NotificationException
 import co.edu.uniquindio.petadoptionapp.domain.model.notification.Notification
 import co.edu.uniquindio.petadoptionapp.domain.repository.NotificationRepository
@@ -16,8 +17,9 @@ Simula la colección `notifications`. La lista guarda las más nuevas primero, a
 @Singleton
 class NotificationRepositoryImpl @Inject constructor() : NotificationRepository {
 
+
     // Guarda las notificaciones, de la más reciente a la más antigua.
-    private val notifications = MutableStateFlow<List<Notification>>(emptyList())
+    private val notifications = MutableStateFlow<List<Notification>>(SeedData.notifications.sortedByDescending { it.createdAt })
 
     override suspend fun create(notification: Notification): Result<Unit> {
         val saved = notification.copy(id = UUID.randomUUID().toString())
@@ -60,4 +62,6 @@ class NotificationRepositoryImpl @Inject constructor() : NotificationRepository 
         notifications.update { list -> list.filterNot { it.id == id } }
         return Result.success(Unit)
     }
+
+
 }

@@ -20,7 +20,8 @@ fun DashboardNavigation(
     navController: NavHostController,
     padding: PaddingValues,
     role: UserRole,
-    onPostClick: (String) -> Unit = {}
+    onPostClick: (String) -> Unit = {},
+    onNotificationsClick: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -32,7 +33,7 @@ fun DashboardNavigation(
     ) {
         // Usuario
         composable<DashboardRoutes.HomeUser> {
-            HomeUserScreen(padding = padding, onPostClick = onPostClick)
+            HomeUserScreen(padding = padding, onPostClick = onPostClick, onNotificationsClick = onNotificationsClick)
         }
         composable<DashboardRoutes.Explore> { PlaceholderScreen("Explore", padding) }
 

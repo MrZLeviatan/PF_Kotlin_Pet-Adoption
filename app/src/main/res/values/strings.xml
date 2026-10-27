@@ -104,6 +104,8 @@
         <string name="home_info_animal">%1$s • %2$s • %3$s</string>
         <string name="home_interested">%1$d personas interesadas</string>
         <string name="home_important_button">Es importante</string>
+        <string name="home_important_active">Marcada como importante</string>
+        <string name="home_error_important">No se pudo registrar tu voto. Intenta de nuevo.</string>
         <string name="home_vaccines_yes">Vacunas al día</string>
         <string name="home_vaccines_no">Sin vacunas al día</string>
         <string name="home_vaccines_unknown">Vacunas sin información</string>
@@ -115,6 +117,59 @@
         <string name="home_error_generic">No se pudo cargar el feed</string>
         <string name="home_users_empty">No se encontraron personas</string>
         <string name="home_user_photo_description">Foto de %1$s</string>
+
+
+    <!--Strings nativos de la pantalla Notificaciones-->
+        <string name="notifications_title">Notificaciones</string>
+        <string name="notifications_filter_all">Todas</string>
+        <string name="notifications_filter_unread">Sin leer</string>
+        <string name="notifications_filter_messages">Mensajes</string>
+        <string name="notifications_new_tag">Nuevo</string>
+        <string name="notifications_empty">No tienes notificaciones en esta categoría</string>
+        <string name="notifications_time_minutes">Hace %1$d min</string>
+        <string name="notifications_time_hours">Hace %1$d h</string>
+        <string name="notifications_time_yesterday">Ayer</string>
+        <plurals name="notifications_time_days">
+            <item quantity="one">Hace %1$d día</item>
+            <item quantity="other">Hace %1$d días</item>
+        </plurals>
+
+        <!-- Notificaciones: título y mensaje por tipo -->
+        <string name="notif_title_new_comment">Nuevo comentario</string>
+        <string name="notif_msg_new_comment">%1$s comentó tu publicación.</string>
+        <string name="notif_title_comment_reply">Respuesta a tu comentario</string>
+        <string name="notif_msg_comment_reply">%1$s respondió tu comentario.</string>
+        <string name="notif_title_post_verified">Publicación verificada</string>
+        <string name="notif_msg_post_verified">Un moderador verificó tu publicación. Ya aparece en el feed.</string>
+        <string name="notif_title_post_rejected">Publicación rechazada</string>
+        <string name="notif_msg_post_rejected">Motivo: %1$s</string>
+        <string name="notif_title_post_important">Tu publicación es importante</string>
+        <string name="notif_msg_post_important">%1$s marcó tu publicación como importante.</string>
+        <string name="notif_title_adoption_request">Solicitud de adopción</string>
+        <string name="notif_msg_adoption_request">%1$s está interesado en adoptar. Revisa tu chat.</string>
+        <string name="notif_title_adoption_response">Respuesta a tu solicitud</string>
+        <string name="notif_msg_adoption_accepted">%1$s aceptó tu solicitud de adopción.</string>
+        <string name="notif_msg_adoption_declined">%1$s rechazó tu solicitud de adopción.</string>
+        <string name="notif_title_post_finished">Publicación finalizada</string>
+        <string name="notif_msg_post_finished">Un moderador marcó tu publicación como resuelta.</string>
+        <string name="notif_title_badge">Nueva insignia</string>
+        <string name="notif_msg_badge">Desbloqueaste la insignia «%1$s».</string>
+        <string name="notif_title_level_up">¡Subiste de nivel!</string>
+        <string name="notif_msg_level_up">Ahora eres %1$s.</string>
+
+        <!-- Niveles (también se usarán en el perfil) -->
+        <string name="level_animal_friend">Amigo Animal</string>
+        <string name="level_protector">Protector</string>
+        <string name="level_guardian">Guardián</string>
+        <string name="level_pet_hero">Héroe de las Mascotas</string>
+
+        <string name="notifications_mark_all">Marcar todas como leídas</string>
+        <string name="notifications_load_more">Ver más</string>
+        <string name="notifications_error">No se pudieron cargar las notificaciones</string>
+        <string name="notif_someone">Alguien</string>
+
+
+
 
     <!--Strings de la pantalla Recuperar contraseña-->
     <string name="recover_title">Recuperar contraseña</string>
@@ -196,20 +251,6 @@
     <string name="my_posts_empty">No tienes publicaciones en esta categoría</string>
 
 
-    <!--Strings de la pantalla Notificaciones-->
-    <string name="notifications_title">Notificaciones</string>
-    <string name="notifications_filter_all">Todas</string>
-    <string name="notifications_filter_unread">Sin leer</string>
-    <string name="notifications_filter_messages">Mensajes</string>
-    <string name="notifications_new_tag">Nuevo</string>
-    <string name="notifications_empty">No tienes notificaciones en esta categoría</string>
-    <string name="notifications_time_minutes">Hace %1$d min</string>
-    <string name="notifications_time_hours">Hace %1$d h</string>
-    <string name="notifications_time_yesterday">Ayer</string>
-    <plurals name="notifications_time_days">
-        <item quantity="one">Hace %1$d día</item>
-        <item quantity="other">Hace %1$d días</item>
-    </plurals>
 
 
     <!--Comunes-->

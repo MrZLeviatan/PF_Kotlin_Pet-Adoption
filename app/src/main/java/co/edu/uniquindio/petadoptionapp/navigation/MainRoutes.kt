@@ -35,6 +35,8 @@ sealed class MainRoutes {
     @Serializable
     data object NewPassword : MainRoutes()
 
+    @Serializable data object Notifications : MainRoutes()
+
 
     // Ruta para la pantalla completa de creación de una nueva publicación (se muestra en pantalla completa sin barra inferior).
     @Serializable
@@ -47,6 +49,9 @@ sealed class MainRoutes {
     @Serializable data class UserProfile(val userId: String) : MainRoutes()
 
 }
+
+
+
 
 
 
