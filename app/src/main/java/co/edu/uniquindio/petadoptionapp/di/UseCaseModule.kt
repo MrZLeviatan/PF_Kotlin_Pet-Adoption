@@ -58,6 +58,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.ToggleCommentLike
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetLikedCommentsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.SendAdoptionInterestUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.GetMyAdoptionRequestUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -406,6 +407,15 @@ object UseCaseModule {
         commentRepository: CommentRepository,
         requireUser: RequireUserUseCase,
     ): GetLikedCommentsUseCase = GetLikedCommentsUseCase(commentRepository, requireUser)
+
+
+    // Cerrar sesión
+
+    @Provides
+    @ViewModelScoped
+    fun providesLogoutUseCase(
+        authRepository: AuthRepository,
+    ): LogoutUseCase = LogoutUseCase(authRepository)
 
 
     // Home Moderador

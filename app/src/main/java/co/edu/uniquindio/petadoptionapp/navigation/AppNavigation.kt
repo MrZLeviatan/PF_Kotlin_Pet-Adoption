@@ -172,14 +172,17 @@ fun AppNavigation() {
 
         // Configuración (sin barra).
         composable<MainRoutes.Settings> {
+            // Sin sesión no se puede volver a ninguna pantalla anterior: se limpia toda la pila
+            // (y con ella los datos de la sesión que guardaban sus ViewModels).
+            val backToLogin = {
+                navController.navigate(MainRoutes.Login) {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            }
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-                onAccountDeleted = {
-                    navController.navigate(MainRoutes.Login) {
-                        // Sin sesión no se puede volver a ninguna pantalla anterior: se limpia toda la pila.
-                        popUpTo(navController.graph.id) { inclusive = true }
-                    }
-                }
+                onAccountDeleted = backToLogin,
+                onLoggedOut = backToLogin
             )
         }
 
@@ -206,9 +209,10 @@ fun AppNavigation() {
                     }
                     context.startActivity(Intent.createChooser(intent, null))
                 },
-                onOpenComments = { postId -> navController.navigate(MainRoutes.PostComments(postId)) },
+                onOpenComments = { postId, replyTo -> navController.navigate(MainRoutes.PostComments(postId, replyTo)) },
                 // TODO: pantalla de editar publicación (UpdatePostUseCase ya existe).
-                onEditPost = { }
+                onEditPost = { },
+                onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) }
             )
         }
 

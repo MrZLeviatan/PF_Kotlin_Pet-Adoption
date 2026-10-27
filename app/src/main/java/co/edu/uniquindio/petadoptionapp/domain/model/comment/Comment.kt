@@ -2,8 +2,10 @@ package co.edu.uniquindio.petadoptionapp.domain.model.comment
 
 
 /**
- Comentario de una publicación, que puede tener respuestas (y respuestas
- de respuestas) hasta [MAX_DEPTH] niveles.
+ Comentario de una publicación, que puede tener respuestas en un solo nivel
+ ([MAX_DEPTH]), como en Facebook: todas las respuestas de un hilo cuelgan del
+ comentario principal. Responder a una respuesta la deja en ese mismo hilo y
+ [replyToUserName] indica a quién se contesta ("@alias").
 
  Se guarda en la subcolección `posts/{postId}/comments`. Todos los
  niveles viven en la MISMA subcolección; la jerarquía se arma con
@@ -17,9 +19,9 @@ data class Comment(
     val postId: String = "",
     // Id del comentario al que responde; nulo si es principal.
     val parentId: String? = null,
-    // Nivel: 0 principales, 1 respuesta, 2 respuestas de respuesta...
+    // Nivel: 0 principales, 1 respuestas (no hay más niveles).
     val depth: Int = 0,
-    // Alias de la persona a quien se responde; nulo en comentarios principales. Sirve para mostrar "en respuesta a @alias".
+    // Alias de la persona a quien se responde cuando se contesta a otra respuesta del hilo; nulo en los demás casos. Sirve para mostrar "@alias".
     val replyToUserName: String? = null,
     // Id de quien comenta (`Account.id`).
     val authorId: String = "",
@@ -33,7 +35,7 @@ data class Comment(
     val status: CommentStatus = CommentStatus.ACTIVE,
     // Cantidad de "me gusta".
     val likeCount: Int = 0,
-    // Cantidad de respuestas directas.
+    // Cantidad de respuestas del hilo (en un comentario principal son todas las respuestas).
     val replyCount: Int = 0,
     // `true` si el autor lo editó después de publicarlo.
     val edited: Boolean = false,
@@ -71,8 +73,8 @@ data class Comment(
         // Longitud máxima del texto.
         const val MAX_LENGTH = 500
 
-        // Niveles máximos de anidación visual.
-        const val MAX_DEPTH = 3
+        // Niveles de respuesta: 1 = respuestas solo bajo el comentario principal (estilo Facebook).
+        const val MAX_DEPTH = 1
 
         // Texto mostrado en lugar de un comentario eliminado.
         const val DELETED_PLACEHOLDER = "Comentario eliminado"
@@ -103,10 +105,10 @@ data class Comment(
         )
 
         /**
-         Crea una respuesta a [parent]. Si el padre ya está en el último
-         nivel ([MAX_DEPTH]), la respuesta se "aplana": queda en ese mismo
-         nivel, bajo el mismo padre, y [replyToUserName] indica a quién
-         se contesta.
+         Crea una respuesta a [parent]. Si el padre ya es una respuesta (está en
+         el último nivel, [MAX_DEPTH]), la nueva se "aplana": queda en el mismo
+         hilo, bajo el comentario principal, y [replyToUserName] indica a quién
+         se contesta. Al responder al principal no hace falta "@alias".
          */
         fun createReply(
             id: String,
@@ -123,7 +125,7 @@ data class Comment(
                 postId = parent.postId,
                 parentId = if (flatten) parent.parentId else parent.id,
                 depth = if (flatten) parent.depth else parent.depth + 1,
-                replyToUserName = parent.authorName,
+                replyToUserName = if (flatten) parent.authorName else null,
                 authorId = authorId,
                 authorName = authorName,
                 authorPhotoUrl = authorPhotoUrl,

@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -34,6 +35,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.DangerButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppConfirmDialog
 import co.edu.uniquindio.petadoptionapp.core.component.card.SectionCard
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppFormDialog
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
@@ -62,15 +65,18 @@ No decide a dónde navegar: avisa y AppNavigation resuelve el destino.
 fun SettingsScreen(
     onBack: () -> Unit,
     onAccountDeleted: () -> Unit,
+    onLoggedOut: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnAccountDeleted by rememberUpdatedState(onAccountDeleted)
+    val currentOnLoggedOut by rememberUpdatedState(onLoggedOut)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 SettingsEvent.AccountDeleted -> currentOnAccountDeleted()
+                SettingsEvent.LoggedOut -> currentOnLoggedOut()
             }
         }
     }
@@ -92,6 +98,9 @@ fun SettingsScreen(
             onDeletePasswordChange = viewModel::onDeletePasswordChange,
             onDeleteConfirm = viewModel::onDeleteConfirm,
             onDeleteDialogDismiss = viewModel::onDeleteDialogDismiss,
+            onLogoutClick = viewModel::onLogoutClick,
+            onLogoutConfirm = viewModel::onLogoutConfirm,
+            onLogoutDismiss = viewModel::onLogoutDismiss,
         ),
     )
 }
@@ -112,6 +121,9 @@ private data class SettingsActions(
     val onDeletePasswordChange: (String) -> Unit = {},
     val onDeleteConfirm: () -> Unit = {},
     val onDeleteDialogDismiss: () -> Unit = {},
+    val onLogoutClick: () -> Unit = {},
+    val onLogoutConfirm: () -> Unit = {},
+    val onLogoutDismiss: () -> Unit = {},
 )
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza.
@@ -175,10 +187,17 @@ private fun SettingsContent(
                 )
             }
 
+            // Cerrar sesión va arriba de "Eliminar cuenta": es la salida normal, no destructiva.
+            SecondaryButton(
+                text = stringResource(R.string.settings_logout),
+                icon = Icons.AutoMirrored.Outlined.Logout,
+                onClick = actions.onLogoutClick,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+
             DangerButton(
                 text = stringResource(R.string.settings_delete_account),
                 onClick = actions.onDeleteAccountClick,
-                modifier = Modifier.padding(top = 8.dp),
             )
 
             Text(
@@ -197,6 +216,17 @@ private fun SettingsContent(
 
     uiState.deleteDialog?.let { dialog ->
         DeleteAccountDialog(dialog = dialog, actions = actions)
+    }
+
+    if (uiState.showLogoutDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.settings_logout_title),
+            message = stringResource(R.string.settings_logout_message),
+            confirmText = stringResource(R.string.settings_logout),
+            cancelText = stringResource(R.string.common_cancel),
+            onConfirm = actions.onLogoutConfirm,
+            onDismiss = actions.onLogoutDismiss,
+        )
     }
 
     if (uiState.showPasswordSuccess) {

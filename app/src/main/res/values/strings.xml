@@ -393,6 +393,12 @@
     <string name="post_detail_msg_error">No se pudo completar la acción. Intenta de nuevo.</string>
     <string name="post_detail_msg_comment_error">No se pudo publicar el comentario. Intenta de nuevo.</string>
     <string name="post_finished_notice">Esta publicación fue finalizada: ya no se puede editar ni eliminar.</string>
+    <string name="post_detail_published_by">Publicado por</string>
+    <string name="post_detail_view_profile">Ver perfil</string>
+    <string name="post_detail_you">Tú</string>
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logout_title">¿Cerrar sesión?</string>
+    <string name="settings_logout_message">Volverás a la pantalla de inicio de sesión.</string>
     <string name="post_share_text">Mira esta publicación en Huellas: %1$s</string>
 
     <!-- Comentarios -->

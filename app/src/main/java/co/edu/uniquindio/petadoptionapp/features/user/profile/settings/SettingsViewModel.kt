@@ -7,6 +7,7 @@ import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.ProfileVisibility
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSettings
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ChangePasswordUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.DeleteAccountUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateSettingsUseCase
@@ -53,12 +54,17 @@ data class SettingsUiState(
     val passwordDialog: PasswordDialogState? = null,
     val showPasswordSuccess: Boolean = false,
     val deleteDialog: DeleteDialogState? = null,
+    // Confirmación de "Cerrar sesión".
+    val showLogoutDialog: Boolean = false,
 )
 
 // Eventos de un solo uso.
 sealed interface SettingsEvent {
     // La cuenta se eliminó (o quedó sin sesión): la navegación vuelve al login.
     data object AccountDeleted : SettingsEvent
+
+    // Se cerró la sesión: la navegación vuelve al login y limpia las pantallas abiertas.
+    data object LoggedOut : SettingsEvent
 }
 
 @HiltViewModel
@@ -67,6 +73,7 @@ class SettingsViewModel @Inject constructor(
     private val updateSettings: UpdateSettingsUseCase,
     private val changePassword: ChangePasswordUseCase,
     private val deleteAccount: DeleteAccountUseCase,
+    private val logout: LogoutUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -164,6 +171,20 @@ class SettingsViewModel @Inject constructor(
 
     private fun updatePasswordDialog(change: (PasswordDialogState) -> PasswordDialogState) =
         _uiState.update { state -> state.copy(passwordDialog = state.passwordDialog?.let(change)) }
+
+    // --- Cerrar sesión ---
+
+    fun onLogoutClick() = _uiState.update { it.copy(showLogoutDialog = true) }
+
+    fun onLogoutDismiss() = _uiState.update { it.copy(showLogoutDialog = false) }
+
+    fun onLogoutConfirm() {
+        _uiState.update { it.copy(showLogoutDialog = false) }
+        viewModelScope.launch {
+            logout()
+            _events.send(SettingsEvent.LoggedOut)
+        }
+    }
 
     // --- Eliminar cuenta ---
 

@@ -51,8 +51,11 @@ class CommentsViewModel @Inject constructor(
     private val createComment: CreateCommentUseCase,
 ) : ViewModel() {
 
-    // Llega de la ruta MainRoutes.PostComments(postId).
+    // Llega de la ruta MainRoutes.PostComments(postId, replyToCommentId).
     private val postId: String = savedStateHandle["postId"] ?: ""
+
+    // Si se llegó desde "Responder" en el detalle: el comentario a responder (se usa una sola vez).
+    private var pendingReplyToId: String? = savedStateHandle["replyToCommentId"]
 
     private val _uiState = MutableStateFlow(CommentsUiState())
     val uiState: StateFlow<CommentsUiState> = _uiState.asStateFlow()
@@ -159,10 +162,25 @@ class CommentsViewModel @Inject constructor(
             it.copy(postTitle = post.title, totalComments = post.commentCount, canComment = post.showsInPublicFeed())
         }
         publish(canLoadMore = lastPageSize >= PAGE_SIZE)
+
+        // Llegó desde "Responder": deja lista la respuesta a ese comentario (la pantalla lo resalta y baja hasta él).
+        pendingReplyToId?.let { id ->
+            pendingReplyToId = null
+            _uiState.value.comments.firstOrNull { it.id == id }?.let { target ->
+                _uiState.update { it.copy(replyingTo = target) }
+            }
+        }
     }
 
+    // Todas las respuestas del hilo (pide páginas hasta terminar), así "Ver respuestas" las muestra completas.
     private suspend fun loadReplies(parentId: String) {
-        getComments(postId, parentCommentId = parentId).onSuccess { repliesByParent[parentId] = it }
+        val all = mutableListOf<Comment>()
+        do {
+            val page = getComments(postId, parentCommentId = parentId, afterCommentId = all.lastOrNull()?.id)
+                .getOrElse { return }
+            all += page
+        } while (page.size >= PAGE_SIZE)
+        repliesByParent[parentId] = all
     }
 
     // Traduce lo leído al estado de la pantalla.

@@ -55,9 +55,20 @@ fun CommentItem(
     modifier: Modifier = Modifier,
     // false donde ya no se puede comentar (publicación finalizada o sin verificar).
     canReply: Boolean = true,
+    // Resalta el comentario al que se está respondiendo.
+    highlighted: Boolean = false,
     footer: (@Composable () -> Unit)? = null,
 ) {
-    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                if (highlighted) AppTheme.colors.surfaceTag else Color.Transparent,
+                RoundedCornerShape(16.dp),
+            )
+            .padding(if (highlighted) 8.dp else 0.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         UserAvatar(name = comment.authorName, photoUrl = comment.authorPhotoUrl, size = 36.dp)
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -106,7 +117,8 @@ private fun CommentBody(comment: CommentUi) {
         )
         return
     }
-    val prefix = comment.replyToUserName?.takeIf { comment.depth >= Comment.MAX_DEPTH }?.let { "@$it " }.orEmpty()
+    // "@alias" solo cuando se contestó a otra respuesta del hilo.
+    val prefix = comment.replyToUserName?.let { "@$it " }.orEmpty()
     Text(
         text = prefix + comment.text,
         style = MaterialTheme.typography.bodyMedium,
@@ -146,9 +158,9 @@ private fun LikeButton(comment: CommentUi, onClick: () -> Unit) {
 private val ReplyIndent = 48.dp
 
 /**
- Un comentario con su hilo: "Ver N respuestas" va justo debajo de ESE comentario y, al abrirlo,
- sus respuestas aparecen con sangría (y cada una puede tener las suyas).
- [replies] y [expanded] vienen del ViewModel; lo usan el detalle y la pantalla de comentarios.
+ Un comentario principal con su hilo, como en Facebook: solo el principal tiene
+ "Ver N respuestas"; al abrirlo aparecen TODAS las respuestas debajo, con sangría,
+ y al cerrarlo se ocultan. [highlightedId] resalta el comentario al que se responde.
  */
 @Composable
 fun CommentThread(
@@ -160,6 +172,7 @@ fun CommentThread(
     onToggleReplies: (commentId: String) -> Unit,
     modifier: Modifier = Modifier,
     canReply: Boolean = true,
+    highlightedId: String? = null,
 ) {
     val isExpanded = comment.id in expanded
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -168,6 +181,7 @@ fun CommentThread(
             onLikeClick = { onLike(comment.id) },
             onReplyClick = { onReply(comment) },
             canReply = canReply,
+            highlighted = comment.id == highlightedId,
             footer = if (comment.replyCount > 0) {
                 {
                     RepliesToggle(
@@ -183,15 +197,14 @@ fun CommentThread(
                 modifier = Modifier.padding(start = ReplyIndent),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                // Las respuestas no tienen su propio "Ver respuestas": todo el hilo vive aquí.
                 replies[comment.id].orEmpty().forEach { reply ->
-                    CommentThread(
+                    CommentItem(
                         comment = reply,
-                        replies = replies,
-                        expanded = expanded,
-                        onLike = onLike,
-                        onReply = onReply,
-                        onToggleReplies = onToggleReplies,
+                        onLikeClick = { onLike(reply.id) },
+                        onReplyClick = { onReply(reply) },
                         canReply = canReply,
+                        highlighted = reply.id == highlightedId,
                     )
                 }
             }

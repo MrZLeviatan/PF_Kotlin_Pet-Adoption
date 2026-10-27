@@ -34,6 +34,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material.icons.outlined.Share
@@ -80,6 +81,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
 import co.edu.uniquindio.petadoptionapp.core.component.card.NoticeBanner
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppConfirmDialog
+import co.edu.uniquindio.petadoptionapp.core.component.icon.UserAvatar
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
@@ -87,7 +89,7 @@ import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
 import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentInputBar
-import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentThread
+import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentItem
 import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentUi
 import coil3.compose.AsyncImage
 import java.util.Locale
@@ -103,8 +105,10 @@ Conecta el [PostDetailViewModel] con la UI; [PostDetailContent] solo dibuja.
 fun PostDetailScreen(
     onBack: () -> Unit,
     onShare: (title: String) -> Unit,
-    onOpenComments: (postId: String) -> Unit,
+    // replyToCommentId: al tocar "Responder", la pantalla de comentarios abre lista para responderle.
+    onOpenComments: (postId: String, replyToCommentId: String?) -> Unit,
     onEditPost: (postId: String) -> Unit,
+    onAuthorClick: (userId: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -145,11 +149,10 @@ fun PostDetailScreen(
                 onDeleteDismiss = viewModel::onDeleteDismiss,
                 onImportant = viewModel::onImportantClick,
                 onAdoptionInterest = viewModel::onAdoptionInterestClick,
-                onOpenComments = { uiState.post?.let { onOpenComments(it.id) } },
+                onOpenComments = { uiState.post?.let { onOpenComments(it.id, null) } },
+                onReply = { comment -> uiState.post?.let { onOpenComments(it.id, comment.id) } },
+                onAuthorClick = { uiState.author?.let { onAuthorClick(it.id) } },
                 onCommentLike = viewModel::onCommentLike,
-                onReply = viewModel::onReplyClick,
-                onCancelReply = viewModel::onCancelReply,
-                onToggleReplies = viewModel::onToggleReplies,
                 onCommentTextChange = viewModel::onCommentTextChange,
                 onSendComment = viewModel::onSendComment,
             ),
@@ -176,8 +179,7 @@ private data class PostDetailActions(
     val onOpenComments: () -> Unit = {},
     val onCommentLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
-    val onCancelReply: () -> Unit = {},
-    val onToggleReplies: (String) -> Unit = {},
+    val onAuthorClick: () -> Unit = {},
     val onCommentTextChange: (String) -> Unit = {},
     val onSendComment: () -> Unit = {},
 )
@@ -239,6 +241,7 @@ private fun PostDetailContent(
                 }
 
                 PostTitleCard(post)
+                uiState.author?.let { AuthorCard(author = it, isOwner = uiState.isOwner, onViewProfile = actions.onAuthorClick) }
                 PostInfoCard(post)
 
                 if (!uiState.isOwner && post.isPublic) {
@@ -265,8 +268,6 @@ private fun PostDetailContent(
                 text = uiState.commentText,
                 onTextChange = actions.onCommentTextChange,
                 onSend = actions.onSendComment,
-                replyingTo = uiState.replyingTo?.authorName,
-                onCancelReply = actions.onCancelReply,
                 isSending = uiState.isSendingComment,
             )
         }
@@ -506,6 +507,64 @@ private fun PostTitleCard(post: PostDetailUi) {
     }
 }
 
+// Quién publicó: avatar, alias y nombre (si es público) con el acceso a su perfil.
+// En una publicación propia dice "Tú" en lugar del botón.
+@Composable
+private fun AuthorCard(author: PostAuthorUi, isOwner: Boolean, onViewProfile: () -> Unit) {
+    AppCard(
+        contentPadding = PaddingValues(16.dp),
+        onClick = if (isOwner) null else onViewProfile,
+        onClickLabel = stringResource(R.string.post_detail_view_profile),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            UserAvatar(name = author.userName, photoUrl = author.photoUrl, size = 48.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    // Se guarda normal y se pasa a mayúsculas aquí, para que TalkBack lo lea como frase.
+                    text = stringResource(R.string.post_detail_published_by).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AppTheme.colors.textPrimary,
+                )
+                Text(
+                    text = stringResource(R.string.user_profile_username, author.userName),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = AppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                author.name?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = AppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            if (isOwner) {
+                Text(
+                    text = stringResource(R.string.post_detail_you),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AppTheme.colors.textPrimary,
+                    modifier = Modifier
+                        .background(AppTheme.colors.surfaceTag, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            } else {
+                // Toda la tarjeta es tocable; el botón deja claro qué pasa al tocar.
+                PillButton(
+                    text = stringResource(R.string.post_detail_view_profile),
+                    icon = Icons.Outlined.Person,
+                    onClick = onViewProfile,
+                    containerColor = AppTheme.colors.actionPrimary,
+                    contentColor = AppTheme.colors.onActionPrimary,
+                )
+            }
+        }
+    }
+}
+
 // Tarjeta con los datos de la mascota en 2 columnas
 @Composable
 private fun PostInfoCard(post: PostDetailUi) {
@@ -574,7 +633,7 @@ private fun PostLocation(post: PostDetailUi) {
     }
 }
 
-// Vista previa de comentarios: los primeros tres, cada uno con su hilo, y "Ver todos" para la pantalla completa.
+// Vista previa de comentarios: solo los primeros tres principales y "Ver todos" para la pantalla completa.
 @Composable
 private fun PostCommentsPreview(
     totalComments: Int,
@@ -613,15 +672,12 @@ private fun PostCommentsPreview(
             )
         }
 
-        // "Ver N respuestas" va debajo de cada comentario; "Responder" usa la barra de abajo.
+        // Sin hilos aquí: "Responder" lleva a la pantalla de comentarios con ese comentario resaltado.
         comments.forEach { comment ->
-            CommentThread(
+            CommentItem(
                 comment = comment,
-                replies = uiState.replies,
-                expanded = uiState.expanded,
-                onLike = actions.onCommentLike,
-                onReply = actions.onReply,
-                onToggleReplies = actions.onToggleReplies,
+                onLikeClick = { actions.onCommentLike(comment.id) },
+                onReplyClick = { actions.onReply(comment) },
                 canReply = canComment,
             )
         }
@@ -717,7 +773,10 @@ private val previewComments = listOf(
 private fun PostDetailVisitorPreview() {
     PetAdoptionAppTheme {
         PostDetailContent(
-            uiState = PostDetailUiState(post = previewPost, comments = previewComments, isLoading = false, viewerName = "ana_77"),
+            uiState = PostDetailUiState(
+                post = previewPost, comments = previewComments, isLoading = false, viewerName = "ana_77",
+                author = PostAuthorUi("u1", "fundacion_huellas", null, "Fundación Huellas"),
+            ),
             actions = PostDetailActions(),
         )
     }

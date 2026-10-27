@@ -26,6 +26,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyVotedP
 import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.ToggleImportantUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.DeletePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetUserProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
 import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentUi
 import co.edu.uniquindio.petadoptionapp.features.user.post.comments.toUi
@@ -67,21 +68,25 @@ data class PostDetailUi(
     val isFinished: Boolean,
 )
 
+// Quien publicó: alias y foto siempre; el nombre real solo si su perfil es público.
+data class PostAuthorUi(
+    val id: String,
+    val userName: String,
+    val photoUrl: String?,
+    val name: String?,
+)
+
 // Mensajes cortos (snackbar); el texto lo pone la UI con strings.xml.
 enum class DetailMessage { INTEREST_SENT, ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR }
 
 data class PostDetailUiState(
     val post: PostDetailUi? = null,
+    val author: PostAuthorUi? = null,
     val isOwner: Boolean = false,
     val isLoading: Boolean = true,
     val notFound: Boolean = false,
     // Vista previa: los primeros comentarios principales (como en Facebook).
     val comments: List<CommentUi> = emptyList(),
-    // Respuestas de cada hilo abierto (se cargan al tocar "Ver N respuestas").
-    val replies: Map<String, List<CommentUi>> = emptyMap(),
-    val expanded: Set<String> = emptySet(),
-    // Comentario al que se está respondiendo desde la barra (null = comentario nuevo).
-    val replyingTo: CommentUi? = null,
     val commentText: String = "",
     val isSendingComment: Boolean = false,
     val viewerName: String = "",
@@ -118,6 +123,7 @@ class PostDetailViewModel @Inject constructor(
     private val sendAdoptionInterest: SendAdoptionInterestUseCase,
     private val getMyAdoptionRequest: GetMyAdoptionRequestUseCase,
     private val deletePost: DeletePostUseCase,
+    private val getUserProfile: GetUserProfileUseCase,
 ) : ViewModel() {
 
     // Llega de la ruta MainRoutes.PostDetail(postId).
@@ -173,6 +179,13 @@ class PostDetailViewModel @Inject constructor(
             }
             loadCommentsPreview()
 
+            // Autor: la privacidad la aplica el caso de uso (el nombre llega en null si es privado).
+            getUserProfile(post.authorId, session.id).onSuccess { profile ->
+                _uiState.update {
+                    it.copy(author = PostAuthorUi(profile.id, profile.userName, profile.photoUrl, profile.name?.takeIf(String::isNotBlank)))
+                }
+            }
+
             // Estado de los botones de quien no es el dueño.
             if (!isOwner) {
                 val voted = getMyVotedPostIds(listOf(postId)).getOrNull().orEmpty()
@@ -187,7 +200,7 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
-    // Vista previa + los hilos que estén abiertos, con los "me gusta" de quien mira.
+    // Vista previa: solo los primeros comentarios principales (las respuestas se ven en la pantalla completa).
     private suspend fun loadCommentsPreview() {
         val liked = getLikedComments(postId).getOrNull().orEmpty()
         val viewerId = observeSession().value?.id
@@ -196,26 +209,7 @@ class PostDetailViewModel @Inject constructor(
                 state.copy(comments = comments.take(PREVIEW_SIZE).map { it.toUi(liked, viewerId) })
             }
         }
-        val replies = _uiState.value.expanded.associateWith { parentId ->
-            getComments(postId, parentCommentId = parentId).getOrNull().orEmpty().map { it.toUi(liked, viewerId) }
-        }
-        _uiState.update { it.copy(replies = replies) }
     }
-
-    // Abre o cierra el hilo de respuestas de un comentario, justo debajo de él.
-    fun onToggleReplies(commentId: String) {
-        if (commentId in _uiState.value.expanded) {
-            _uiState.update { it.copy(expanded = it.expanded - commentId) }
-            return
-        }
-        _uiState.update { it.copy(expanded = it.expanded + commentId) }
-        viewModelScope.launch { loadCommentsPreview() }
-    }
-
-    // "Responder": la barra de abajo pasa a "Respondiendo a @alias".
-    fun onReplyClick(comment: CommentUi) = _uiState.update { it.copy(replyingTo = comment) }
-
-    fun onCancelReply() = _uiState.update { it.copy(replyingTo = null) }
 
     // --- Comentarios ---
 
@@ -226,17 +220,10 @@ class PostDetailViewModel @Inject constructor(
         if (state.commentText.isBlank() || state.isSendingComment) return
         _uiState.update { it.copy(isSendingComment = true) }
         viewModelScope.launch {
-            createComment(postId, state.commentText, state.replyingTo?.id)
-                .onSuccess { saved ->
-                    // Si fue una respuesta, se abre su hilo para verla debajo del comentario.
-                    _uiState.update {
-                        it.copy(
-                            commentText = "",
-                            isSendingComment = false,
-                            replyingTo = null,
-                            expanded = saved.parentId?.let { parent -> it.expanded + parent } ?: it.expanded,
-                        )
-                    }
+            // Desde el detalle solo se crean comentarios principales; las respuestas, en la pantalla completa.
+            createComment(postId, state.commentText)
+                .onSuccess {
+                    _uiState.update { it.copy(commentText = "", isSendingComment = false) }
                     // Recarga para que el contador y la vista previa queden al día.
                     refresh()
                 }

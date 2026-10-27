@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +78,17 @@ private fun CommentsContent(
     uiState: CommentsUiState,
     actions: CommentsActions,
 ) {
+    val listState = rememberLazyListState()
+
+    // Al elegir a quién responder (o al llegar desde "Responder" del detalle), baja hasta ese comentario.
+    // Si es una respuesta, baja hasta su hilo (el comentario principal).
+    val target = uiState.replyingTo
+    LaunchedEffect(target?.id) {
+        if (target == null) return@LaunchedEffect
+        val index = uiState.comments.indexOfFirst { it.id == target.id || it.id == target.parentId }
+        if (index >= 0) listState.animateScrollToItem(index)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,6 +103,7 @@ private fun CommentsContent(
         )
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -117,6 +131,7 @@ private fun CommentsContent(
                     onReply = actions.onReply,
                     onToggleReplies = actions.onToggleReplies,
                     canReply = uiState.canComment,
+                    highlightedId = uiState.replyingTo?.id,
                 )
             }
 
