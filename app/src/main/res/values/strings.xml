@@ -1,3 +1,528 @@
 <resources>
-    <string name="app_name">PetAdoptionApp</string>
+    <!--Strings nativos de la App-->
+    <string name="app_name">Kog`Maw adoption app</string>
+
+    <!--String nativos de la pantalla Splash de carga-->
+        <string name="app_name_pantallas">Huellas</string>
+        <string name="splash_tagline">Adopta con amor, cambia una vida</string>
+        <string name="splash_hero_description">Imagen de perro y gatos descansando juntos</string>
+        <string name="splash_notice_title">Adopción responsable</string>
+        <string name="splash_notice_message">Adoptar responsablemente significa brindar amor, compromiso y cuidado durante toda la vida de tu compañero.</string>
+
+    <!--Strings nativos de la pantalla de Lógin-->
+        <string name="login_hero_description">Imagen de perro y gatos descansando juntos</string>
+        <!--%1$s = marcador donde irá el ícono, %2$s = nombre de la app-->
+        <string name="login_welcome">Bienvenid%1$s a %2$s</string>
+        <!--Lo que leen los lectores de pantalla, con la "o" real-->
+        <string name="login_welcome_spoken">Bienvenido a %1$s</string>
+        <string name="login_title">Inicio de sesión</string>
+        <string name="login_email_placeholder">Correo electrónico</string>
+        <string name="login_password_placeholder">Contraseña</string>
+        <string name="login_button">Iniciar sesión</string>
+        <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+        <string name="login_divider_or">o</string>
+        <string name="login_no_account">¿No tienes una cuenta?</string>
+        <string name="login_create_account">Crear una cuenta</string>
+        <!--Comunes (accesibilidad del campo de contraseña)-->
+        <string name="common_show_password">Mostrar contraseña</string>
+        <string name="common_hide_password">Ocultar contraseña</string>
+        <!--Mensajes error para el formulario-->
+        <string name="login_error_email_empty">Debe llenar el campo correo</string>
+        <string name="login_error_email_invalid">Ingresa un correo válido</string>
+        <string name="login_error_password_empty">Debe llenar el campo contraseña</string>
+        <!-- Mensajes error para el logueo -->
+        <string name="login_error_invalid_credentials">Correo o contraseña incorrectos.</string>
+        <string name="login_error_inactive_moderator">Tu cuenta de moderador está inactiva o suspendida. Contacta al administrador.</string>
+        <string name="login_error_account_deleted">Esta cuenta fue eliminada.</string>
+        <string name="login_error_generic">No pudimos iniciar sesión. Inténtalo de nuevo.</string>
+
+    <!--Strings nativos de la pantalla de Registrar Cuenta -->
+        <string name="register_title">Crear cuenta</string>
+        <string name="register_name_label">Nombre completo*</string>
+        <string name="register_email_label">Correo electrónico*</string>
+        <string name="register_phone_label">Teléfono*</string>
+        <string name="register_password_label">Contraseña*</string>
+        <string name="register_confirm_password_label">Confirmar contraseña*</string>
+        <string name="register_next_button">Siguiente</string>
+        <string name="register_have_account">¿Ya tienes una cuenta?</string>
+        <string name="register_login_link">Inicia sesión</string>
+        <string name="register_location_subtitle">Configura tu ubicación para encontrar mascotas cerca de ti</string>
+        <string name="register_city_label">Ciudad*</string>
+        <string name="register_address_label">Dirección*</string>
+        <string name="register_set_location">Establecer mi ubicación</string>
+        <!--%1$s = marcador de Términos y Condiciones, %2$s = marcador de Políticas de Adopción-->
+        <string name="register_terms_template">Acepto los %1$s y las %2$s de la app.</string>
+        <string name="register_terms_link">Términos y Condiciones</string>
+        <string name="register_policies_link">Políticas de Adopción</string>
+        <string name="register_create_button">Crear cuenta</string>
+        <string name="register_success_title">Cuenta creada</string>
+        <string name="register_success_message">¡Bienvenido! Tu cuenta ya está lista para encontrar mascotas cerca de ti.</string>
+        <string name="register_success_button">Aceptar</string>
+        <!-- Errores de registro de Cuenta-->
+        <string name="register_error_name_empty">Debe llenar el campo nombre</string>
+        <string name="register_error_email_empty">Debe llenar el campo correo</string>
+        <string name="register_error_phone_empty">Debe llenar el campo teléfono</string>
+        <string name="register_error_password_empty">Debe llenar el campo contraseña</string>
+        <string name="register_error_confirm_empty">Debe confirmar la contraseña</string>
+        <!--Errores del registro-->
+        <string name="register_error_name_invalid">Ingresa tu nombre completo</string>
+        <string name="register_error_email_invalid">Ingresa un correo válido</string>
+        <string name="register_error_email_taken">Este correo ya está registrado</string>
+        <string name="register_error_phone_invalid">Ingresa un teléfono válido (8 a 15 dígitos)</string>
+        <string name="register_error_phone_taken">Este teléfono ya está asociado a otra cuenta</string>
+        <string name="register_error_password_weak">Mínimo 8 caracteres, con un número y una mayúscula</string>
+        <string name="register_error_password_mismatch">Las contraseñas no coinciden</string>
+        <string name="register_error_location">Selecciona una ubicación válida</string>
+        <string name="register_error_generic">No pudimos crear tu cuenta. Inténtalo de nuevo.</string>
+
+
+    <!--String nativos de la Barra de navegación-->
+        <string name="nav_home">Inicio</string>
+        <string name="nav_explore">Explorar</string>
+        <string name="nav_dashboard">Dashboard</string>
+        <string name="nav_feeds">Post</string>
+        <string name="nav_messages">Mensajes</string>
+        <string name="nav_profile">Perfil</string>
+        <string name="nav_create_description">Crear publicación</string>
+
+    <!--String Comunes-->
+        <string name="common_back">Volver</string>
+        <string name="common_step_indicator">Paso %1$d de %2$d</string>
+        <string name="common_password_strength">Seguridad: %1$s</string>
+        <string name="common_strength_weak">Baja</string>
+        <string name="common_strength_medium">Media</string>
+        <string name="common_strength_strong">Alta</string>
+
+    <!--String nativos del Home de usuario -->
+        <string name="home_welcome">Bienvenido, %1$s</string>
+        <string name="home_notifications_description">Notificaciones</string>
+        <string name="home_search_placeholder">Buscar mascotas o @personas</string>
+        <string name="home_search_description">Buscar</string>
+        <string name="home_search_empty">No se encontraron publicaciones</string>
+        <string name="home_empty_feed">Aún no hay publicaciones</string>
+        <string name="home_distance_km">%1$s km</string>
+        <string name="home_info_animal">%1$s • %2$s • %3$s</string>
+        <string name="home_interested">%1$d personas interesadas</string>
+        <string name="home_important_button">Es importante</string>
+        <string name="home_important_active">Marcada como importante</string>
+        <string name="home_error_important">No se pudo registrar tu voto. Intenta de nuevo.</string>
+        <string name="home_vaccines_yes">Vacunas al día</string>
+        <string name="home_vaccines_no">Sin vacunas al día</string>
+        <string name="home_vaccines_unknown">Vacunas sin información</string>
+        <string name="home_size_small">Pequeño</string>
+        <string name="home_size_medium">Mediano</string>
+        <string name="home_size_large">Grande</string>
+        <string name="home_size_unknown">Tamaño sin definir</string>
+        <string name="home_breed_unknown">Raza sin definir</string>
+        <string name="home_error_generic">No se pudo cargar el feed</string>
+        <string name="home_users_empty">No se encontraron personas</string>
+        <string name="home_user_photo_description">Foto de %1$s</string>
+        <string name="home_own_post">Tu publicación</string>
+
+
+    <!--Strings nativos de la pantalla Notificaciones-->
+        <string name="notifications_title">Notificaciones</string>
+        <string name="notifications_filter_all">Todas</string>
+        <string name="notifications_filter_unread">Sin leer</string>
+        <string name="notifications_filter_messages">Mensajes</string>
+        <string name="notifications_new_tag">Nuevo</string>
+        <string name="notifications_empty">No tienes notificaciones en esta categoría</string>
+        <string name="notifications_time_minutes">Hace %1$d min</string>
+        <string name="notifications_time_hours">Hace %1$d h</string>
+        <string name="notifications_time_yesterday">Ayer</string>
+        <plurals name="notifications_time_days">
+            <item quantity="one">Hace %1$d día</item>
+            <item quantity="other">Hace %1$d días</item>
+        </plurals>
+
+        <!-- Notificaciones: título y mensaje por tipo -->
+        <string name="notif_title_new_comment">Nuevo comentario</string>
+        <string name="notif_msg_new_comment">%1$s comentó tu publicación.</string>
+        <string name="notif_title_comment_reply">Respuesta a tu comentario</string>
+        <string name="notif_msg_comment_reply">%1$s respondió tu comentario.</string>
+        <string name="notif_title_post_verified">Publicación verificada</string>
+        <string name="notif_msg_post_verified">Un moderador verificó tu publicación. Ya aparece en el feed.</string>
+        <string name="notif_title_post_rejected">Publicación rechazada</string>
+        <string name="notif_msg_post_rejected">Motivo: %1$s</string>
+        <string name="notif_title_post_important">Tu publicación es importante</string>
+        <string name="notif_msg_post_important">%1$s marcó tu publicación como importante.</string>
+        <string name="notif_title_adoption_request">Solicitud de adopción</string>
+        <string name="notif_msg_adoption_request">%1$s está interesado en adoptar. Revisa tu chat.</string>
+        <string name="notif_title_adoption_response">Respuesta a tu solicitud</string>
+        <string name="notif_msg_adoption_accepted">%1$s aceptó tu solicitud de adopción.</string>
+        <string name="notif_msg_adoption_declined">%1$s rechazó tu solicitud de adopción.</string>
+        <string name="notif_title_post_finished">Publicación finalizada</string>
+        <string name="notif_msg_post_finished">Un moderador marcó tu publicación como resuelta.</string>
+        <string name="notif_title_badge">Nueva insignia</string>
+        <string name="notif_msg_badge">Desbloqueaste la insignia «%1$s».</string>
+        <string name="notif_title_level_up">¡Subiste de nivel!</string>
+        <string name="notif_msg_level_up">Ahora eres %1$s.</string>
+        <string name="notif_title_new_message">Nuevo mensaje</string>
+        <string name="notif_msg_new_message">%1$s te envió un mensaje.</string>
+
+        <!-- Niveles (también se usarán en el perfil) -->
+        <string name="level_animal_friend">Amigo Animal</string>
+        <string name="level_protector">Protector</string>
+        <string name="level_guardian">Guardián</string>
+        <string name="level_pet_hero">Héroe de las Mascotas</string>
+
+        <string name="notifications_mark_all">Marcar todas como leídas</string>
+        <string name="notifications_load_more">Ver más</string>
+        <string name="notifications_error">No se pudieron cargar las notificaciones</string>
+        <string name="notif_someone">Alguien</string>
+
+
+    <!--Strings nativos de la pantalla Mi Perfil-->
+        <string name="profile_level_label">Nivel actual</string>
+        <string name="profile_level_badge">LVL %1$d</string>
+        <string name="profile_points">%1$s puntos acumulados</string>
+        <string name="profile_progress">Progreso: %1$d%%</string>
+        <string name="profile_points_short">%1$s pts</string>
+        <string name="profile_diary_title">Mi Diario Comunidad</string>
+        <string name="profile_my_posts">Mis publicaciones</string>
+        <string name="profile_my_likes">Me gusta</string>
+        <string name="profile_edit">Editar perfil</string>
+        <string name="profile_settings">Configuración</string>
+        <string name="profile_progress_max">Nivel máximo alcanzado</string>
+        <string name="profile_location_empty">Sin ubicación</string>
+        <string name="profile_username">Username: %1$s</string>
+
+    <!-- String nativos de las metricas / dashboard Usuario-->
+        <string name="profile_metrics">Mis métricas</string>
+        <string name="metrics_badge_unlocked">Desbloqueada el %1$s</string>
+        <string name="metrics_badges_empty">Aún no tienes insignias</string>
+        <string name="metrics_error">No se pudieron cargar tus métricas</string>
+        <string name="metrics_share_text">Estoy ayudando a mascotas en Pet Adoption. ¡Únete!</string>
+
+
+    <!--Strings de la pantalla Recuperar contraseña-->
+        <string name="recover_title">Recuperar contraseña</string>
+        <string name="recover_subtitle">Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</string>
+        <string name="recover_email_label">Correo electrónico</string>
+        <string name="recover_send_button">Enviar enlace de recuperación</string>
+        <string name="recover_success_title">Correo enviado</string>
+        <string name="recover_success_message">Hemos enviado un enlace de recuperación a tu correo electrónico. Haz clic en el enlace para restablecer tu contraseña.</string>
+        <string name="recover_success_button">Aceptar</string>
+
+    <!--Strings de la pantalla Nueva contraseña-->
+        <string name="new_password_title">Nueva contraseña</string>
+        <string name="new_password_subtitle">Ingresa tu nueva contraseña y la confirmación de esta.</string>
+        <string name="new_password_label">Contraseña*</string>
+        <string name="new_password_confirm_label">Confirmar contraseña*</string>
+        <string name="new_password_button">Confirmar nueva contraseña</string>
+        <string name="new_password_success_title">Contraseña actualizada</string>
+        <string name="new_password_success_message">Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión con tus nuevos datos.</string>
+        <string name="new_password_success_button">Aceptar</string>
+
+
+
+
+
+    <!--Comunes-->
+    <string name="common_share">Compartir</string>
+
+    <!--Strings de la pantalla de Métricas-->
+    <string name="metrics_title">Dashboard</string>
+    <string name="metrics_posts_title">Publicaciones</string>
+    <string name="metrics_posts_subtitle">Estado actual de tus publicaciones</string>
+    <string name="metrics_posts_active">Activas</string>
+    <string name="metrics_posts_review">Revisión</string>
+    <string name="metrics_posts_finished">Finalizadas</string>
+    <string name="metrics_badges_title">Insignias conseguidas</string>
+    <string name="metrics_badges_subtitle">Reconocimientos obtenidos en tu actividad</string>
+
+
+    <!--Comunes: tiempo transcurrido-->
+    <plurals name="common_time_hours_ago">
+        <item quantity="one">hace %1$d hora</item>
+        <item quantity="other">hace %1$d horas</item>
+    </plurals>
+    <plurals name="common_time_days_ago">
+        <item quantity="one">hace %1$d día</item>
+        <item quantity="other">hace %1$d días</item>
+    </plurals>
+
+    <!--Strings de la pantalla Mis Publicaciones-->
+    <string name="my_posts_title">Mis Publicaciones</string>
+    <string name="my_posts_tab_all">Todas (%1$d)</string>
+    <string name="my_posts_tab_active">Activas (%1$d)</string>
+    <string name="my_posts_tab_pending">Pendientes (%1$d)</string>
+    <string name="my_posts_tab_finished">Finalizadas (%1$d)</string>
+    <string name="my_posts_section_active">Activas (%1$d)</string>
+    <string name="my_posts_section_pending">Pendientes de verificación (%1$d)</string>
+    <string name="my_posts_section_finished">Finalizadas (%1$d)</string>
+    <string name="my_posts_type_adoption">Adopción</string>
+    <string name="my_posts_type_lost">Perdido</string>
+    <string name="my_posts_published">Publicado %1$s</string>
+    <string name="my_posts_sent">Enviado %1$s</string>
+    <plurals name="my_posts_interested">
+        <item quantity="one">%1$d persona interesada</item>
+        <item quantity="other">%1$d personas interesadas</item>
+    </plurals>
+    <string name="my_posts_finish">Finalizar publicación</string>
+    <string name="my_posts_delete">Eliminar</string>
+    <string name="my_posts_not_editable">No editable en revisión</string>
+    <string name="my_posts_empty">No tienes publicaciones en esta categoría</string>
+
+
+
+
+    <!--Comunes-->
+    <string name="common_char_counter">%1$d/%2$d caracteres</string>
+
+    <!--Strings de la pantalla Motivos de Rechazo-->
+    <string name="reject_title">Motivos de Rechazo</string>
+    <string name="reject_notice">La publicación rechazada no aparecerá en el feed público y el usuario recibirá una notificación con el motivo detallado.</string>
+    <string name="reject_reasons_title">Motivos frecuentes</string>
+    <string name="reject_reason_insufficient_info">Información insuficiente</string>
+    <string name="reject_reason_invalid_image">Imagen no válida</string>
+    <string name="reject_reason_suspicious_content">Contenido sospechoso</string>
+    <string name="reject_reason_animal_sale">Posible venta de animales</string>
+    <string name="reject_reason_wrong_location">Ubicación incorrecta</string>
+    <string name="reject_reason_duplicated">Publicación duplicada</string>
+    <string name="reject_description_title">Descripción</string>
+    <string name="reject_description_placeholder">Describe el motivo del porque la publicación fue rechazada.</string>
+    <string name="reject_confirm_button">Confirmar rechazo</string>
+
+
+    <!-- Strings en base a los comentarios de los post-->
+        <string name="comment_deleted">Comentario eliminado</string>
+
+
+    <!-- Comunes -->
+    <string name="common_cancel">Cancelar</string>
+
+    <!-- Perfil: acción de la tarjeta de nivel (la anuncia TalkBack) -->
+    <string name="profile_open_metrics">ver métricas</string>
+
+    <!-- Configuración -->
+    <string name="settings_security">Seguridad</string>
+    <string name="settings_change_password">Cambiar contraseña</string>
+    <string name="settings_two_factor">Verificación en dos pasos</string>
+    <string name="settings_privacy">Privacidad</string>
+    <string name="settings_public_profile">Perfil público</string>
+    <string name="settings_delete_account">Eliminar cuenta</string>
+    <string name="settings_delete_warning">Esta acción es permanente y requiere confirmación</string>
+    <string name="settings_error_save">No se pudo guardar el cambio. Intenta de nuevo.</string>
+
+    <string name="settings_current_password">Contraseña actual</string>
+    <string name="settings_new_password">Nueva contraseña</string>
+    <string name="settings_confirm_password">Confirmar nueva contraseña</string>
+    <string name="settings_password_save">Guardar contraseña</string>
+    <string name="settings_password_success_title">Contraseña actualizada</string>
+    <string name="settings_password_success_message">Tu contraseña se cambió correctamente.</string>
+    <string name="settings_password_success_button">Aceptar</string>
+
+    <string name="settings_delete_title">¿Eliminar tu cuenta?</string>
+    <string name="settings_delete_message">Tus publicaciones dejarán de mostrarse y tus datos personales se borrarán. Escribe tu contraseña para confirmar.</string>
+    <string name="settings_delete_confirm">Eliminar definitivamente</string>
+
+    <string name="settings_error_wrong_password">La contraseña no es correcta</string>
+    <string name="settings_error_same_password">La nueva contraseña debe ser distinta de la actual</string>
+    <string name="settings_error_generic">Algo salió mal. Intenta de nuevo.</string>
+
+    <!-- Lo anuncia TalkBack en el candado de un campo de solo lectura -->
+    <string name="common_not_editable">No se puede editar</string>
+
+    <!-- Editar perfil (el asterisco de obligatorio lo pone AppTextField) -->
+    <string name="edit_profile_title">Editar Perfil</string>
+    <string name="edit_profile_name">Nombre completo</string>
+    <string name="edit_profile_email">Correo electrónico</string>
+    <string name="edit_profile_phone">Teléfono</string>
+    <string name="edit_profile_city">Ciudad</string>
+    <string name="edit_profile_address">Dirección</string>
+    <string name="edit_profile_save">Guardar Cambios</string>
+    <string name="edit_profile_error_city">Debe llenar el campo ciudad</string>
+    <string name="edit_profile_error_address">Debe llenar el campo dirección</string>
+    <string name="edit_profile_success_title">Perfil actualizado</string>
+    <string name="edit_profile_success_message">Tus datos se guardaron correctamente.</string>
+    <string name="edit_profile_success_button">Aceptar</string>
+
+    <!-- Perfil de otra persona -->
+    <string name="user_profile_title">Perfil</string>
+    <string name="user_profile_username">@%1$s</string>
+    <string name="user_profile_private">Este perfil es privado. Solo puedes ver su alias y su foto.</string>
+    <string name="user_profile_contact">Contacto</string>
+    <string name="user_profile_badges_empty">Aún no tiene insignias</string>
+    <string name="user_profile_posts">Publicaciones activas</string>
+    <string name="user_profile_posts_empty">No tiene publicaciones activas</string>
+    <string name="user_profile_not_found">Este perfil no existe o fue eliminado</string>
+    <string name="user_profile_error">No se pudo cargar el perfil. Intenta de nuevo.</string>
+
+    <!-- Perfil de otra persona: contacto -->
+    <string name="user_profile_contact_subtitle">Comunícate directamente con esta persona</string>
+    <string name="user_profile_name">Nombre</string>
+    <string name="user_profile_phone">Teléfono</string>
+    <string name="user_profile_call">Llamar a %1$s</string>
+
+    <!-- Mis publicaciones: acciones y estados -->
+    <string name="my_posts_error">No se pudieron cargar tus publicaciones. Intenta de nuevo.</string>
+    <string name="my_posts_action_error">No se pudo completar la acción. Intenta de nuevo.</string>
+    <string name="my_posts_finish_title">¿Finalizar publicación?</string>
+    <string name="my_posts_finish_message">¿Deseas darle fin a esta publicación? Ya no aparecerá en el inicio.</string>
+    <string name="my_posts_delete_title">¿Eliminar publicación?</string>
+    <string name="my_posts_delete_message">La publicación dejará de mostrarse y no se puede deshacer.</string>
+    <string name="my_posts_dialog_accept">Aceptar</string>
+    <string name="my_posts_section_rejected">Rechazadas (%1$d)</string>
+    <string name="my_posts_rejected_reason">Motivo: %1$s</string>
+
+    <!-- Detalle de publicación -->
+    <string name="post_detail_not_found">Esta publicación no existe o ya no está disponible</string>
+    <string name="post_detail_photo">Foto %1$d de %2$d</string>
+    <string name="post_detail_edit">Editar publicación</string>
+    <string name="post_detail_delete">Eliminar publicación</string>
+    <string name="post_detail_delete_title">¿Eliminar publicación?</string>
+    <string name="post_detail_delete_message">La publicación dejará de mostrarse y no se puede deshacer.</string>
+    <string name="post_detail_interest">Me interesa adoptar</string>
+    <string name="post_detail_interest_sent">Solicitud enviada</string>
+    <string name="post_detail_important">Es importante</string>
+    <string name="post_detail_verified">Verificado</string>
+    <string name="post_detail_unknown">Sin información</string>
+    <string name="post_detail_type">Tipo</string>
+    <string name="post_detail_breed">Raza</string>
+    <string name="post_detail_size">Tamaño</string>
+    <string name="post_detail_vaccines">Vacunas</string>
+    <string name="post_detail_vaccines_yes">Al día</string>
+    <string name="post_detail_vaccines_no">Pendientes</string>
+    <string name="post_detail_about">Descripción</string>
+    <string name="post_detail_location">Ubicación aproximada</string>
+    <string name="post_detail_comments">Comentarios (%1$d)</string>
+    <string name="post_detail_see_all">Ver todos</string>
+    <string name="post_detail_no_comments">Aún no hay comentarios. ¡Sé el primero!</string>
+    <string name="post_detail_comments_closed">Los comentarios se abren cuando la publicación sea verificada</string>
+    <string name="post_detail_msg_already_requested">Ya enviaste una solicitud para esta publicación</string>
+    <string name="post_detail_msg_error">No se pudo completar la acción. Intenta de nuevo.</string>
+    <string name="post_detail_msg_comment_error">No se pudo publicar el comentario. Intenta de nuevo.</string>
+    <string name="post_finished_notice">Esta publicación fue finalizada: ya no se puede editar ni eliminar.</string>
+    <string name="post_detail_published_by">Publicado por</string>
+    <string name="post_detail_view_profile">Ver perfil</string>
+    <string name="post_detail_you">Tú</string>
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logout_title">¿Cerrar sesión?</string>
+    <string name="settings_logout_message">Volverás a la pantalla de inicio de sesión.</string>
+    <string name="post_rejected_title">Publicación rechazada</string>
+    <string name="post_rejected_no_reason">Un moderador rechazó esta publicación.</string>
+    <string name="my_posts_not_editable_rejected">No editable</string>
+    <string name="my_likes_title">Me gusta</string>
+    <string name="my_likes_tab_all">Todas (%1$d)</string>
+    <string name="my_likes_tab_category">%1$s (%2$d)</string>
+    <string name="my_likes_remove">Quitar de Me gusta</string>
+    <string name="my_likes_empty">Aún no tienes publicaciones en Me gusta. Marca "Es importante" en las que quieras guardar.</string>
+    <string name="my_likes_error">No se pudieron cargar tus Me gusta. Intenta de nuevo.</string>
+    <!-- Crear publicación -->
+    <string name="create_post_title">Nueva publicación</string>
+    <string name="create_post_next">Continuar</string>
+    <string name="create_post_publish">Publicar</string>
+    <string name="create_post_subtitle_info">Ingresa la información sobre la publicación</string>
+    <string name="create_post_subtitle_pet">Ingresa la información sobre la mascota</string>
+    <string name="create_post_subtitle_location">Ingresa la ubicación de la mascota</string>
+    <string name="create_post_step_info">Información de la Publicación</string>
+    <string name="create_post_step_pet">Información de la Mascota</string>
+    <string name="create_post_step_photos">Fotografías de la Mascota</string>
+    <string name="create_post_step_location">Ubicación de la Mascota</string>
+    <string name="create_post_title_label">Título de la publicación</string>
+    <string name="create_post_category_label">Categoría</string>
+    <string name="create_post_description_label">Descripción</string>
+    <string name="create_post_description_placeholder">Describe la situación de la mascota, su personalidad, necesidades especiales…</string>
+    <string name="create_post_animal_label">Tipo de animal</string>
+    <string name="create_post_breed_label">Raza aproximada</string>
+    <string name="create_post_size_label">Tamaño aproximado</string>
+    <string name="create_post_age_label">Edad aproximada</string>
+    <string name="create_post_age_months">Meses</string>
+    <string name="create_post_age_years">Años</string>
+    <string name="create_post_vaccinated">Vacunas al día</string>
+    <string name="create_post_vaccinated_hint">Se verificará con certificado veterinario</string>
+    <string name="create_post_neutered">Esterilizado / Castrado</string>
+    <string name="create_post_photos_label">Mínimo 1 foto, máximo %1$d</string>
+    <string name="create_post_photos_tip">Usa una foto nítida, bien iluminada y enfocada para que la mascota se vea con claridad.</string>
+    <string name="create_post_location_hint">Selecciona dónde se encuentra o fue vista la mascota</string>
+    <string name="create_post_location_current">Ubicación actual</string>
+    <string name="create_post_location_map">Seleccionar mapa</string>
+    <string name="create_post_location_map_soon">Elegir el punto en el mapa estará disponible pronto. Usa tu ubicación actual.</string>
+    <string name="create_post_location_privacy">Por tu seguridad, solo se mostrará la ubicación aproximada (barrio/zona) en la publicación. La dirección exacta no será visible públicamente.</string>
+    <string name="create_post_error_required">Este campo es obligatorio</string>
+    <string name="create_post_error_min">Mínimo %1$d caracteres</string>
+    <string name="create_post_error_max">Máximo %1$d caracteres</string>
+    <string name="create_post_error_invalid">Valor no válido</string>
+    <string name="create_post_error_age">Ingresa una edad entre 0 y %1$d años</string>
+    <string name="create_post_error_location">Tu perfil no tiene una ubicación válida. Actualízala en Editar perfil.</string>
+    <string name="create_post_error_catalog">La categoría o el tipo de animal ya no está disponible. Elige otro.</string>
+    <string name="create_post_error_generic">No se pudo publicar. Intenta de nuevo.</string>
+    <string name="create_post_sent_title">Publicación enviada</string>
+    <string name="create_post_sent_message">Tu publicación está pendiente de verificación por nuestro equipo de moderadores. Recibirás una notificación cuando sea aprobada o si necesita ajustes.</string>
+    <string name="create_post_sent_time">Tiempo estimado: 24-48 horas</string>
+    <string name="edit_post_title">Editar publicación</string>
+    <string name="edit_post_save">Guardar cambios</string>
+    <string name="edit_post_loading">Cargando la publicación…</string>
+    <string name="edit_post_load_error">Esta publicación ya no se puede editar.</string>
+    <string name="edit_post_saved_title">Cambios guardados</string>
+    <string name="edit_post_saved_message">Tu publicación vuelve a revisión: nuestro equipo de moderadores verificará los cambios antes de mostrarla de nuevo.</string>
+    <string name="create_post_view_post">Ver mi publicación</string>
+    <string name="create_post_go_home">Volver al inicio</string>
+
+    <!-- Selector de fotos -->
+    <string name="photo_add">+ Añadir</string>
+    <string name="photo_description">Foto de la mascota</string>
+    <string name="photo_remove">Quitar foto</string>
+    <string name="photo_main">Principal</string>
+    <string name="photo_sheet_title">Agregar foto</string>
+    <string name="photo_camera">Cámara</string>
+    <string name="photo_gallery">Galería</string>
+    <string name="post_share_text">Mira esta publicación en Huellas: %1$s</string>
+
+    <!-- Comentarios -->
+    <string name="comments_title">Comentarios (%1$d)</string>
+    <string name="comments_error">No se pudieron cargar los comentarios. Intenta de nuevo.</string>
+    <string name="comments_load_more">Ver más comentarios</string>
+    <string name="comment_reply">Responder</string>
+    <string name="comment_edited">Editado</string>
+    <string name="comment_like">Me gusta</string>
+    <string name="comment_unlike">Quitar me gusta</string>
+    <string name="comment_hide_replies">Ocultar respuestas</string>
+    <plurals name="comment_view_replies">
+        <item quantity="one">Ver %1$d respuesta</item>
+        <item quantity="other">Ver %1$d respuestas</item>
+    </plurals>
+    <string name="comment_replying_to">Respondiendo a @%1$s</string>
+    <string name="comment_cancel_reply">Cancelar respuesta</string>
+    <string name="comment_placeholder">Escribe un comentario…</string>
+    <string name="comment_send">Enviar comentario</string>
+    <string name="comment_time_now">Ahora</string>
+
+    <!-- Mensajes (lista de chats y conversación) -->
+    <string name="chats_search_placeholder">Buscar chat</string>
+    <string name="chats_search_description">Buscar</string>
+    <string name="chats_empty">Aún no tienes conversaciones. Escribe desde una publicación con "Me interesa adoptar".</string>
+    <string name="chats_search_empty">No hay chats con ese nombre.</string>
+    <string name="chats_error">No se pudieron cargar tus chats.</string>
+    <string name="chats_time_yesterday">Ayer</string>
+    <string name="chats_you_prefix">Tú: %1$s</string>
+    <string name="chats_preview_interest_received">Le interesa adoptar tu mascota</string>
+    <string name="chats_preview_interest_sent">Enviaste una solicitud de adopción</string>
+    <plurals name="chats_unread_description">
+        <item quantity="one">%1$d mensaje sin leer</item>
+        <item quantity="other">%1$d mensajes sin leer</item>
+    </plurals>
+    <string name="chat_placeholder">Escribe un mensaje…</string>
+    <string name="chat_send">Enviar mensaje</string>
+    <string name="chat_about_post">Sobre: %1$s</string>
+    <string name="chat_not_found">No se encontró este chat.</string>
+    <string name="chat_send_error">No se pudo enviar el mensaje. Intenta de nuevo.</string>
+    <string name="chat_load_older">Ver mensajes anteriores</string>
+    <string name="chat_today">Hoy</string>
+    <string name="chat_seen">Visto</string>
+    <string name="chat_auto_label">Mensaje automático</string>
+    <string name="chat_auto_interest">¡Hola! Me interesa adoptar a «%1$s». ¿Podemos hablar?</string>
+    <string name="chat_auto_interest_no_title">¡Hola! Me interesa adoptar a tu mascota. ¿Podemos hablar?</string>
+    <string name="post_detail_open_chat">Ir al chat</string>
+    <string name="chat_options">Opciones del chat</string>
+    <string name="chat_delete">Eliminar chat</string>
+    <string name="chat_delete_title">¿Eliminar chat?</string>
+    <string name="chat_delete_message">Si lo eliminas para ambos, la conversación desaparece para los dos. Si es una solicitud de adopción, podrás volver a enviarla desde la publicación.</string>
+    <string name="chat_delete_for_everyone">Eliminar para ambos</string>
+    <string name="chat_delete_for_me">Eliminar solo para mí</string>
+    <string name="chat_delete_error">No se pudo eliminar el chat. Intenta de nuevo.</string>
+    <string name="chat_long_press_label">Ver opciones</string>
+    <string name="notifications_delete">Eliminar notificación</string>
+    <string name="notifications_delete_error">No se pudo eliminar la notificación.</string>
 </resources>
