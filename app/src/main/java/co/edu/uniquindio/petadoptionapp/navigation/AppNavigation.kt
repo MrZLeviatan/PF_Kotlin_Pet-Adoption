@@ -25,11 +25,13 @@ import co.edu.uniquindio.petadoptionapp.features.dashboard.MainScreen
 import co.edu.uniquindio.petadoptionapp.features.notification.NotificationsScreen
 import co.edu.uniquindio.petadoptionapp.features.splash.SplashScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostScreen
+import co.edu.uniquindio.petadoptionapp.features.user.likes.MyLikesScreen
 import co.edu.uniquindio.petadoptionapp.features.user.myposts.MyPostsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.metric.MetricsScreen
+import co.edu.uniquindio.petadoptionapp.features.user.chat.conversation.ChatScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.edit.EditProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.settings.SettingsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.publicprofile.UserProfileScreen
@@ -87,7 +89,11 @@ fun AppNavigation() {
         composable<MainRoutes.Notifications> {
             NotificationsScreen(
                 onBack = { navController.popBackStack() },
-                onOpenPost = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+                onOpenPost = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) },
+                // Mensajes y solicitudes de adopción abren el chat asociado.
+                onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) },
+                // Insignias y niveles se ven en el dashboard de métricas.
+                onOpenMetrics = { navController.navigate(MainRoutes.Metrics) }
             )
         }
 
@@ -145,7 +151,18 @@ fun AppNavigation() {
                 onSettingsClick = { navController.navigate(MainRoutes.Settings) },
                 onEditProfileClick = { navController.navigate(MainRoutes.EditProfile) },
                 onUserClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
-                onMyPostsClick = { navController.navigate(MainRoutes.MyPosts) }
+                onMyPostsClick = { navController.navigate(MainRoutes.MyPosts) },
+                onMyLikesClick = { navController.navigate(MainRoutes.MyLikes) },
+                onChatClick = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) }
+            )
+        }
+
+        // Conversación (sin barra). El chatId lo lee el ViewModel de la ruta.
+        composable<MainRoutes.Chat> {
+            ChatScreen(
+                onBack = { navController.popBackStack() },
+                onUserClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
             )
         }
 
@@ -190,8 +207,23 @@ fun AppNavigation() {
         composable<MainRoutes.CreatePost> {
             CreatePostScreen(
                 onBack = { navController.popBackStack() },
-                onViewPost = { navController.popBackStack() },
+                // Abre la publicación recién creada; "atrás" desde ahí vuelve al inicio, no al formulario.
+                onViewPost = { postId ->
+                    navController.navigate(MainRoutes.PostDetail(postId)) {
+                        popUpTo<MainRoutes.CreatePost> { inclusive = true }
+                    }
+                },
                 onGoHome = { navController.popBackStack() }
+            )
+        }
+
+        // Editar publicación (sin barra): la misma pantalla de crear; el postId lo lee el ViewModel de la ruta.
+        // Al guardar se vuelve al detalle, que se recarga solo al reaparecer.
+        composable<MainRoutes.EditPost> {
+            CreatePostScreen(
+                onBack = { navController.popBackStack() },
+                onViewPost = { navController.popBackStack() },
+                onGoHome = { navController.popBackStack(MainRoutes.Main, inclusive = false) }
             )
         }
 
@@ -210,15 +242,26 @@ fun AppNavigation() {
                     context.startActivity(Intent.createChooser(intent, null))
                 },
                 onOpenComments = { postId, replyTo -> navController.navigate(MainRoutes.PostComments(postId, replyTo)) },
-                // TODO: pantalla de editar publicación (UpdatePostUseCase ya existe).
-                onEditPost = { },
-                onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) }
+                onEditPost = { postId -> navController.navigate(MainRoutes.EditPost(postId)) },
+                onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
+                onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) }
             )
         }
 
         // Todos los comentarios (sin barra).
         composable<MainRoutes.PostComments> {
-            CommentsScreen(onBack = { navController.popBackStack() })
+            CommentsScreen(
+                onBack = { navController.popBackStack() },
+                onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) }
+            )
+        }
+
+        // Me gusta (sin barra).
+        composable<MainRoutes.MyLikes> {
+            MyLikesScreen(
+                onBack = { navController.popBackStack() },
+                onPostClick = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
+            )
         }
 
         // Mis publicaciones (sin barra).

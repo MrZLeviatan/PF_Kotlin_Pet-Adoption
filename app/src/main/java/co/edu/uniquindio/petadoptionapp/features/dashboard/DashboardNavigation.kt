@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.features.dashboard
 
+import co.edu.uniquindio.petadoptionapp.features.user.chat.list.ChatListScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ fun DashboardNavigation(
     onEditProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onMetricsClick: () -> Unit,
+    onChatClick: (chatId: String) -> Unit = {},
 ) {
     NavHost(
         navController = navController,
@@ -54,7 +56,7 @@ fun DashboardNavigation(
         composable<DashboardRoutes.Publications> { PlaceholderScreen("Publications", padding) }
 
         // Compartidas
-        composable<DashboardRoutes.Messages> { PlaceholderScreen("Messages", padding) }
+        composable<DashboardRoutes.Messages> { ChatListScreen(padding = padding, onChatClick = onChatClick) }
         composable<DashboardRoutes.Profile> { PlaceholderScreen("Profile", padding) }
 
         composable<DashboardRoutes.Profile> {

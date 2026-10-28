@@ -21,7 +21,8 @@ class NotifyUseCase(
         actorName: String? = null,
         postId: String? = null,
         commentId: String? = null,
-        extra: String? = null
+        extra: String? = null,
+        chatId: String? = null
     ): Result<Unit> {
 
         // Nadie se notifica a sí mismo (si el actor es el destinatario, no se hace nada).
@@ -40,6 +41,7 @@ class NotifyUseCase(
                 postId = postId,
                 commentId = commentId,
                 extra = extra,
+                chatId = chatId,
                 read = false,
                 createdAt = System.currentTimeMillis()
             )

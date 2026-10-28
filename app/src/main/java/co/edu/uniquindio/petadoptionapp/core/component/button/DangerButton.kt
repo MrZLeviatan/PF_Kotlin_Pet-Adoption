@@ -3,7 +3,6 @@ package co.edu.uniquindio.petadoptionapp.core.component.button
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -33,8 +32,8 @@ fun DangerButton(
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp),
-        shape = RoundedCornerShape(16.dp),
+            .heightIn(min = AppButtonMinHeight),
+        shape = AppButtonShape,
         border = BorderStroke(1.dp, AppTheme.colors.stateError),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = AppTheme.colors.surface,

@@ -29,7 +29,6 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.Badge
@@ -40,8 +39,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -62,6 +59,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.form.SearchField
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
@@ -148,7 +146,14 @@ private fun HomeUserContent(
             onNotificationsClick = onNotificationsClick
         )
 
-        SearchField(query = state.query, onQueryChange = onQueryChange)
+        // Buscador de publicaciones (y de personas con @): el estado vive en el ViewModel.
+        SearchField(
+            query = state.query,
+            onQueryChange = onQueryChange,
+            placeholder = stringResource(R.string.home_search_placeholder),
+            iconDescription = stringResource(R.string.home_search_description),
+            modifier = Modifier.padding(horizontal = ScreenHorizontalPadding),
+        )
 
         when {
             // Búsqueda de personas (el texto empieza con @).
@@ -290,30 +295,6 @@ private fun HomeHeader(
             }
         }
     }
-}
-
-// Buscador de publicaciones (y de personas con @): el estado vive en el ViewModel.
-@Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = ScreenHorizontalPadding),
-        placeholder = { Text(stringResource(R.string.home_search_placeholder)) },
-        leadingIcon = {
-            Icon(Icons.Outlined.Search, contentDescription = stringResource(R.string.home_search_description))
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(24.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = AppTheme.colors.background,         // CAMBIAR: fondo del campo
-            unfocusedContainerColor = AppTheme.colors.background,
-            focusedBorderColor = AppTheme.colors.textPrimary,           // CAMBIAR: borde
-            unfocusedBorderColor = AppTheme.colors.textPrimary
-        )
-    )
 }
 
 // Tarjeta de una publicación del feed.

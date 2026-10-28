@@ -28,6 +28,8 @@ fun MainScreen(
     onEditProfileClick: () -> Unit = {},
     onUserClick: (String) -> Unit = {},
     onMyPostsClick: () -> Unit = {},
+    onMyLikesClick: () -> Unit = {},
+    onChatClick: (chatId: String) -> Unit = {},
 
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -46,7 +48,9 @@ fun MainScreen(
                 onSettingsClick = onSettingsClick,
                 onEditProfileClick = onEditProfileClick,
                 onUserClick = onUserClick,
-                onMyPostsClick = onMyPostsClick
+                onMyPostsClick = onMyPostsClick,
+                onMyLikesClick = onMyLikesClick,
+                onChatClick = onChatClick
             )
         }
     }
@@ -64,6 +68,8 @@ private fun MainContent(
     onEditProfileClick: () -> Unit,
     onUserClick: (String) -> Unit,
     onMyPostsClick: () -> Unit,
+    onMyLikesClick: () -> Unit,
+    onChatClick: (String) -> Unit = {},
 ) {
     // Controlador del NavHost interno (cambia de pantalla al tocar la barra).
     val navController = rememberNavController()
@@ -114,7 +120,9 @@ private fun MainContent(
             onSettingsClick = onSettingsClick,
             onEditProfileClick = onEditProfileClick,
             onUserClick = onUserClick,
-            onMyPostsClick = onMyPostsClick
+            onMyPostsClick = onMyPostsClick,
+            onMyLikesClick = onMyLikesClick,
+            onChatClick = onChatClick
         )
     }
 }
@@ -122,11 +130,11 @@ private fun MainContent(
 @Preview(name = "Usuario", showBackground = true)
 @Composable
 private fun MainUserPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.USER, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
 }
 
 @Preview(name = "Moderador", showBackground = true)
 @Composable
 private fun MainModeratorPreview() {
-    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}, {}, {}, {}) }
+    PetAdoptionAppTheme { MainContent(UserRole.MODERATOR, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
 }

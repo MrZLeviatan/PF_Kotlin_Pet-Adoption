@@ -1,44 +1,38 @@
 package co.edu.uniquindio.petadoptionapp.features.user.post.comments
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.form.MessageInputBar
 import co.edu.uniquindio.petadoptionapp.core.component.icon.UserAvatar
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.domain.model.comment.Comment
@@ -57,8 +51,15 @@ fun CommentItem(
     canReply: Boolean = true,
     // Resalta el comentario al que se está respondiendo.
     highlighted: Boolean = false,
+    // Al tocar la foto o el nombre, abre el perfil de quien comentó.
+    onAuthorClick: (() -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
 ) {
+    val authorModifier = if (onAuthorClick != null) {
+        Modifier.clickable(onClickLabel = stringResource(R.string.post_detail_view_profile), role = Role.Button, onClick = onAuthorClick)
+    } else {
+        Modifier
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -69,13 +70,21 @@ fun CommentItem(
             .padding(if (highlighted) 8.dp else 0.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        UserAvatar(name = comment.authorName, photoUrl = comment.authorPhotoUrl, size = 36.dp)
+        UserAvatar(
+            name = comment.authorName,
+            photoUrl = comment.authorPhotoUrl,
+            size = 36.dp,
+            modifier = Modifier
+                .clip(CircleShape)
+                .then(authorModifier),
+        )
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = comment.authorName,
                     style = MaterialTheme.typography.labelLarge,
                     color = AppTheme.colors.textPrimary,
+                    modifier = authorModifier,
                 )
                 Text(
                     text = "· ${commentTimeText(comment.ageMinutes)}",
@@ -173,6 +182,7 @@ fun CommentThread(
     modifier: Modifier = Modifier,
     canReply: Boolean = true,
     highlightedId: String? = null,
+    onAuthorClick: (userId: String) -> Unit = {},
 ) {
     val isExpanded = comment.id in expanded
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -182,6 +192,7 @@ fun CommentThread(
             onReplyClick = { onReply(comment) },
             canReply = canReply,
             highlighted = comment.id == highlightedId,
+            onAuthorClick = { onAuthorClick(comment.authorId) },
             footer = if (comment.replyCount > 0) {
                 {
                     RepliesToggle(
@@ -205,6 +216,7 @@ fun CommentThread(
                         onReplyClick = { onReply(reply) },
                         canReply = canReply,
                         highlighted = reply.id == highlightedId,
+                        onAuthorClick = { onAuthorClick(reply.authorId) },
                     )
                 }
             }
@@ -241,33 +253,16 @@ fun CommentInputBar(
     onCancelReply: () -> Unit = {},
     isSending: Boolean = false,
 ) {
-    val canSend = text.isNotBlank() && !isSending
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(AppTheme.colors.brand)
-            // El color llega hasta abajo sin tapar los botones del sistema.
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-    ) {
-        if (replyingTo != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.comment_replying_to, replyingTo),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = AppTheme.colors.textPrimary,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onCancelReply) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = stringResource(R.string.comment_cancel_reply),
-                        tint = AppTheme.colors.textPrimary,
-                    )
-                }
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    MessageInputBar(
+        text = text,
+        onTextChange = onTextChange,
+        onSend = onSend,
+        placeholder = stringResource(R.string.comment_placeholder),
+        sendDescription = stringResource(R.string.comment_send),
+        maxLength = Comment.MAX_LENGTH,
+        modifier = modifier,
+        isSending = isSending,
+        leading = {
             UserAvatar(
                 name = viewerName,
                 photoUrl = viewerPhotoUrl,
@@ -276,54 +271,27 @@ fun CommentInputBar(
                 containerColor = AppTheme.colors.actionPrimary,
                 contentColor = AppTheme.colors.onActionPrimary,
             )
-            OutlinedTextField(
-                value = text,
-                // El máximo lo define el dominio: no se deja escribir más allá.
-                onValueChange = { if (it.length <= Comment.MAX_LENGTH) onTextChange(it) },
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 48.dp),
-                placeholder = {
-                    Text(stringResource(R.string.comment_placeholder), style = MaterialTheme.typography.bodyMedium)
-                },
-                maxLines = 4,
-                shape = RoundedCornerShape(24.dp),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = { if (canSend) onSend() }),
-                trailingIcon = {
-                    FilledIconButton(
-                        onClick = onSend,
-                        enabled = canSend,
-                        modifier = Modifier.size(36.dp),
-                        shape = CircleShape,
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = AppTheme.colors.actionPrimary,
-                            contentColor = AppTheme.colors.onActionPrimary,
-                            disabledContainerColor = AppTheme.colors.surfaceTag,
-                            disabledContentColor = AppTheme.colors.stateDisabled,
-                        ),
-                    ) {
+        },
+        header = replyingTo?.let { name ->
+            {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.comment_replying_to, name),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = AppTheme.colors.textPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = onCancelReply) {
                         Icon(
-                            Icons.Filled.ArrowUpward,
-                            contentDescription = stringResource(R.string.comment_send),
-                            modifier = Modifier.size(18.dp),
+                            Icons.Outlined.Close,
+                            contentDescription = stringResource(R.string.comment_cancel_reply),
+                            tint = AppTheme.colors.textPrimary,
                         )
                     }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = AppTheme.colors.background,
-                    unfocusedContainerColor = AppTheme.colors.background,
-                    focusedBorderColor = Color.Transparent,     // Sin borde, como en el diseño
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = AppTheme.colors.textPrimary,
-                    unfocusedTextColor = AppTheme.colors.textPrimary,
-                    cursorColor = AppTheme.colors.textPrimary,
-                    focusedPlaceholderColor = AppTheme.colors.stateDisabled,
-                    unfocusedPlaceholderColor = AppTheme.colors.stateDisabled,
-                ),
-            )
-        }
-    }
+                }
+            }
+        },
+    )
 }
 
 // Minutos → "Ahora", "Hace 5 min", "Hace 3 h", "Ayer", "Hace 4 días" (mismos textos que Notificaciones).

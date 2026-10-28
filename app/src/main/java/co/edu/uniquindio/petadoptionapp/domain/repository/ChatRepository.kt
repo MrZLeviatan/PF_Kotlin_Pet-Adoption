@@ -49,6 +49,21 @@ interface ChatRepository {
     suspend fun countChatsWithUnread(userId: String): Result<Int>
 
 
+    /**
+    Elimina el chat solo para una persona (los demás lo siguen viendo).
+    - Qué envía: El [chatId] y el [userId].
+    - Qué recibe: Un [Result<Unit>] que confirma si se guardó.
+    Guarda `deletedAt` de esa persona con el momento actual y pone en 0 sus no leídos; no borra mensajes.
+     */
+    suspend fun hideChatFor(chatId: String, userId: String): Result<Unit>
+
+    /**
+    Elimina el chat para todos: el documento y su subcolección de mensajes.
+    - Qué envía ([chatId]): El identificador del chat.
+    - Qué recibe: Un [Result<Unit>] que confirma si se borró.
+     */
+    suspend fun deleteChat(chatId: String): Result<Unit>
+
     // Mensajes
 
     /**

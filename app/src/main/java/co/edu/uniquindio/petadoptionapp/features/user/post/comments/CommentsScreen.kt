@@ -42,6 +42,7 @@ Conecta el [CommentsViewModel] con la UI; [CommentsContent] solo dibuja.
 @Composable
 fun CommentsScreen(
     onBack: () -> Unit,
+    onAuthorClick: (userId: String) -> Unit,
     viewModel: CommentsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,6 +50,7 @@ fun CommentsScreen(
         uiState = uiState,
         actions = CommentsActions(
             onBack = onBack,
+            onAuthorClick = onAuthorClick,
             onLike = viewModel::onLikeClick,
             onReply = viewModel::onReplyClick,
             onToggleReplies = viewModel::onToggleReplies,
@@ -63,6 +65,7 @@ fun CommentsScreen(
 // Agrupa las acciones de la pantalla (mismo patrón que Registro y Configuración).
 private data class CommentsActions(
     val onBack: () -> Unit = {},
+    val onAuthorClick: (String) -> Unit = {},
     val onLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
     val onToggleReplies: (String) -> Unit = {},
@@ -132,6 +135,7 @@ private fun CommentsContent(
                     onToggleReplies = actions.onToggleReplies,
                     canReply = uiState.canComment,
                     highlightedId = uiState.replyingTo?.id,
+                    onAuthorClick = actions.onAuthorClick,
                 )
             }
 

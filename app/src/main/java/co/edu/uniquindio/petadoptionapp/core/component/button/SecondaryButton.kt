@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material3.ButtonDefaults
@@ -40,8 +39,8 @@ fun SecondaryButton(
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp),
-        shape = RoundedCornerShape(16.dp),
+            .heightIn(min = AppButtonMinHeight),
+        shape = AppButtonShape,
         border = BorderStroke(1.dp, AppTheme.colors.border),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = AppTheme.colors.surface,

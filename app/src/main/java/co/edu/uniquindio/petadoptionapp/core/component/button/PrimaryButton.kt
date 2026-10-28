@@ -2,7 +2,6 @@ package co.edu.uniquindio.petadoptionapp.core.component.button
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 
 /**
@@ -38,8 +36,8 @@ fun PrimaryButton(
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp),   // área táctil cómoda (mínimo recomendado: 48 dp)
-        shape = CircleShape,          // forma de píldora, como en el diseño
+            .heightIn(min = AppButtonMinHeight),
+        shape = AppButtonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = AppTheme.colors.actionPrimary,
             contentColor = AppTheme.colors.onActionPrimary,

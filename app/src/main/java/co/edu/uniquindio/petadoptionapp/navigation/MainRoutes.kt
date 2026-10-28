@@ -51,6 +51,9 @@ sealed class MainRoutes {
     @Serializable
     data object CreatePost : MainRoutes()
 
+    // Editar una publicación propia: los mismos pasos de crear, llenos con sus datos (sin barra)
+    @Serializable data class EditPost(val postId: String) : MainRoutes()
+
     // Detalle de una publicación (pantalla completa, sin barra)
     @Serializable
     data class PostDetail(val postId: String) : MainRoutes()
@@ -62,7 +65,13 @@ sealed class MainRoutes {
     // Publicaciones del usuario, agrupadas por estado (sin barra)
     @Serializable data object MyPosts : MainRoutes()
 
+    // Publicaciones que el usuario marcó con "Es importante" (sin barra)
+    @Serializable data object MyLikes : MainRoutes()
+
     @Serializable data class UserProfile(val userId: String) : MainRoutes()
+
+    // Una conversación (sin barra). Se abre desde Mensajes, una notificación o "Me interesa adoptar".
+    @Serializable data class Chat(val chatId: String) : MainRoutes()
 
 }
 

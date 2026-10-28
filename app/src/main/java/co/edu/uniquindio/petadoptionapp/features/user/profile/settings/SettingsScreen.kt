@@ -226,6 +226,7 @@ private fun SettingsContent(
             cancelText = stringResource(R.string.common_cancel),
             onConfirm = actions.onLogoutConfirm,
             onDismiss = actions.onLogoutDismiss,
+            isDestructive = true,
         )
     }
 

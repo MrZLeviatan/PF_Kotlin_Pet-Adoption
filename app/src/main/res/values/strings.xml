@@ -157,6 +157,8 @@
         <string name="notif_msg_badge">Desbloqueaste la insignia «%1$s».</string>
         <string name="notif_title_level_up">¡Subiste de nivel!</string>
         <string name="notif_msg_level_up">Ahora eres %1$s.</string>
+        <string name="notif_title_new_message">Nuevo mensaje</string>
+        <string name="notif_msg_new_message">%1$s te envió un mensaje.</string>
 
         <!-- Niveles (también se usarán en el perfil) -->
         <string name="level_animal_friend">Amigo Animal</string>
@@ -388,7 +390,6 @@
     <string name="post_detail_see_all">Ver todos</string>
     <string name="post_detail_no_comments">Aún no hay comentarios. ¡Sé el primero!</string>
     <string name="post_detail_comments_closed">Los comentarios se abren cuando la publicación sea verificada</string>
-    <string name="post_detail_msg_interest_sent">Le avisamos al autor de tu interés. Revisa tus mensajes.</string>
     <string name="post_detail_msg_already_requested">Ya enviaste una solicitud para esta publicación</string>
     <string name="post_detail_msg_error">No se pudo completar la acción. Intenta de nuevo.</string>
     <string name="post_detail_msg_comment_error">No se pudo publicar el comentario. Intenta de nuevo.</string>
@@ -399,6 +400,74 @@
     <string name="settings_logout">Cerrar sesión</string>
     <string name="settings_logout_title">¿Cerrar sesión?</string>
     <string name="settings_logout_message">Volverás a la pantalla de inicio de sesión.</string>
+    <string name="post_rejected_title">Publicación rechazada</string>
+    <string name="post_rejected_no_reason">Un moderador rechazó esta publicación.</string>
+    <string name="my_posts_not_editable_rejected">No editable</string>
+    <string name="my_likes_title">Me gusta</string>
+    <string name="my_likes_tab_all">Todas (%1$d)</string>
+    <string name="my_likes_tab_category">%1$s (%2$d)</string>
+    <string name="my_likes_remove">Quitar de Me gusta</string>
+    <string name="my_likes_empty">Aún no tienes publicaciones en Me gusta. Marca "Es importante" en las que quieras guardar.</string>
+    <string name="my_likes_error">No se pudieron cargar tus Me gusta. Intenta de nuevo.</string>
+    <!-- Crear publicación -->
+    <string name="create_post_title">Nueva publicación</string>
+    <string name="create_post_next">Continuar</string>
+    <string name="create_post_publish">Publicar</string>
+    <string name="create_post_subtitle_info">Ingresa la información sobre la publicación</string>
+    <string name="create_post_subtitle_pet">Ingresa la información sobre la mascota</string>
+    <string name="create_post_subtitle_location">Ingresa la ubicación de la mascota</string>
+    <string name="create_post_step_info">Información de la Publicación</string>
+    <string name="create_post_step_pet">Información de la Mascota</string>
+    <string name="create_post_step_photos">Fotografías de la Mascota</string>
+    <string name="create_post_step_location">Ubicación de la Mascota</string>
+    <string name="create_post_title_label">Título de la publicación</string>
+    <string name="create_post_category_label">Categoría</string>
+    <string name="create_post_description_label">Descripción</string>
+    <string name="create_post_description_placeholder">Describe la situación de la mascota, su personalidad, necesidades especiales…</string>
+    <string name="create_post_animal_label">Tipo de animal</string>
+    <string name="create_post_breed_label">Raza aproximada</string>
+    <string name="create_post_size_label">Tamaño aproximado</string>
+    <string name="create_post_age_label">Edad aproximada</string>
+    <string name="create_post_age_months">Meses</string>
+    <string name="create_post_age_years">Años</string>
+    <string name="create_post_vaccinated">Vacunas al día</string>
+    <string name="create_post_vaccinated_hint">Se verificará con certificado veterinario</string>
+    <string name="create_post_neutered">Esterilizado / Castrado</string>
+    <string name="create_post_photos_label">Mínimo 1 foto, máximo %1$d</string>
+    <string name="create_post_photos_tip">Usa una foto nítida, bien iluminada y enfocada para que la mascota se vea con claridad.</string>
+    <string name="create_post_location_hint">Selecciona dónde se encuentra o fue vista la mascota</string>
+    <string name="create_post_location_current">Ubicación actual</string>
+    <string name="create_post_location_map">Seleccionar mapa</string>
+    <string name="create_post_location_map_soon">Elegir el punto en el mapa estará disponible pronto. Usa tu ubicación actual.</string>
+    <string name="create_post_location_privacy">Por tu seguridad, solo se mostrará la ubicación aproximada (barrio/zona) en la publicación. La dirección exacta no será visible públicamente.</string>
+    <string name="create_post_error_required">Este campo es obligatorio</string>
+    <string name="create_post_error_min">Mínimo %1$d caracteres</string>
+    <string name="create_post_error_max">Máximo %1$d caracteres</string>
+    <string name="create_post_error_invalid">Valor no válido</string>
+    <string name="create_post_error_age">Ingresa una edad entre 0 y %1$d años</string>
+    <string name="create_post_error_location">Tu perfil no tiene una ubicación válida. Actualízala en Editar perfil.</string>
+    <string name="create_post_error_catalog">La categoría o el tipo de animal ya no está disponible. Elige otro.</string>
+    <string name="create_post_error_generic">No se pudo publicar. Intenta de nuevo.</string>
+    <string name="create_post_sent_title">Publicación enviada</string>
+    <string name="create_post_sent_message">Tu publicación está pendiente de verificación por nuestro equipo de moderadores. Recibirás una notificación cuando sea aprobada o si necesita ajustes.</string>
+    <string name="create_post_sent_time">Tiempo estimado: 24-48 horas</string>
+    <string name="edit_post_title">Editar publicación</string>
+    <string name="edit_post_save">Guardar cambios</string>
+    <string name="edit_post_loading">Cargando la publicación…</string>
+    <string name="edit_post_load_error">Esta publicación ya no se puede editar.</string>
+    <string name="edit_post_saved_title">Cambios guardados</string>
+    <string name="edit_post_saved_message">Tu publicación vuelve a revisión: nuestro equipo de moderadores verificará los cambios antes de mostrarla de nuevo.</string>
+    <string name="create_post_view_post">Ver mi publicación</string>
+    <string name="create_post_go_home">Volver al inicio</string>
+
+    <!-- Selector de fotos -->
+    <string name="photo_add">+ Añadir</string>
+    <string name="photo_description">Foto de la mascota</string>
+    <string name="photo_remove">Quitar foto</string>
+    <string name="photo_main">Principal</string>
+    <string name="photo_sheet_title">Agregar foto</string>
+    <string name="photo_camera">Cámara</string>
+    <string name="photo_gallery">Galería</string>
     <string name="post_share_text">Mira esta publicación en Huellas: %1$s</string>
 
     <!-- Comentarios -->
@@ -419,4 +488,41 @@
     <string name="comment_placeholder">Escribe un comentario…</string>
     <string name="comment_send">Enviar comentario</string>
     <string name="comment_time_now">Ahora</string>
+
+    <!-- Mensajes (lista de chats y conversación) -->
+    <string name="chats_search_placeholder">Buscar chat</string>
+    <string name="chats_search_description">Buscar</string>
+    <string name="chats_empty">Aún no tienes conversaciones. Escribe desde una publicación con "Me interesa adoptar".</string>
+    <string name="chats_search_empty">No hay chats con ese nombre.</string>
+    <string name="chats_error">No se pudieron cargar tus chats.</string>
+    <string name="chats_time_yesterday">Ayer</string>
+    <string name="chats_you_prefix">Tú: %1$s</string>
+    <string name="chats_preview_interest_received">Le interesa adoptar tu mascota</string>
+    <string name="chats_preview_interest_sent">Enviaste una solicitud de adopción</string>
+    <plurals name="chats_unread_description">
+        <item quantity="one">%1$d mensaje sin leer</item>
+        <item quantity="other">%1$d mensajes sin leer</item>
+    </plurals>
+    <string name="chat_placeholder">Escribe un mensaje…</string>
+    <string name="chat_send">Enviar mensaje</string>
+    <string name="chat_about_post">Sobre: %1$s</string>
+    <string name="chat_not_found">No se encontró este chat.</string>
+    <string name="chat_send_error">No se pudo enviar el mensaje. Intenta de nuevo.</string>
+    <string name="chat_load_older">Ver mensajes anteriores</string>
+    <string name="chat_today">Hoy</string>
+    <string name="chat_seen">Visto</string>
+    <string name="chat_auto_label">Mensaje automático</string>
+    <string name="chat_auto_interest">¡Hola! Me interesa adoptar a «%1$s». ¿Podemos hablar?</string>
+    <string name="chat_auto_interest_no_title">¡Hola! Me interesa adoptar a tu mascota. ¿Podemos hablar?</string>
+    <string name="post_detail_open_chat">Ir al chat</string>
+    <string name="chat_options">Opciones del chat</string>
+    <string name="chat_delete">Eliminar chat</string>
+    <string name="chat_delete_title">¿Eliminar chat?</string>
+    <string name="chat_delete_message">Si lo eliminas para ambos, la conversación desaparece para los dos. Si es una solicitud de adopción, podrás volver a enviarla desde la publicación.</string>
+    <string name="chat_delete_for_everyone">Eliminar para ambos</string>
+    <string name="chat_delete_for_me">Eliminar solo para mí</string>
+    <string name="chat_delete_error">No se pudo eliminar el chat. Intenta de nuevo.</string>
+    <string name="chat_long_press_label">Ver opciones</string>
+    <string name="notifications_delete">Eliminar notificación</string>
+    <string name="notifications_delete_error">No se pudo eliminar la notificación.</string>
 </resources>

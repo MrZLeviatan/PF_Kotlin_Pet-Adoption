@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,10 +30,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
@@ -70,6 +74,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -96,7 +101,7 @@ import java.util.Locale
 
 /**
 Detalle de una publicación. Cambia según quién la mira:
-- El dueño ve "Editar" y "Eliminar".
+- El dueño ve "Editar" (solo mientras está en revisión) y "Eliminar".
 - Los demás ven "Me interesa adoptar" (si la categoría lo permite) y "Es importante".
 Los comentarios se ven de a tres; "Ver todos" abre la pantalla completa para comentar y responder.
 Conecta el [PostDetailViewModel] con la UI; [PostDetailContent] solo dibuja.
@@ -109,10 +114,12 @@ fun PostDetailScreen(
     onOpenComments: (postId: String, replyToCommentId: String?) -> Unit,
     onEditPost: (postId: String) -> Unit,
     onAuthorClick: (userId: String) -> Unit,
+    onOpenChat: (chatId: String) -> Unit,
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnBack by rememberUpdatedState(onBack)
+    val currentOnOpenChat by rememberUpdatedState(onOpenChat)
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Al volver (por ejemplo, de la pantalla de comentarios) se recarga.
@@ -125,6 +132,7 @@ fun PostDetailScreen(
         viewModel.events.collect { event ->
             when (event) {
                 PostDetailEvent.Deleted -> currentOnBack()
+                is PostDetailEvent.OpenChat -> currentOnOpenChat(event.chatId)
             }
         }
     }
@@ -152,6 +160,7 @@ fun PostDetailScreen(
                 onOpenComments = { uiState.post?.let { onOpenComments(it.id, null) } },
                 onReply = { comment -> uiState.post?.let { onOpenComments(it.id, comment.id) } },
                 onAuthorClick = { uiState.author?.let { onAuthorClick(it.id) } },
+                onCommentAuthorClick = onAuthorClick,
                 onCommentLike = viewModel::onCommentLike,
                 onCommentTextChange = viewModel::onCommentTextChange,
                 onSendComment = viewModel::onSendComment,
@@ -180,6 +189,7 @@ private data class PostDetailActions(
     val onCommentLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
     val onAuthorClick: () -> Unit = {},
+    val onCommentAuthorClick: (String) -> Unit = {},
     val onCommentTextChange: (String) -> Unit = {},
     val onSendComment: () -> Unit = {},
 )
@@ -235,9 +245,14 @@ private fun PostDetailContent(
                         message = stringResource(R.string.post_finished_notice),
                         icon = Icons.Outlined.CheckCircle,
                     )
+                } else if (post.isRejected) {
+                    // Rechazada: el motivo del moderador y solo "Eliminar" (no se edita).
+                    RejectedNotice(reason = post.rejectionReason)
+                    if (uiState.isOwner) OwnerActions(onEdit = null, onDelete = actions.onDelete)
                 } else if (uiState.isOwner) {
                     // El dueño tiene sus acciones arriba; los demás, debajo de los datos (como en el diseño).
-                    OwnerActions(onEdit = actions.onEdit, onDelete = actions.onDelete)
+                    // Ya verificada no se edita (solo se finaliza o elimina), igual que en UpdatePostUseCase.
+                    OwnerActions(onEdit = actions.onEdit.takeUnless { post.isVerified }, onDelete = actions.onDelete)
                 }
 
                 PostTitleCard(post)
@@ -282,6 +297,7 @@ private fun PostDetailContent(
             onConfirm = actions.onDeleteConfirm,
             onDismiss = actions.onDeleteDismiss,
             isLoading = uiState.isDeleting,
+            isDestructive = true,
         )
     }
 }
@@ -384,16 +400,19 @@ private fun RoundIconButton(
 
 // Dueño: editar (principal) y eliminar (delineado en rojo).
 @Composable
-private fun OwnerActions(onEdit: () -> Unit, onDelete: () -> Unit) {
+// Sin [onEdit] (verificada o rechazada) solo queda "Eliminar", a todo el ancho.
+private fun OwnerActions(onEdit: (() -> Unit)?, onDelete: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        PillButton(
-            text = stringResource(R.string.post_detail_edit),
-            icon = Icons.Outlined.Edit,
-            onClick = onEdit,
-            containerColor = AppTheme.colors.actionPrimary,
-            contentColor = AppTheme.colors.onActionPrimary,
-            modifier = Modifier.weight(1f),
-        )
+        if (onEdit != null) {
+            PillButton(
+                text = stringResource(R.string.post_detail_edit),
+                icon = Icons.Outlined.Edit,
+                onClick = onEdit,
+                containerColor = AppTheme.colors.actionPrimary,
+                contentColor = AppTheme.colors.onActionPrimary,
+                modifier = Modifier.weight(1f),
+            )
+        }
         PillButton(
             text = stringResource(R.string.post_detail_delete),
             icon = Icons.Outlined.Delete,
@@ -406,32 +425,79 @@ private fun OwnerActions(onEdit: () -> Unit, onDelete: () -> Unit) {
     }
 }
 
+// Aviso de rechazo: lo escribe el moderador al rechazar y explica qué corregir o por qué no se publica.
+@Composable
+private fun RejectedNotice(reason: String?) {
+    AppCard(
+        containerColor = AppTheme.colors.surface,
+        borderColor = AppTheme.colors.stateError,
+        contentPadding = PaddingValues(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.Outlined.Block, contentDescription = null, tint = AppTheme.colors.stateError, modifier = Modifier.size(20.dp))
+            Text(
+                text = stringResource(R.string.post_rejected_title),
+                style = MaterialTheme.typography.titleSmall,
+                color = AppTheme.colors.stateError,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = reason?.let { stringResource(R.string.my_posts_rejected_reason, it) }
+                ?: stringResource(R.string.post_rejected_no_reason),
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppTheme.colors.textPrimary,
+        )
+    }
+}
+
 // Otra persona: interés de adopción (si la categoría lo admite) y voto "Es importante".
 @Composable
 private fun VisitorActions(uiState: PostDetailUiState, post: PostDetailUi, actions: PostDetailActions) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    // IntrinsicSize.Min + fillMaxHeight: si un texto ocupa dos líneas, los dos botones quedan del mismo alto.
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         if (post.allowsAdoption) {
             PillButton(
+                // Ya enviada: "Ir al chat" abre la conversación con el autor (si se conoce su chat).
                 text = stringResource(
-                    if (uiState.adoptionRequested) R.string.post_detail_interest_sent else R.string.post_detail_interest
+                    when {
+                        uiState.adoptionChatId != null -> R.string.post_detail_open_chat
+                        uiState.adoptionRequested -> R.string.post_detail_interest_sent
+                        else -> R.string.post_detail_interest
+                    }
                 ),
-                icon = if (uiState.adoptionRequested) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                icon = when {
+                    uiState.adoptionChatId != null -> Icons.AutoMirrored.Outlined.Chat
+                    uiState.adoptionRequested -> Icons.Filled.Favorite
+                    else -> Icons.Outlined.FavoriteBorder
+                },
                 onClick = actions.onAdoptionInterest,
-                enabled = !uiState.adoptionRequested && !uiState.isSendingInterest,
+                enabled = (uiState.adoptionChatId != null || !uiState.adoptionRequested) && !uiState.isSendingInterest,
                 containerColor = AppTheme.colors.actionPrimary,
                 contentColor = AppTheme.colors.onActionPrimary,
-                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
             )
         }
-        // Colores invertidos cuando ya votó, igual que en el feed.
+        // Mismo texto y colores invertidos que en el feed cuando ya votó ("Marcada como importante").
         PillButton(
-            text = stringResource(R.string.post_detail_important),
+            text = stringResource(if (uiState.isVoted) R.string.home_important_active else R.string.home_important_button),
             icon = if (uiState.isVoted) Icons.Filled.Star else Icons.Outlined.StarBorder,
             onClick = actions.onImportant,
             enabled = !uiState.isTogglingImportant,
             containerColor = if (uiState.isVoted) AppTheme.colors.textPrimary else AppTheme.colors.brand,
             contentColor = if (uiState.isVoted) AppTheme.colors.background else AppTheme.colors.textPrimary,
-            modifier = Modifier.weight(1f),
+            maxLines = 2,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
         )
     }
 }
@@ -447,6 +513,8 @@ private fun PillButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     border: BorderStroke? = null,
+    // 2 en los botones del visitante, para que "Marcada como importante" no se corte.
+    maxLines: Int = 1,
 ) {
     Button(
         onClick = onClick,
@@ -464,8 +532,14 @@ private fun PillButton(
     ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(6.dp))
-        // 12 sp: los textos del diseño ("Me interesa adoptar") caben completos en media pantalla.
-        Text(text, style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // 12 sp para todos: los dos botones de una fila se ven del mismo tamaño.
+        Text(
+            text,
+            style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp, lineHeight = 14.sp),
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -679,6 +753,7 @@ private fun PostCommentsPreview(
                 onLikeClick = { actions.onCommentLike(comment.id) },
                 onReplyClick = { actions.onReply(comment) },
                 canReply = canComment,
+                onAuthorClick = { actions.onCommentAuthorClick(comment.authorId) },
             )
         }
     }
@@ -744,7 +819,6 @@ private fun vaccinesText(vaccinated: Boolean?): String = when (vaccinated) {
 @Composable
 private fun detailMessageText(message: DetailMessage): String = stringResource(
     when (message) {
-        DetailMessage.INTEREST_SENT -> R.string.post_detail_msg_interest_sent
         DetailMessage.ALREADY_REQUESTED -> R.string.post_detail_msg_already_requested
         DetailMessage.ACTION_ERROR -> R.string.post_detail_msg_error
         DetailMessage.COMMENT_ERROR -> R.string.post_detail_msg_comment_error

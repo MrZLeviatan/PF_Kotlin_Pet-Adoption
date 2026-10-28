@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Verification
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.CheckPostCatalogUseCase
@@ -10,7 +11,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 
 /**
 Documenta el caso de uso que edita una publicación propia.
-Al editar, la verificación se reinicia: así nadie publica algo aprobado y lo cambia después.
+Solo se edita mientras está en revisión (sin verificar); al editar, el resumen de IA se reinicia.
+Una verificada no se edita (así nadie publica algo aprobado y lo cambia después): solo se finaliza o se elimina.
+Una rechazada tampoco: el moderador ya dio su motivo y el autor solo puede eliminarla.
  */
 class UpdatePostUseCase(
     // Inyecta el repositorio de publicaciones.
@@ -30,6 +33,9 @@ class UpdatePostUseCase(
 
         // Solo se edita mientras sigue en proceso.
         if (current.status != PostStatus.IN_PROGRESS) return Result.failure(PostException.PostNotActive)
+
+        // Ya revisada por un moderador (verificada o rechazada): no se edita.
+        if (current.verification.status != VerificationStatus.UNVERIFIED) return Result.failure(PostException.AlreadyReviewed)
 
         // Revisa las reglas de formato.
         PostValidator.validate(edited)?.let { return Result.failure(it) }

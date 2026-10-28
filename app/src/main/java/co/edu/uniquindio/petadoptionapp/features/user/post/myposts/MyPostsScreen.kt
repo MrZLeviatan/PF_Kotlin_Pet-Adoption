@@ -16,10 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -187,6 +189,8 @@ private fun MyPostsContent(
             onConfirm = actions.onConfirmAction,
             onDismiss = actions.onDismissAction,
             isLoading = uiState.isProcessing,
+            // Eliminar no tiene vuelta atrás: confirmar en rojo. Finalizar mantiene el estilo normal.
+            isDestructive = !isFinish,
         )
     }
 }
@@ -243,12 +247,7 @@ private fun MyPostItem(
     val footer: (@Composable () -> Unit)? = when (post.status) {
         PostStatusUi.ACTIVE -> ({ ActiveFooter(onFinish = onFinish) })
         PostStatusUi.PENDING -> ({ DeleteFooter(onDelete = onDelete, note = stringResource(R.string.my_posts_not_editable)) })
-        PostStatusUi.REJECTED -> ({
-            DeleteFooter(
-                onDelete = onDelete,
-                note = post.rejectionReason?.let { stringResource(R.string.my_posts_rejected_reason, it) }.orEmpty(),
-            )
-        })
+        PostStatusUi.REJECTED -> ({ RejectedFooter(reason = post.rejectionReason, onDelete = onDelete) })
         // Finalizada: sin acciones, solo el aviso (no se edita ni se elimina).
         PostStatusUi.FINISHED -> ({ FinishedFooter() })
     }
@@ -287,6 +286,28 @@ private fun FinishedFooter() {
         modifier = Modifier.padding(vertical = 12.dp),
         style = MaterialTheme.typography.labelMedium,
     )
+}
+
+// Rechazada: el motivo del moderador bien visible y solo "Eliminar" (no se edita).
+@Composable
+private fun RejectedFooter(reason: String?, onDelete: () -> Unit) {
+    Column(modifier = Modifier.padding(top = 8.dp)) {
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Icon(
+                Icons.Outlined.Block,
+                contentDescription = null,
+                tint = AppTheme.colors.stateError,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                text = reason?.let { stringResource(R.string.my_posts_rejected_reason, it) }
+                    ?: stringResource(R.string.post_rejected_no_reason),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppTheme.colors.stateError,
+            )
+        }
+        DeleteFooter(onDelete = onDelete, note = stringResource(R.string.my_posts_not_editable_rejected))
+    }
 }
 
 // Eliminar a la izquierda y una nota a la derecha ("No editable en revisión" o el motivo del rechazo).

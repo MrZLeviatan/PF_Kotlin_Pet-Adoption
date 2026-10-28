@@ -66,6 +66,9 @@ data class PostDetailUi(
     val allowsAdoption: Boolean,
     // Finalizada: el caso se cerró; no se edita, no se elimina y no recibe interacciones.
     val isFinished: Boolean,
+    // Rechazada por un moderador: se muestra su motivo; no se edita, pero sí se puede eliminar.
+    val isRejected: Boolean = false,
+    val rejectionReason: String? = null,
 )
 
 // Quien publicó: alias y foto siempre; el nombre real solo si su perfil es público.
@@ -77,7 +80,7 @@ data class PostAuthorUi(
 )
 
 // Mensajes cortos (snackbar); el texto lo pone la UI con strings.xml.
-enum class DetailMessage { INTEREST_SENT, ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR }
+enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR }
 
 data class PostDetailUiState(
     val post: PostDetailUi? = null,
@@ -94,6 +97,8 @@ data class PostDetailUiState(
     val isVoted: Boolean = false,
     val isTogglingImportant: Boolean = false,
     val adoptionRequested: Boolean = false,
+    // Chat de la solicitud ya enviada: el botón pasa a ser "Ir al chat".
+    val adoptionChatId: String? = null,
     val isSendingInterest: Boolean = false,
     val showDeleteDialog: Boolean = false,
     val isDeleting: Boolean = false,
@@ -103,6 +108,8 @@ data class PostDetailUiState(
 sealed interface PostDetailEvent {
     // La publicación se eliminó: la navegación vuelve atrás.
     data object Deleted : PostDetailEvent
+    // Abrir el chat con el autor (después de "Me interesa adoptar" o con "Ir al chat").
+    data class OpenChat(val chatId: String) : PostDetailEvent
 }
 
 @HiltViewModel
@@ -190,10 +197,12 @@ class PostDetailViewModel @Inject constructor(
             if (!isOwner) {
                 val voted = getMyVotedPostIds(listOf(postId)).getOrNull().orEmpty()
                 val request = getMyAdoptionRequest(postId).getOrNull()
+                    ?.takeIf { it.status != AdoptionRequestStatus.CANCELLED }
                 _uiState.update {
                     it.copy(
                         isVoted = postId in voted,
-                        adoptionRequested = request != null && request.status != AdoptionRequestStatus.CANCELLED,
+                        adoptionRequested = request != null,
+                        adoptionChatId = request?.chatId?.takeIf(String::isNotBlank),
                     )
                 }
             }
@@ -261,28 +270,42 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     "Me interesa adoptar": el caso de uso crea la solicitud, abre el chat con el autor y deja el mensaje
+     automático; luego se abre ese chat. Si ya se había enviado, el botón es "Ir al chat" y solo lo abre.
+     */
     fun onAdoptionInterestClick() {
         val state = _uiState.value
-        if (state.adoptionRequested || state.isSendingInterest) return
+        if (state.isSendingInterest) return
+        state.adoptionChatId?.let { _events.trySend(PostDetailEvent.OpenChat(it)); return }
+        if (state.adoptionRequested) return
         _uiState.update { it.copy(isSendingInterest = true) }
         viewModelScope.launch {
             sendAdoptionInterest(postId)
-                .onSuccess {
-                    _uiState.update {
-                        it.copy(isSendingInterest = false, adoptionRequested = true, message = DetailMessage.INTEREST_SENT)
-                    }
-                }
+                .onSuccess { request -> openAdoptionChat(request.chatId) }
                 .onFailure { error ->
-                    val alreadySent = error === AdoptionException.AlreadyRequested
+                    if (error === AdoptionException.AlreadyRequested) {
+                        // Ya existía (por ejemplo, desde otro dispositivo): se abre su chat.
+                        val chatId = getMyAdoptionRequest(postId).getOrNull()?.chatId
+                        if (!chatId.isNullOrBlank()) {
+                            openAdoptionChat(chatId)
+                            return@launch
+                        }
+                    }
                     _uiState.update {
                         it.copy(
                             isSendingInterest = false,
-                            adoptionRequested = alreadySent || it.adoptionRequested,
-                            message = if (alreadySent) DetailMessage.ALREADY_REQUESTED else DetailMessage.ACTION_ERROR,
+                            adoptionRequested = error === AdoptionException.AlreadyRequested || it.adoptionRequested,
+                            message = if (error === AdoptionException.AlreadyRequested) DetailMessage.ALREADY_REQUESTED else DetailMessage.ACTION_ERROR,
                         )
                     }
                 }
         }
+    }
+
+    private fun openAdoptionChat(chatId: String) {
+        _uiState.update { it.copy(isSendingInterest = false, adoptionRequested = true, adoptionChatId = chatId) }
+        _events.trySend(PostDetailEvent.OpenChat(chatId))
     }
 
     // --- Acciones del dueño ---
@@ -334,6 +357,8 @@ class PostDetailViewModel @Inject constructor(
             isPublic = showsInPublicFeed(),
             allowsAdoption = category?.allowsAdoptionRequests == true,
             isFinished = status == PostStatus.FINISHED,
+            isRejected = verification.status == VerificationStatus.REJECTED,
+            rejectionReason = verification.rejectionReason?.takeIf { it.isNotBlank() },
         )
     }
 

@@ -4,6 +4,7 @@ import co.edu.uniquindio.petadoptionapp.domain.error.AdoptionException
 import co.edu.uniquindio.petadoptionapp.domain.error.ChatException
 import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequest
 import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestStatus
+import co.edu.uniquindio.petadoptionapp.data.repository.send.SeedData
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Chat
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Message
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
@@ -27,13 +28,13 @@ Las operaciones que tocan varios documentos se hacen bajo un candado, imitando u
 class ChatRepositoryImpl @Inject constructor() : ChatRepository {
 
     // Guarda los chats, con el id determinista como clave.
-    private val chats = MutableStateFlow<Map<String, Chat>>(emptyMap())
+    private val chats = MutableStateFlow(SeedData.chats.associateBy { it.id })
 
     // Guarda los mensajes de cada chat, del más antiguo al más nuevo.
-    private val messages = MutableStateFlow<Map<String, List<Message>>>(emptyMap())
+    private val messages = MutableStateFlow(SeedData.chatMessages)
 
     // Guarda las solicitudes de adopción, con el id fijo "postId_requesterId" como clave.
-    private val requests = MutableStateFlow<Map<String, AdoptionRequest>>(emptyMap())
+    private val requests = MutableStateFlow(SeedData.adoptionRequests.associateBy { it.id })
 
     // Candado que vuelve atómicas las operaciones sobre varios estados.
     private val lock = Mutex()
@@ -50,7 +51,7 @@ class ChatRepositoryImpl @Inject constructor() : ChatRepository {
 
     override suspend fun getChatsByParticipant(userId: String, limit: Int, afterChatId: String?): Result<List<Chat>> {
         val list = chats.value.values
-            .filter { userId in it.participantIds }
+            .filter { userId in it.participantIds && !it.isHiddenFor(userId) }
             .sortedByDescending { it.lastMessageAt }
         val start = if (afterChatId == null) 0 else {
             val index = list.indexOfFirst { it.id == afterChatId }
@@ -61,6 +62,26 @@ class ChatRepositoryImpl @Inject constructor() : ChatRepository {
 
     override suspend fun countChatsWithUnread(userId: String): Result<Int> =
         Result.success(chats.value.values.count { userId in it.participantIds && it.unreadFor(userId) > 0 })
+
+    override suspend fun hideChatFor(chatId: String, userId: String): Result<Unit> = lock.withLock {
+        val chat = chats.value[chatId] ?: return Result.failure(ChatException.ChatNotFound)
+        val now = System.currentTimeMillis()
+        chats.update {
+            it + (chatId to chat.copy(
+                deletedAt = chat.deletedAt + (userId to now),
+                unreadCounts = chat.unreadCounts + (userId to 0),
+                lastReadAt = chat.lastReadAt + (userId to now)
+            ))
+        }
+        Result.success(Unit)
+    }
+
+    override suspend fun deleteChat(chatId: String): Result<Unit> = lock.withLock {
+        if (chats.value[chatId] == null) return Result.failure(ChatException.ChatNotFound)
+        chats.update { it - chatId }
+        messages.update { it - chatId }
+        Result.success(Unit)
+    }
 
     override suspend fun sendMessage(chatId: String, message: Message): Result<Message> = lock.withLock {
         val chat = chats.value[chatId] ?: return Result.failure(ChatException.ChatNotFound)

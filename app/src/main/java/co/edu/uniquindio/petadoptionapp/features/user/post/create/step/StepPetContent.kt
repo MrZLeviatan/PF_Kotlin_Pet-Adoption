@@ -1,62 +1,115 @@
 package co.edu.uniquindio.petadoptionapp.features.user.post.create.step
 
-// Importación general de materiales y componentes visuales (androidx)
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import co.edu.uniquindio.petadoptionapp.core.component.*
+import androidx.compose.ui.unit.sp
+import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.card.FormCard
+import co.edu.uniquindio.petadoptionapp.core.component.form.FormDropdown
+import co.edu.uniquindio.petadoptionapp.core.component.form.FormTextField
+import co.edu.uniquindio.petadoptionapp.core.component.form.OptionSelector
+import co.edu.uniquindio.petadoptionapp.core.component.form.SelectorOption
+import co.edu.uniquindio.petadoptionapp.core.component.form.SwitchRow
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
+import co.edu.uniquindio.petadoptionapp.features.user.post.create.AgeUnit
+import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostActions
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostUiState
-import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostViewModel
-import co.edu.uniquindio.petadoptionapp.features.user.post.create.component.SizeSelector
 
-// Componente visual correspondiente al segundo paso del formulario (Información detallada de la mascota).
+/** Paso 2: tipo de animal (del catálogo), raza, tamaño, edad y salud. */
 @Composable
-fun StepPetContent(state: CreatePostUiState, viewModel: CreatePostViewModel) {
-    // Tarjeta contenedora blanca con título centrado para agrupar los campos del paso 2.
-    FormCard(title = "Información de la Mascota") {
-
-        // Componente desplegable para seleccionar el tipo de animal (Perro, Gato, Otro).
+fun StepPetContent(state: CreatePostUiState, actions: CreatePostActions) {
+    FormCard(title = stringResource(R.string.create_post_step_pet)) {
         FormDropdown(
-            value = state.animalType,
-            label = "Tipo de Animal",
-            options = listOf("Perro", "Gato", "Otro"),
-            onSelect = viewModel::onAnimalTypeChange
+            label = stringResource(R.string.create_post_animal_label),
+            options = state.animalTypes.map { it.name },
+            selectedIndex = state.animalTypes.indexOfFirst { it.id == state.animalTypeId }.takeIf { it >= 0 },
+            onSelect = actions.onAnimalTypeSelected,
         )
-        // Inserta un espacio vertical de separación de 12dp.
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Campo de texto para ingresar la raza aproximada con validación de errores.
-        FormTextField(state.breed, viewModel::onBreedChange, "Raza Aproximada", errorText = state.breedError)
-        // Inserta un espacio vertical de separación de 12dp.
+        FormTextField(
+            value = state.breed,
+            onValueChange = actions.onBreedChange,
+            label = stringResource(R.string.create_post_breed_label),
+            errorText = lengthErrorText(state.breedError, CreatePostUiState.MIN_BREED_LENGTH, Int.MAX_VALUE),
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Selector visual de tamaño (Pequeño, Mediano, Grande).
-        SizeSelector(selected = state.size, onSelect = viewModel::onSizeChange)
-        // Inserta un espacio vertical de separación de 12dp.
+        // El orden de las opciones es el del enum: Pequeño, Mediano, Grande.
+        OptionSelector(
+            label = stringResource(R.string.create_post_size_label),
+            options = AnimalSize.entries.map { SelectorOption(sizeLabel(it)) },
+            selectedIndex = state.size?.ordinal,
+            onSelect = actions.onSizeSelected,
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Campo de texto para ingresar la edad aproximada con validación de errores.
-        FormTextField(state.age, viewModel::onAgeChange, "Edad Aproximada", errorText = state.ageError)
-        // Inserta un espacio vertical de separación de 12dp.
+        // Edad: el número y la unidad; se guarda en meses.
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FormTextField(
+                value = state.age,
+                onValueChange = actions.onAgeChange,
+                label = stringResource(R.string.create_post_age_label),
+                errorText = ageErrorText(state.ageError, PostValidator.MAX_AGE_IN_MONTHS),
+                keyboardType = KeyboardType.Number,
+                // Más pequeña: el campo comparte la fila con "Meses / Años".
+                labelFontSize = 12.sp,
+                modifier = Modifier.weight(1f),
+            )
+            OptionSelector(
+                options = AgeUnit.entries.map { SelectorOption(ageUnitLabel(it)) },
+                selectedIndex = state.ageUnit.ordinal,
+                onSelect = actions.onAgeUnitSelected,
+                // Baja las unidades al nivel del campo (la etiqueta flotante deja espacio arriba).
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Fila con interruptor (switch) para indicar si tiene las vacunas al día e incluye subtítulo.
         SwitchRow(
-            title = "Vacunas al día",
+            title = stringResource(R.string.create_post_vaccinated),
             checked = state.vaccinated,
-            onCheckedChange = viewModel::onVaccinatedChange,
-            subtitle = "Se verificará con certificado veterinario"
+            onCheckedChange = actions.onVaccinatedChange,
+            subtitle = stringResource(R.string.create_post_vaccinated_hint),
         )
-        // Inserta un espacio vertical de separación de 8dp.
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Fila con interruptor para indicar si la mascota está esterilizada o castrada.
         SwitchRow(
-            title = "Esterilizado / Castrado",
-            checked = state.sterilized,
-            onCheckedChange = viewModel::onSterilizedChange
+            title = stringResource(R.string.create_post_neutered),
+            checked = state.neutered,
+            onCheckedChange = actions.onNeuteredChange,
         )
     }
 }
+
+@Composable
+private fun sizeLabel(size: AnimalSize) = stringResource(
+    when (size) {
+        AnimalSize.SMALL -> R.string.home_size_small
+        AnimalSize.MEDIUM -> R.string.home_size_medium
+        AnimalSize.LARGE -> R.string.home_size_large
+    }
+)
+
+@Composable
+private fun ageUnitLabel(unit: AgeUnit) = stringResource(
+    when (unit) {
+        AgeUnit.MONTHS -> R.string.create_post_age_months
+        AgeUnit.YEARS -> R.string.create_post_age_years
+    }
+)

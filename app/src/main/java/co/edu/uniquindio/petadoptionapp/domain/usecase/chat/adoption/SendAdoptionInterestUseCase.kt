@@ -105,11 +105,11 @@ class SendAdoptionInterestUseCase(
             sentAt = now
         )
 
-        // 8. Guarda todo o nada. Pendiente: NotifyUseCase ADOPTION_REQUEST al autor.
+        // 8. Guarda todo o nada y avisa al autor (la notificación abre el chat).
         // Solicita al repositorio guardar la solicitud, el chat y el mensaje en una sola transacción atómica, mapeando el resultado final para devolver la solicitud creada.
         return chatRepository.sendAdoptionInterest(request, chat, autoMessage)
             .onSuccess {
-                notify(post.authorId, NotificationType.ADOPTION_REQUEST, session.id, session.userName, postId)
+                notify(post.authorId, NotificationType.ADOPTION_REQUEST, session.id, session.userName, postId, chatId = chatId)
             }
             .map { request }
     }

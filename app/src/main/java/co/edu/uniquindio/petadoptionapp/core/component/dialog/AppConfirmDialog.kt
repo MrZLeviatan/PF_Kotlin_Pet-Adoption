@@ -19,13 +19,17 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import co.edu.uniquindio.petadoptionapp.core.component.button.DangerButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.icon.PawCircle
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 /**
  Diálogo de confirmación ("¿Finalizar publicación?"): icono, título, mensaje y dos botones.
- Confirmar es el botón principal; Cancelar va delineado en rojo, como en el diseño.
+ Normalmente confirmar es el botón principal (amarillo) y Cancelar va delineado en rojo.
+ Con [isDestructive] (cerrar sesión, eliminar) se invierten: confirmar va en rojo y Cancelar en amarillo,
+ para que la acción que no tiene vuelta atrás se distinga.
+ Con [alternativeText] aparece una tercera opción neutral entre las dos (ej. "Eliminar para mí").
  Mientras [isLoading] no se puede cerrar ni confirmar dos veces.
  */
 @Composable
@@ -38,6 +42,9 @@ fun AppConfirmDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
+    isDestructive: Boolean = false,
+    alternativeText: String? = null,
+    onAlternative: () -> Unit = {},
     // Por defecto la huella; cada pantalla puede poner el suyo.
     icon: @Composable () -> Unit = {
         PawCircle(size = 64.dp, containerColor = AppTheme.colors.brand)
@@ -70,14 +77,23 @@ fun AppConfirmDialog(
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(24.dp))
-            PrimaryButton(text = confirmText, onClick = onConfirm, enabled = !isLoading)
-            Spacer(Modifier.height(12.dp))
-            DangerButton(
-                text = cancelText,
-                onClick = onDismiss,
-                enabled = !isLoading,
-                uppercase = false,
-            )
+            if (isDestructive) {
+                DangerButton(text = confirmText, onClick = onConfirm, enabled = !isLoading, uppercase = false)
+                Spacer(Modifier.height(12.dp))
+                if (alternativeText != null) {
+                    SecondaryButton(text = alternativeText, onClick = onAlternative, enabled = !isLoading)
+                    Spacer(Modifier.height(12.dp))
+                }
+                PrimaryButton(text = cancelText, onClick = onDismiss, enabled = !isLoading)
+            } else {
+                PrimaryButton(text = confirmText, onClick = onConfirm, enabled = !isLoading)
+                Spacer(Modifier.height(12.dp))
+                if (alternativeText != null) {
+                    SecondaryButton(text = alternativeText, onClick = onAlternative, enabled = !isLoading)
+                    Spacer(Modifier.height(12.dp))
+                }
+                DangerButton(text = cancelText, onClick = onDismiss, enabled = !isLoading, uppercase = false)
+            }
         }
     }
 }

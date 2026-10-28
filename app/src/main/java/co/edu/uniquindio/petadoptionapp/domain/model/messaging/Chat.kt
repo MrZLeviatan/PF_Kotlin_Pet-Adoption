@@ -28,6 +28,9 @@ data class Chat(
     val unreadCounts: Map<String, Int> = emptyMap(),
     // Último momento en que cada participante abrió el chat (clave: id de la cuenta), en milisegundos (epoch).
     val lastReadAt: Map<String, Long> = emptyMap(),
+    // Momento en que cada participante eliminó el chat solo para sí (clave: id de la cuenta), en milisegundos (epoch).
+    // Como en WhatsApp: deja de ver los mensajes anteriores y el chat vuelve a aparecer si llega uno nuevo.
+    val deletedAt: Map<String, Long> = emptyMap(),
     // Momento en que se creó el chat, en milisegundos (epoch).
     val createdAt: Long = System.currentTimeMillis()
 ) {
@@ -35,6 +38,12 @@ data class Chat(
     // Dado mi id, devuelve el id de la otra persona del chat (o `null`).
     fun otherParticipantId(myId: String): String? =
         participantIds.firstOrNull { it != myId }
+
+    // Desde cuándo ve mensajes la persona indicada (0 si nunca eliminó el chat para sí).
+    fun visibleSince(userId: String): Long = deletedAt[userId] ?: 0L
+
+    // ¿La persona eliminó el chat para sí y no ha llegado nada después? Entonces no sale en su lista.
+    fun isHiddenFor(userId: String): Boolean = deletedAt[userId]?.let { it >= lastMessageAt } ?: false
 
     // Cantidad de mensajes sin leer que tiene la persona indicada.
     fun unreadFor(userId: String): Int = unreadCounts[userId] ?: 0

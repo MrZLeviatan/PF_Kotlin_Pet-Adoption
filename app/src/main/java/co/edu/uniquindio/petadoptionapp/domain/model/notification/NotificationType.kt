@@ -37,4 +37,6 @@ enum class NotificationType {
 
     // El autor respondió (aceptó o rechazó) una solicitud de adopción.
     ADOPTION_RESPONSE,
+    // Alguien escribió en un chat del usuario; el chat va en Notification.chatId.
+    NEW_MESSAGE,
 }

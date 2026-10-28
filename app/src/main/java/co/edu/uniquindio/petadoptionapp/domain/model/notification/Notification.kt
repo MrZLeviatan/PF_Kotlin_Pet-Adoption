@@ -9,8 +9,8 @@ package co.edu.uniquindio.petadoptionapp.domain.model.notification
  Messaging). No almacena el mensaje ya redactado: guarda el [type] y los
  datos necesarios, y la interfaz compone el texto con `strings.xml`.
 
- Para navegar, la UI usa [postId] (y [commentId] si existe) y abre el
- detalle de la publicación relacionada.
+ Para navegar, la UI usa [chatId] si existe (mensajes y solicitudes de adopción abren el chat);
+ si no, [postId] (y [commentId] si existe) y abre el detalle de la publicación relacionada.
  */
 data class Notification(
     val id: String = "",
@@ -26,6 +26,8 @@ data class Notification(
     val postId: String? = null,
     // Id del comentario relacionado, si aplica.
     val commentId: String? = null,
+    // Id del chat relacionado (mensajes y solicitudes de adopción), si aplica.
+    val chatId: String? = null,
     // Dato adicional según el tipo: motivo del rechazo, id de la insignia o nombre del nivel.
     val extra: String? = null,
     // `true` si la persona ya la abrió.
@@ -35,7 +37,7 @@ data class Notification(
 ) {
 
     // ¿Se puede navegar a una publicación desde esta notificación?
-    fun hasDestination(): Boolean = !postId.isNullOrBlank()
+    fun hasDestination(): Boolean = !chatId.isNullOrBlank() || !postId.isNullOrBlank()
 
     // Devuelve una copia marcada como leída.
     fun markAsRead(): Notification = copy(read = true)

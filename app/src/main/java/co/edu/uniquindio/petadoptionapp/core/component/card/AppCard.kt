@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.core.component.card
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ val AppCardShape = RoundedCornerShape(24.dp)
  Tarjeta con fondo, borde y esquinas redondeadas del tema. Base de las demás tarjetas.
  Con [borderColor] en `null` se dibuja sin borde.
  Con [onClick] la tarjeta completa es tocable; [onClickLabel] es lo que TalkBack anuncia como acción.
+ Con [onLongClick] además responde a mantener presionado (ej. opciones de un chat).
  */
 @Composable
 fun AppCard(
@@ -34,6 +36,7 @@ fun AppCard(
     contentPadding: PaddingValues = PaddingValues(20.dp),
     onClick: (() -> Unit)? = null,
     onClickLabel: String? = null,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -44,7 +47,14 @@ fun AppCard(
             .background(containerColor, AppCardShape)
             .then(if (borderColor != null) Modifier.border(1.dp, borderColor, AppCardShape) else Modifier)
             .then(
-                if (onClick != null) {
+                if (onLongClick != null) {
+                    Modifier.combinedClickable(
+                        onClickLabel = onClickLabel,
+                        role = Role.Button,
+                        onLongClick = onLongClick,
+                        onClick = onClick ?: {},
+                    )
+                } else if (onClick != null) {
                     Modifier.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
                 } else {
                     Modifier

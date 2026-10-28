@@ -57,8 +57,20 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.CreateCommentUseC
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.ToggleCommentLikeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetLikedCommentsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.SendAdoptionInterestUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.CountUnreadChatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.DeleteChatUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.DeleteNotificationUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.GetMyChatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.GetOlderMessagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.MarkChatReadUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.ObserveMessagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.RequireChatMemberUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.SendMessageUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.GetMyAdoptionRequestUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyImportantPostsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.CreatePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.UpdatePostUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -200,6 +212,13 @@ object UseCaseModule {
         notificationRepository: NotificationRepository,
         authRepository: AuthRepository
     ): GetNotificationsUseCase = GetNotificationsUseCase(notificationRepository, authRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesDeleteNotificationUseCase(
+        notificationRepository: NotificationRepository,
+        authRepository: AuthRepository
+    ): DeleteNotificationUseCase = DeleteNotificationUseCase(notificationRepository, authRepository)
 
 
     @Provides
@@ -372,6 +391,66 @@ object UseCaseModule {
     ): GetMyAdoptionRequestUseCase = GetMyAdoptionRequestUseCase(chatRepository, requireUser)
 
 
+    // Chats
+
+    @Provides
+    @ViewModelScoped
+    fun providesRequireChatMemberUseCase(
+        chatRepository: ChatRepository,
+        requireUser: RequireUserUseCase,
+    ): RequireChatMemberUseCase = RequireChatMemberUseCase(chatRepository, requireUser)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyChatsUseCase(
+        chatRepository: ChatRepository,
+        requireUser: RequireUserUseCase,
+    ): GetMyChatsUseCase = GetMyChatsUseCase(chatRepository, requireUser)
+
+    @Provides
+    @ViewModelScoped
+    fun providesCountUnreadChatsUseCase(
+        chatRepository: ChatRepository,
+        requireUser: RequireUserUseCase,
+    ): CountUnreadChatsUseCase = CountUnreadChatsUseCase(chatRepository, requireUser)
+
+    @Provides
+    @ViewModelScoped
+    fun providesObserveMessagesUseCase(
+        chatRepository: ChatRepository,
+        requireChatMember: RequireChatMemberUseCase,
+    ): ObserveMessagesUseCase = ObserveMessagesUseCase(chatRepository, requireChatMember)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetOlderMessagesUseCase(
+        chatRepository: ChatRepository,
+        requireChatMember: RequireChatMemberUseCase,
+    ): GetOlderMessagesUseCase = GetOlderMessagesUseCase(chatRepository, requireChatMember)
+
+    @Provides
+    @ViewModelScoped
+    fun providesSendMessageUseCase(
+        chatRepository: ChatRepository,
+        requireChatMember: RequireChatMemberUseCase,
+        notify: NotifyUseCase,
+    ): SendMessageUseCase = SendMessageUseCase(chatRepository, requireChatMember, notify)
+
+    @Provides
+    @ViewModelScoped
+    fun providesMarkChatReadUseCase(
+        chatRepository: ChatRepository,
+        requireChatMember: RequireChatMemberUseCase,
+    ): MarkChatReadUseCase = MarkChatReadUseCase(chatRepository, requireChatMember)
+
+    @Provides
+    @ViewModelScoped
+    fun providesDeleteChatUseCase(
+        chatRepository: ChatRepository,
+        requireChatMember: RequireChatMemberUseCase,
+    ): DeleteChatUseCase = DeleteChatUseCase(chatRepository, requireChatMember)
+
+
     // Comentarios
 
     @Provides
@@ -416,6 +495,40 @@ object UseCaseModule {
     fun providesLogoutUseCase(
         authRepository: AuthRepository,
     ): LogoutUseCase = LogoutUseCase(authRepository)
+
+
+    // Me gusta
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyImportantPostsUseCase(
+        voteRepository: ImportantVoteRepository,
+        postRepository: PostRepository,
+        requireUser: RequireUserUseCase,
+    ): GetMyImportantPostsUseCase = GetMyImportantPostsUseCase(voteRepository, postRepository, requireUser)
+
+
+    // Crear publicación
+
+    @Provides
+    @ViewModelScoped
+    fun providesCheckPostCatalogUseCase(
+        catalogRepository: CatalogRepository,
+    ): CheckPostCatalogUseCase = CheckPostCatalogUseCase(catalogRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesCreatePostUseCase(
+        postRepository: PostRepository,
+        checkPostCatalog: CheckPostCatalogUseCase,
+    ): CreatePostUseCase = CreatePostUseCase(postRepository, checkPostCatalog)
+
+    @Provides
+    @ViewModelScoped
+    fun providesUpdatePostUseCase(
+        postRepository: PostRepository,
+        checkPostCatalog: CheckPostCatalogUseCase,
+    ): UpdatePostUseCase = UpdatePostUseCase(postRepository, checkPostCatalog)
 
 
     // Home Moderador

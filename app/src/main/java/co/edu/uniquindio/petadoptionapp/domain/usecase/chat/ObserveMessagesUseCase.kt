@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.chat
 
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Message
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -20,8 +21,11 @@ class ObserveMessagesUseCase(
     // Define la función asíncrona principal que recibe el ID del chat y devuelve un resultado con el flujo de la lista de mensajes.
     suspend operator fun invoke(chatId: String): Result<Flow<List<Message>>> {
         // Confirma que el usuario participa en el chat y retorna un fallo si la validación no es exitosa.
-        requireChatMember(chatId).getOrElse { return Result.failure(it) }
-        // Solicita al repositorio observar el flujo de mensajes en vivo del chat utilizando el tamaño definido y retorna el resultado exitoso.
-        return Result.success(chatRepository.observeMessages(chatId, LIVE_SIZE))
+        val membership = requireChatMember(chatId).getOrElse { return Result.failure(it) }
+        // Si eliminó el chat para sí, solo ve los mensajes que llegaron después (en Firestore: where sentAt > desde).
+        val since = membership.chat.visibleSince(membership.account.id)
+        return Result.success(
+            chatRepository.observeMessages(chatId, LIVE_SIZE).map { list -> list.filter { it.sentAt > since } }
+        )
     }
 }
