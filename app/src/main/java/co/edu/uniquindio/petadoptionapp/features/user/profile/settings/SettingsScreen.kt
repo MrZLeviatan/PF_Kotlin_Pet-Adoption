@@ -169,16 +169,19 @@ private fun SettingsContent(
                 )
             }
 
-            SectionCard(
-                title = stringResource(R.string.settings_privacy),
-                icon = Icons.Outlined.Visibility,
-            ) {
-                SettingSwitchRow(
-                    icon = Icons.Outlined.Person,
-                    title = stringResource(R.string.settings_public_profile),
-                    checked = uiState.isProfilePublic,
-                    onCheckedChange = actions.onProfilePublicChange,
-                )
+            // Los moderadores no tienen perfil público ni privado.
+            if (!uiState.isModerator) {
+                SectionCard(
+                    title = stringResource(R.string.settings_privacy),
+                    icon = Icons.Outlined.Visibility,
+                ) {
+                    SettingSwitchRow(
+                        icon = Icons.Outlined.Person,
+                        title = stringResource(R.string.settings_public_profile),
+                        checked = uiState.isProfilePublic,
+                        onCheckedChange = actions.onProfilePublicChange,
+                    )
+                }
             }
 
             if (uiState.settingsError) {
@@ -196,18 +199,21 @@ private fun SettingsContent(
                 modifier = Modifier.padding(top = 8.dp),
             )
 
-            DangerButton(
-                text = stringResource(R.string.settings_delete_account),
-                onClick = actions.onDeleteAccountClick,
-            )
+            // Un moderador no elimina su cuenta desde la app (se gestiona aparte, como su alta).
+            if (!uiState.isModerator) {
+                DangerButton(
+                    text = stringResource(R.string.settings_delete_account),
+                    onClick = actions.onDeleteAccountClick,
+                )
 
-            Text(
-                text = stringResource(R.string.settings_delete_warning),
-                style = MaterialTheme.typography.bodySmall,
-                color = AppTheme.colors.stateError,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                Text(
+                    text = stringResource(R.string.settings_delete_warning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppTheme.colors.stateError,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 

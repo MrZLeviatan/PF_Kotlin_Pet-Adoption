@@ -39,8 +39,8 @@ class UserRepositoryImpl @Inject constructor(
     // Guarda los perfiles de usuario en un flujo de estado, con el id como clave.
     private val users = MutableStateFlow<Map<String, User>>(emptyMap())
 
-    // Guarda los moderadores precargados (solo lectura) indexados por el ID de su cuenta.
-    private val moderators = SeedData.moderators.associateBy { it.account.id }
+    // Guarda los moderadores precargados indexados por el ID de su cuenta (solo cambia su verificación en dos pasos).
+    private val moderators = MutableStateFlow(SeedData.moderators.associateBy { it.account.id })
 
     // Define el ámbito de corrutinas con un trabajo supervisor y despachador predeterminado donde vive el flujo derivado de la sesión.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -68,7 +68,13 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun findById(id: String): User? = users.value[id]
 
     // Busca y retorna un moderador precargado por su ID, o nulo si no se encuentra.
-    override suspend fun findModeratorById(id: String): Moderator? = moderators[id]
+    override suspend fun findModeratorById(id: String): Moderator? = moderators.value[id]
+
+    override suspend fun updateModeratorTwoFactor(id: String, enabled: Boolean): Result<Unit> {
+        if (moderators.value[id] == null) return Result.failure(UserException.ProfileNotFound)
+        moderators.update { map -> map[id]?.let { map + (id to it.copy(twoFactorEnabled = enabled, updatedAt = System.currentTimeMillis())) } ?: map }
+        return Result.success(Unit)
+    }
 
     // Valida si ya existe un nombre de usuario registrado y no eliminado, ignorando mayúsculas, minúsculas y espacios.
     override suspend fun existsByUserName(userName: String): Boolean =

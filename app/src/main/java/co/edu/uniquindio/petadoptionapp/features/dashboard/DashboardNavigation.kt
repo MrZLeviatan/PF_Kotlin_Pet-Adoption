@@ -1,6 +1,9 @@
 package co.edu.uniquindio.petadoptionapp.features.dashboard
 
 import co.edu.uniquindio.petadoptionapp.features.moderator.home.ModeratorHomeScreen
+import co.edu.uniquindio.petadoptionapp.features.moderator.profile.ModeratorProfileScreen
+import co.edu.uniquindio.petadoptionapp.features.moderator.stats.ModeratorStatsScreen
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import co.edu.uniquindio.petadoptionapp.features.moderator.reviews.MyReviewsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.chat.list.ChatListScreen
 import androidx.compose.foundation.layout.Box
@@ -66,18 +69,34 @@ fun DashboardNavigation(
 
         // Compartidas
         composable<DashboardRoutes.Messages> { ChatListScreen(padding = padding, onChatClick = onChatClick) }
-        composable<DashboardRoutes.Profile> { PlaceholderScreen("Profile", padding) }
+        // Moderador: su dashboard de desempeño ocupa el lugar de Mensajes.
+        composable<DashboardRoutes.ModeratorStats> { ModeratorStatsScreen(padding = padding) }
 
+        // Cada rol tiene su perfil: el moderador no tiene editar perfil, me gusta ni publicaciones.
         composable<DashboardRoutes.Profile> {
-            ProfileScreen(
-                onMyPostsClick = onMyPostsClick,
-                onMyLikesClick = onMyLikesClick,
-                onEditProfileClick = onEditProfileClick,
-                onSettingsClick = onSettingsClick,
-                onMetricsClick = onMetricsClick,
+            when (role) {
+                UserRole.USER -> ProfileScreen(
+                    onMyPostsClick = onMyPostsClick,
+                    onMyLikesClick = onMyLikesClick,
+                    onEditProfileClick = onEditProfileClick,
+                    onSettingsClick = onSettingsClick,
+                    onMetricsClick = onMetricsClick,
 
-                modifier = Modifier.padding(padding)   // evita que la barra inferior tape el contenido
-            )
+                    modifier = Modifier.padding(padding)   // evita que la barra inferior tape el contenido
+                )
+                UserRole.MODERATOR -> ModeratorProfileScreen(
+                    // Lleva a la pestaña del dashboard, igual que tocarla en la barra.
+                    onStatsClick = {
+                        navController.navigate(DashboardRoutes.ModeratorStats) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onSettingsClick = onSettingsClick,
+                    modifier = Modifier.padding(padding)
+                )
+            }
         }
     }
 }

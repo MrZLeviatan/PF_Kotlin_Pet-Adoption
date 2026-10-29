@@ -50,8 +50,9 @@ data class User (
      - viewerId Id de quien consulta el perfil.
      - postIds Ids de las publicaciones del usuario (se consultan aparte, porque no se guardan dentro de [User]).
      */
-    fun toPublicProfile(viewerId: String, postIds: List<String> = emptyList()): PublicProfile {
-        val isOwner = viewerId == account.id
+    // [fullAccess]: quien mira es un moderador; ve todos los datos aunque el perfil sea privado.
+    fun toPublicProfile(viewerId: String, postIds: List<String> = emptyList(), fullAccess: Boolean = false): PublicProfile {
+        val isOwner = viewerId == account.id || fullAccess
         return PublicProfile(
             id = account.id,
             userName = account.userName,

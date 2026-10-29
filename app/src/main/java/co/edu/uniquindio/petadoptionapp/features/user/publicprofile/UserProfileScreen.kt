@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -129,7 +130,8 @@ private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Un
 
         if (uiState.isPrivate) {
             NoticeBanner(
-                message = stringResource(R.string.user_profile_private),
+                // Un moderador lo ve completo igual; solo se le avisa que es privado.
+                message = stringResource(if (uiState.viewerIsModerator) R.string.user_profile_private_moderator else R.string.user_profile_private),
                 icon = Icons.Outlined.Lock,
             )
         }
@@ -167,8 +169,8 @@ private fun ProfileBody(uiState: UserProfileUiState, onPostClick: (String) -> Un
             }
         }
 
-        // Publicaciones activas (las privadas ni siquiera llegan del dominio).
-        if (!uiState.isPrivate) {
+        // Publicaciones activas (las privadas ni siquiera llegan del dominio, salvo para un moderador).
+        if (!uiState.isPrivate || uiState.viewerIsModerator) {
             SectionCard(title = stringResource(R.string.user_profile_posts)) {
                 if (uiState.posts.isEmpty()) {
                     StatusMessage(text = stringResource(R.string.user_profile_posts_empty))
@@ -229,10 +231,27 @@ private fun PublicPostItem(post: PublicPostUi, onClick: () -> Unit) {
     PostSummaryCard(
         image = if (post.photoUrl == null) fallback else image,
         typeLabel = post.categoryName,
-        // Solo llegan publicaciones verificadas y en proceso: siempre "activas".
-        statusColor = AppTheme.colors.stateSuccess,
+        // Para los demás solo llegan verificadas: siempre "activas". Un moderador ve además en qué va la revisión.
+        statusColor = when (post.review) {
+            null, PostReviewState.VERIFIED -> AppTheme.colors.stateSuccess
+            PostReviewState.IN_REVIEW_BY_ME, PostReviewState.IN_REVIEW_BY_OTHER -> AppTheme.colors.stateWarning
+            PostReviewState.UNASSIGNED -> AppTheme.colors.textLink
+        },
         title = post.title,
-        metaLines = listOf(
+        metaLines = listOfNotNull(
+            post.review?.let { review ->
+                PostMetaLine(
+                    Icons.Outlined.VerifiedUser,
+                    stringResource(
+                        when (review) {
+                            PostReviewState.VERIFIED -> R.string.mod_status_verified
+                            PostReviewState.IN_REVIEW_BY_ME -> R.string.user_profile_review_mine
+                            PostReviewState.IN_REVIEW_BY_OTHER -> R.string.user_profile_review_other
+                            PostReviewState.UNASSIGNED -> R.string.mod_status_pending
+                        }
+                    ),
+                )
+            },
             PostMetaLine(
                 Icons.Outlined.CalendarToday,
                 stringResource(R.string.my_posts_published, agoText(post.ageHours)),

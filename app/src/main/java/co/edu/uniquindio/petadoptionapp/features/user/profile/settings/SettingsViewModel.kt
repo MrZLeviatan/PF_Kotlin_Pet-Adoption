@@ -14,6 +14,10 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateSettingsUseCas
 import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrength
 import co.edu.uniquindio.petadoptionapp.core.component.form.passwordStrengthOf
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetCurrentModeratorUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateModeratorTwoFactorUseCase
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -86,6 +90,8 @@ data class DeleteDialogState(
 
 // Estado de la pantalla. Un diálogo en null significa que está cerrado.
 data class SettingsUiState(
+    // Moderador: solo cambiar contraseña, verificación en dos pasos y cerrar sesión (sin privacidad ni eliminar cuenta).
+    val isModerator: Boolean = false,
     val twoFactorEnabled: Boolean = false,
     val isProfilePublic: Boolean = true,
     val settingsError: Boolean = false,
@@ -108,6 +114,9 @@ sealed interface SettingsEvent {
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     observeCurrentUser: ObserveCurrentUserUseCase,
+    observeSession: ObserveSessionUseCase,
+    getCurrentModerator: GetCurrentModeratorUseCase,
+    private val updateModeratorTwoFactor: UpdateModeratorTwoFactorUseCase,
     private val updateSettings: UpdateSettingsUseCase,
     private val changePassword: ChangePasswordUseCase,
     private val deleteAccount: DeleteAccountUseCase,
@@ -124,7 +133,16 @@ class SettingsViewModel @Inject constructor(
     private var userId = ""
     private var savedSettings = UserSettings()
 
+    // La pantalla es la misma para ambos roles; el moderador guarda su A2F en su propio perfil.
+    private val isModerator = observeSession().value?.role == UserRole.MODERATOR
+
     init {
+        if (isModerator) {
+            _uiState.update { it.copy(isModerator = true) }
+            viewModelScope.launch {
+                getCurrentModerator().onSuccess { moderator -> _uiState.update { it.copy(twoFactorEnabled = moderator.twoFactorEnabled) } }
+            }
+        }
         // Si el perfil cambia, los interruptores muestran lo que realmente está guardado.
         viewModelScope.launch {
             observeCurrentUser().collect { user ->
@@ -143,8 +161,16 @@ class SettingsViewModel @Inject constructor(
 
     // --- Interruptores ---
 
-    fun onTwoFactorChange(enabled: Boolean) =
-        saveSettings { it.copy(twoFactorEnabled = enabled) }
+    fun onTwoFactorChange(enabled: Boolean) {
+        if (!isModerator) return saveSettings { it.copy(twoFactorEnabled = enabled) }
+        // Moderador: mismo cambio optimista, guardado en su perfil de moderador.
+        _uiState.update { it.copy(twoFactorEnabled = enabled, settingsError = false) }
+        viewModelScope.launch {
+            updateModeratorTwoFactor(enabled).onFailure {
+                _uiState.update { it.copy(twoFactorEnabled = !enabled, settingsError = true) }
+            }
+        }
+    }
 
     fun onProfilePublicChange(isPublic: Boolean) = saveSettings {
         it.copy(profileVisibility = if (isPublic) ProfileVisibility.PUBLIC else ProfileVisibility.PRIVATE)

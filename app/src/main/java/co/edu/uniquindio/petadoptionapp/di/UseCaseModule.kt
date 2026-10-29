@@ -12,6 +12,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ChangePasswordUseCas
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LoginUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.RegisterUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.CheckRegistrationAvailabilityUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ResendTwoFactorCodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.SendPasswordResetUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.VerifyTwoFactorCodeUseCase
@@ -37,6 +38,8 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.post.ApprovePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.RejectPostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.StartReviewUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetMyReviewsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetModeratorPerformanceUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateModeratorTwoFactorUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetModerationStatsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetCurrentModeratorUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetUserPostsUseCase
@@ -129,6 +132,13 @@ object UseCaseModule {
 
 
     // Registrar Cuenta
+
+    @Provides
+    @ViewModelScoped
+    fun providesCheckRegistrationAvailabilityUseCase(
+        authRepository: AuthRepository,
+        userRepository: UserRepository,
+    ): CheckRegistrationAvailabilityUseCase = CheckRegistrationAvailabilityUseCase(authRepository, userRepository)
 
     @Provides
     @ViewModelScoped
@@ -336,6 +346,20 @@ object UseCaseModule {
         postRepository: PostRepository,
         requireModerator: RequireModeratorUseCase,
     ): GetMyReviewsUseCase = GetMyReviewsUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetModeratorPerformanceUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+    ): GetModeratorPerformanceUseCase = GetModeratorPerformanceUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesUpdateModeratorTwoFactorUseCase(
+        requireModerator: RequireModeratorUseCase,
+        userRepository: UserRepository,
+    ): UpdateModeratorTwoFactorUseCase = UpdateModeratorTwoFactorUseCase(requireModerator, userRepository)
 
     @Provides
     @ViewModelScoped

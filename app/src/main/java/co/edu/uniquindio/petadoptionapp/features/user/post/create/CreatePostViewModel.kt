@@ -23,7 +23,6 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUs
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.random.Random
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -291,12 +290,11 @@ class CreatePostViewModel @Inject constructor(
     // --- Paso 3 ---
 
     /**
-     Agrega una foto. TODO (Cloudinary): abrir la cámara o la galería, subir la imagen y guardar su URL.
-     Mientras tanto se usa una imagen de prueba distinta cada vez.
+     Agrega las fotos elegidas con la cámara o la galería (ya guardadas en la app), sin pasar del máximo.
+     TODO (Cloudinary): subirlas y guardar su URL en lugar de la dirección local.
      */
-    fun onAddPhoto() = _uiState.update { state ->
-        if (state.photos.size >= PostValidator.MAX_PHOTOS) state
-        else state.copy(photos = state.photos + "https://picsum.photos/seed/${Random.nextInt(10_000)}/400/400")
+    fun onAddPhotos(urls: List<String>) = _uiState.update { state ->
+        state.copy(photos = (state.photos + urls).take(PostValidator.MAX_PHOTOS))
     }
 
     fun onRemovePhoto(index: Int) = _uiState.update { it.copy(photos = it.photos.filterIndexed { i, _ -> i != index }) }

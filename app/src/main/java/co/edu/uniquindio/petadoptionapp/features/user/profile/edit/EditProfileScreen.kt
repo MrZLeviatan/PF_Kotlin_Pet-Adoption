@@ -31,6 +31,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import co.edu.uniquindio.petadoptionapp.core.component.photo.ImageSourcePicker
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.MaterialTheme
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
@@ -72,6 +91,7 @@ fun EditProfileScreen(
         actions = EditProfileActions(
             onBack = onBack,
             onFullNameChange = viewModel::onFullNameChange,
+            onPhotoPicked = viewModel::onPhotoPicked,
             onPhoneChange = viewModel::onPhoneChange,
             onCityChange = viewModel::onCityChange,
             onAddressChange = viewModel::onAddressChange,
@@ -86,6 +106,7 @@ fun EditProfileScreen(
 private data class EditProfileActions(
     val onBack: () -> Unit = {},
     val onFullNameChange: (String) -> Unit = {},
+    val onPhotoPicked: (String) -> Unit = {},
     val onPhoneChange: (String) -> Unit = {},
     val onCityChange: (String) -> Unit = {},
     val onAddressChange: (String) -> Unit = {},
@@ -120,8 +141,18 @@ private fun EditProfileContent(
                 .padding(horizontal = ScreenHorizontalPadding, vertical = 16.dp),
         ) {
             AppCard(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Foto actual; cambiarla queda para más adelante.
-                UserAvatar(name = uiState.userName, photoUrl = uiState.photoUrl, size = 88.dp)
+                // Tocar la foto, su botón de cámara o "Cambiar foto" abre la cámara o la galería.
+                var showPhotoSheet by rememberSaveable { mutableStateOf(false) }
+                ProfilePhotoEditor(
+                    userName = uiState.userName,
+                    photoUrl = uiState.photoUrl,
+                    onClick = { showPhotoSheet = true },
+                )
+                ImageSourcePicker(
+                    visible = showPhotoSheet,
+                    onDismiss = { showPhotoSheet = false },
+                    onPicked = { urls -> urls.firstOrNull()?.let(actions.onPhotoPicked) },
+                )
 
                 Spacer(Modifier.height(20.dp))
 
@@ -235,6 +266,63 @@ private val previewState = EditProfileUiState(
     address = "Oro negro, Calle 20 Norte",
     isLoaded = true,
 )
+
+/**
+ Foto de perfil editable: la foto con un anillo, el botón de cámara montado sobre el borde
+ (fuera del recorte circular, con un borde del color de la tarjeta para separarlo) y "Cambiar foto" debajo.
+ */
+@Composable
+private fun ProfilePhotoEditor(userName: String, photoUrl: String?, onClick: () -> Unit) {
+    val changeLabel = stringResource(R.string.edit_profile_change_photo)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // El Box no recorta: así el botón de cámara se ve completo aunque sobresalga de la foto.
+        Box(modifier = Modifier.size(116.dp)) {
+            UserAvatar(
+                name = userName,
+                photoUrl = photoUrl,
+                size = 104.dp,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .border(3.dp, AppTheme.colors.actionPrimary, CircleShape)
+                    .padding(4.dp)
+                    .clip(CircleShape)
+                    .clickable(onClickLabel = changeLabel, role = Role.Button, onClick = onClick),
+            )
+            // Botón de cámara: el TalkBack lo anuncia una vez (la foto ya tiene la misma acción).
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(AppTheme.colors.actionPrimary, CircleShape)
+                    .border(3.dp, AppTheme.colors.surface, CircleShape)
+                    .clickable(onClickLabel = changeLabel, role = Role.Button, onClick = onClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Outlined.PhotoCamera,
+                    contentDescription = null,
+                    tint = AppTheme.colors.onActionPrimary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        // "Cambiar foto" como píldora delineada, con su icono.
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .border(1.dp, AppTheme.colors.border, RoundedCornerShape(50))
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.Edit, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(changeLabel, style = MaterialTheme.typography.labelMedium, color = AppTheme.colors.textPrimary)
+        }
+    }
+}
 
 @Preview(name = "Editar perfil", showBackground = true, heightDp = 1000)
 @Composable

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Carpetas que el FileProvider puede compartir con otras apps: solo las imágenes de "shared" en la caché. -->
+<!-- Carpetas que el FileProvider puede compartir con otras apps: las imágenes de "shared" en la caché
+     y "photos", donde la cámara deja las fotos que se toman desde la app. -->
 <paths>
     <cache-path name="shared_images" path="shared/" />
+    <files-path name="photos" path="photos/" />
 </paths>

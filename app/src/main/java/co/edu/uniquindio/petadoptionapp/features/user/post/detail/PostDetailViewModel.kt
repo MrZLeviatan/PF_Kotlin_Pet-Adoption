@@ -29,6 +29,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyVotedP
 import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.ToggleImportantUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.ApprovePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.DeletePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.FinishPostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.StartReviewUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetUserProfileUseCase
@@ -85,14 +86,15 @@ data class PostAuthorUi(
 )
 
 // Mensajes cortos (snackbar); el texto lo pone la UI con strings.xml.
-enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR, REVIEW_TAKEN, REVIEW_TAKEN_BY_OTHER, APPROVED }
+enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR, REVIEW_TAKEN, REVIEW_TAKEN_BY_OTHER, APPROVED, FINISHED }
 
 /**
  Qué puede hacer el moderador que mira la publicación:
  AVAILABLE = nadie la revisa (puede tomarla), MINE = la revisa él (aprobar o rechazar),
- OTHER = la revisa otro moderador (solo un aviso), CLOSED = ya fue aprobada o rechazada.
+ OTHER = la revisa otro moderador (solo un aviso), VERIFIED = aprobada y en proceso (se puede finalizar),
+ CLOSED = rechazada o ya cerrada.
  */
-enum class ModeratorReview { AVAILABLE, MINE, OTHER, CLOSED }
+enum class ModeratorReview { AVAILABLE, MINE, OTHER, VERIFIED, CLOSED }
 
 data class PostDetailUiState(
     val post: PostDetailUi? = null,
@@ -105,6 +107,8 @@ data class PostDetailUiState(
     val isTakingReview: Boolean = false,
     val showApproveDialog: Boolean = false,
     val isApproving: Boolean = false,
+    val showFinishDialog: Boolean = false,
+    val isFinishing: Boolean = false,
     val isLoading: Boolean = true,
     val notFound: Boolean = false,
     // Vista previa: los primeros comentarios principales (como en Facebook).
@@ -154,6 +158,7 @@ class PostDetailViewModel @Inject constructor(
     private val deletePost: DeletePostUseCase,
     private val startReview: StartReviewUseCase,
     private val approvePost: ApprovePostUseCase,
+    private val finishPost: FinishPostUseCase,
     private val getUserProfile: GetUserProfileUseCase,
 ) : ViewModel() {
 
@@ -411,10 +416,29 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
-    private fun Post.reviewFor(moderatorId: String): ModeratorReview = when (verification.status) {
-        VerificationStatus.UNVERIFIED -> ModeratorReview.AVAILABLE
-        VerificationStatus.IN_PROCESS ->
+    fun onFinishClick() = _uiState.update { it.copy(showFinishDialog = true) }
+
+    fun onFinishDismiss() = _uiState.update { if (it.isFinishing) it else it.copy(showFinishDialog = false) }
+
+    /** Finaliza una verificada: sale del feed y el caso de uso le avisa al autor con una notificación. */
+    fun onFinishConfirm() {
+        val session = observeSession().value ?: return
+        if (_uiState.value.isFinishing) return
+        _uiState.update { it.copy(isFinishing = true) }
+        viewModelScope.launch {
+            finishPost(session, postId)
+                .onSuccess { _uiState.update { it.copy(isFinishing = false, showFinishDialog = false, message = DetailMessage.FINISHED) } }
+                .onFailure { _uiState.update { it.copy(isFinishing = false, showFinishDialog = false, message = DetailMessage.ACTION_ERROR) } }
+            refresh()
+        }
+    }
+
+    private fun Post.reviewFor(moderatorId: String): ModeratorReview = when {
+        status != PostStatus.IN_PROGRESS -> ModeratorReview.CLOSED
+        verification.status == VerificationStatus.UNVERIFIED -> ModeratorReview.AVAILABLE
+        verification.status == VerificationStatus.IN_PROCESS ->
             if (verification.reviewedBy == moderatorId) ModeratorReview.MINE else ModeratorReview.OTHER
+        verification.status == VerificationStatus.VERIFIED -> ModeratorReview.VERIFIED
         else -> ModeratorReview.CLOSED
     }
 

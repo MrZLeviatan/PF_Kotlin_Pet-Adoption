@@ -26,6 +26,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** Filtro de la cola al tocar una tarjeta: ALL = "Pendientes" (todas sin moderador). */
+enum class QueueFilter { ALL, HIGH, MEDIUM, LOW }
+
 /** Publicación de la cola (o de la búsqueda) lista para dibujar; los textos fijos los pone la UI. */
 data class ModerationPostUi(
     val id: String,
@@ -45,8 +48,8 @@ data class ModeratorHomeUiState(
     val stats: ModerationStats = ModerationStats(),
     // Sin moderador asignado, de mayor a menor prioridad.
     val queue: List<ModerationPostUi> = emptyList(),
-    // Al tocar "Prioridad alta" la cola se filtra a las altas y urgentes; al tocarla de nuevo se quita.
-    val highPriorityOnly: Boolean = false,
+    // Tarjeta elegida: filtra la cola por esa prioridad; "Pendientes" (o tocar de nuevo la misma) muestra todas.
+    val filter: QueueFilter = QueueFilter.ALL,
     val query: String = "",
     // Resultados de publicaciones al escribir (sin @).
     val postResults: List<ModerationPostUi> = emptyList(),
@@ -58,13 +61,14 @@ data class ModeratorHomeUiState(
 ) {
     val isSearching: Boolean get() = query.isNotBlank()
 
-    /** Cola que se muestra, con el filtro de prioridad alta si está activo. */
+    /** Cola que se muestra según la tarjeta elegida (las mismas reglas que los números de las tarjetas). */
     val visibleQueue: List<ModerationPostUi>
-        get() = if (highPriorityOnly) queue.filter { it.priority in HIGH_PRIORITIES } else queue
-
-    private companion object {
-        val HIGH_PRIORITIES = setOf(PriorityLevel.HIGH, PriorityLevel.URGENT)
-    }
+        get() = when (filter) {
+            QueueFilter.ALL -> queue
+            QueueFilter.HIGH -> queue.filter { it.priority == PriorityLevel.HIGH || it.priority == PriorityLevel.URGENT }
+            QueueFilter.MEDIUM -> queue.filter { it.priority == PriorityLevel.MEDIUM }
+            QueueFilter.LOW -> queue.filter { it.priority == PriorityLevel.LOW }
+        }
 }
 
 /**
@@ -120,7 +124,9 @@ class ModeratorHomeViewModel @Inject constructor(
         }
     }
 
-    fun onHighPriorityClick() = _uiState.update { it.copy(highPriorityOnly = !it.highPriorityOnly) }
+    // Tocar la tarjeta ya elegida vuelve a "todas".
+    fun onFilterClick(filter: QueueFilter) =
+        _uiState.update { it.copy(filter = if (it.filter == filter) QueueFilter.ALL else filter) }
 
     fun onQueryChange(value: String) {
         val searchingUsers = value.trimStart().startsWith("@")

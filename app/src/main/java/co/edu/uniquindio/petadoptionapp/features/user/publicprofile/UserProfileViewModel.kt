@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Category
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
+import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.Badge
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.UserLevel
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.PublicProfile
@@ -34,7 +36,12 @@ data class PublicPostUi(
     val photoUrl: String?,
     val ageHours: Int,
     val importantCount: Int,
+    // Solo para un moderador: en qué punto de la revisión está (null para los demás).
+    val review: PostReviewState? = null,
 )
+
+/** Revisión de una publicación vista por un moderador. */
+enum class PostReviewState { VERIFIED, IN_REVIEW_BY_ME, IN_REVIEW_BY_OTHER, UNASSIGNED }
 
 /**
  Estado del perfil de otra persona. Lo que la privacidad oculta llega en `null`
@@ -44,6 +51,8 @@ data class UserProfileUiState(
     val userName: String = "",
     val photoUrl: String? = null,
     val isPrivate: Boolean = false,
+    // Mira un moderador: ve todo (también si es privado) y el estado de revisión de cada publicación.
+    val viewerIsModerator: Boolean = false,
     val name: String? = null,
     val phone: String? = null,
     // null cuando la reputación está oculta.
@@ -117,16 +126,26 @@ class UserProfileViewModel @Inject constructor(
             val posts = getUserPosts(userId).getOrDefault(emptyList())
 
             // Las insignias y categorías se cruzan con su catálogo; si este cambia, se actualiza solo.
+            val session = observeSession().value
+            val moderatorId = session?.id?.takeIf { session.role == UserRole.MODERATOR }
             combine(observeBadges(), observeCategories()) { badgeCatalog, categories ->
-                profile.toUiState(posts, badgeCatalog, categories)
+                profile.toUiState(posts, badgeCatalog, categories, moderatorId)
             }.collect { state -> _uiState.value = state }
         }
+    }
+
+    private fun Post.reviewStateFor(moderatorId: String): PostReviewState = when (verification.status) {
+        VerificationStatus.VERIFIED -> PostReviewState.VERIFIED
+        VerificationStatus.IN_PROCESS ->
+            if (verification.reviewedBy == moderatorId) PostReviewState.IN_REVIEW_BY_ME else PostReviewState.IN_REVIEW_BY_OTHER
+        else -> PostReviewState.UNASSIGNED
     }
 
     private fun PublicProfile.toUiState(
         posts: List<Post>,
         badgeCatalog: List<Badge>,
         categories: List<Category>,
+        moderatorId: String?,
     ): UserProfileUiState {
         val level = reputation?.level()
         val next = level?.let { UserLevel.entries.getOrNull(it.ordinal + 1) }
@@ -142,6 +161,7 @@ class UserProfileViewModel @Inject constructor(
             userName = userName,
             photoUrl = photoUrl,
             isPrivate = isPrivate,
+            viewerIsModerator = moderatorId != null,
             name = name?.takeIf { it.isNotBlank() },
             phone = phone?.takeIf { it.isNotBlank() },
             level = level,
@@ -158,6 +178,7 @@ class UserProfileViewModel @Inject constructor(
                     photoUrl = post.photoUrls.firstOrNull(),
                     ageHours = ((now - post.createdAt) / MILLIS_PER_HOUR).toInt().coerceAtLeast(0),
                     importantCount = post.importantCount,
+                    review = moderatorId?.let { post.reviewStateFor(it) },
                 )
             },
             isLoading = false,

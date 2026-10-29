@@ -17,7 +17,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.card.FormCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.InfoTip
 import co.edu.uniquindio.petadoptionapp.core.component.form.FormLabel
 import co.edu.uniquindio.petadoptionapp.core.component.photo.PhotoPickerGrid
-import co.edu.uniquindio.petadoptionapp.core.component.photo.PhotoSourceSheet
+import co.edu.uniquindio.petadoptionapp.core.component.photo.ImageSourcePicker
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostActions
 import co.edu.uniquindio.petadoptionapp.features.user.post.create.CreatePostUiState
@@ -42,12 +42,11 @@ fun StepPhotosContent(state: CreatePostUiState, actions: CreatePostActions) {
 
     InfoTip(icon = Icons.Outlined.Image, text = stringResource(R.string.create_post_photos_tip))
 
-    if (showSheet) {
-        // TODO (Cloudinary): cámara y galería reales; por ahora ambas agregan una foto de prueba.
-        PhotoSourceSheet(
-            onDismiss = { showSheet = false },
-            onCameraClick = { actions.onAddPhoto(); showSheet = false },
-            onGalleryClick = { actions.onAddPhoto(); showSheet = false },
-        )
-    }
+    // Cámara (pide el permiso) o galería (varias a la vez, hasta completar el máximo).
+    ImageSourcePicker(
+        visible = showSheet,
+        onDismiss = { showSheet = false },
+        onPicked = actions.onAddPhotos,
+        maxSelection = (PostValidator.MAX_PHOTOS - state.photos.size).coerceAtLeast(1),
+    )
 }

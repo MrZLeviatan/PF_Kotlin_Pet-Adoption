@@ -1,16 +1,16 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
 /**
- Números del dashboard de moderación.
- [highPriority], [inReview] y [pending] son de toda la aplicación; [reviewedToday] es solo del moderador con sesión.
+ Números del inicio del moderador: publicaciones de toda la app que ningún moderador ha tomado,
+ por prioridad sugerida. [pending] es el total sin moderador (incluye las que aún no tienen prioridad).
  */
 data class ModerationStats(
-    // Sin resolver (sin moderador o en revisión) con prioridad alta o urgente según la IA.
+    // Sin moderador, con prioridad alta o urgente.
     val highPriority: Int = 0,
-    // Tomadas por algún moderador y aún sin decisión.
-    val inReview: Int = 0,
-    // Aprobadas o rechazadas hoy por el moderador con sesión.
-    val reviewedToday: Int = 0,
-    // Sin moderador asignado todavía.
+    // Sin moderador, con prioridad media.
+    val mediumPriority: Int = 0,
+    // Sin moderador, con prioridad baja.
+    val lowPriority: Int = 0,
+    // Todas las que no tienen moderador asignado.
     val pending: Int = 0
 )

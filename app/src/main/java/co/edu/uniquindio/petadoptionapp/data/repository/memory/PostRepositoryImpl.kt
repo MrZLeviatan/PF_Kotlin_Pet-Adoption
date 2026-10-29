@@ -138,6 +138,15 @@ class PostRepositoryImpl @Inject constructor() : PostRepository {
             (reviewedSince == null || (v.reviewedAt ?: 0L) >= reviewedSince)
     }
 
+    override suspend fun getReviewedBy(moderatorId: String): Result<List<Post>> =
+        Result.success(
+            posts.value.values.filter {
+                it.status != PostStatus.DELETED &&
+                    it.verification.reviewedBy == moderatorId &&
+                    it.verification.status != VerificationStatus.UNVERIFIED
+            }
+        )
+
     override suspend fun getInReviewBy(moderatorId: String): Result<List<Post>> =
         Result.success(
             posts.value.values.filter {

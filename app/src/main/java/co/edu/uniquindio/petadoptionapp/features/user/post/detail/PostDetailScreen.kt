@@ -178,6 +178,9 @@ fun PostDetailScreen(
                 onApproveConfirm = viewModel::onApproveConfirm,
                 onApproveDismiss = viewModel::onApproveDismiss,
                 onReject = { uiState.post?.let { onRejectPost(it.id) } },
+                onFinish = viewModel::onFinishClick,
+                onFinishConfirm = viewModel::onFinishConfirm,
+                onFinishDismiss = viewModel::onFinishDismiss,
                 onOpenComments = { uiState.post?.let { onOpenComments(it.id, null) } },
                 onReply = { comment -> uiState.post?.let { onOpenComments(it.id, comment.id) } },
                 onAuthorClick = { uiState.author?.let { onAuthorClick(it.id) } },
@@ -212,6 +215,9 @@ private data class PostDetailActions(
     val onApproveConfirm: () -> Unit = {},
     val onApproveDismiss: () -> Unit = {},
     val onReject: () -> Unit = {},
+    val onFinish: () -> Unit = {},
+    val onFinishConfirm: () -> Unit = {},
+    val onFinishDismiss: () -> Unit = {},
     val onOpenComments: () -> Unit = {},
     val onCommentLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
@@ -265,7 +271,8 @@ private fun PostDetailContent(
             PostImageHeader(
                 imageUrls = post.photoUrls,
                 onBack = actions.onBack,
-                onShare = actions.onShare,
+                // Solo se comparte lo que está verificado y visible al público.
+                onShare = actions.onShare.takeIf { post.isPublic },
                 onPhotoClick = { page -> viewerPage = page },
             )
             viewerPage?.let { page ->
@@ -343,6 +350,19 @@ private fun PostDetailContent(
         )
     }
 
+    // Moderador: confirmar antes de finalizar (se avisa al autor por notificación).
+    if (uiState.showFinishDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.my_posts_finish_title),
+            message = stringResource(R.string.mod_finish_message),
+            confirmText = stringResource(R.string.my_posts_dialog_accept),
+            cancelText = stringResource(R.string.common_cancel),
+            onConfirm = actions.onFinishConfirm,
+            onDismiss = actions.onFinishDismiss,
+            isLoading = uiState.isFinishing,
+        )
+    }
+
     // Moderador: confirmar antes de aprobar (la publicación pasa al feed público).
     if (uiState.showApproveDialog) {
         AppConfirmDialog(
@@ -358,7 +378,7 @@ private fun PostDetailContent(
 }
 
 @Composable
-private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare: () -> Unit, onPhotoClick: (page: Int) -> Unit) {
+private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare: (() -> Unit)?, onPhotoClick: (page: Int) -> Unit) {
     // Sin fotos se muestra la imagen local para no dejar el espacio vacío.
     val pageCount = imageUrls.size.coerceAtLeast(1)
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -388,14 +408,16 @@ private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare
                 .align(Alignment.TopStart)
                 .padding(12.dp),
         )
-        RoundIconButton(
-            icon = Icons.Outlined.Share,
-            description = stringResource(R.string.common_share),
-            onClick = onShare,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(12.dp),
-        )
+        if (onShare != null) {
+            RoundIconButton(
+                icon = Icons.Outlined.Share,
+                description = stringResource(R.string.common_share),
+                onClick = onShare,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp),
+            )
+        }
 
         if (pageCount > 1) {
             // Puntos: indican cuántas fotos hay y cuál se ve.
@@ -490,6 +512,15 @@ private fun ModeratorActions(review: ModeratorReview, isTaking: Boolean, actions
         ModeratorReview.OTHER -> NoticeBanner(
             message = stringResource(R.string.mod_in_review_by_other),
             icon = Icons.Outlined.HourglassTop,
+        )
+        // Verificada y en proceso: el moderador puede cerrar el caso.
+        ModeratorReview.VERIFIED -> PillButton(
+            text = stringResource(R.string.mod_finish_post),
+            icon = Icons.Outlined.CheckCircle,
+            onClick = actions.onFinish,
+            containerColor = AppTheme.colors.actionPrimary,
+            contentColor = AppTheme.colors.onActionPrimary,
+            modifier = Modifier.fillMaxWidth(),
         )
         ModeratorReview.CLOSED -> Unit
     }
@@ -931,6 +962,7 @@ private fun detailMessageText(message: DetailMessage): String = stringResource(
         DetailMessage.REVIEW_TAKEN -> R.string.mod_msg_review_taken
         DetailMessage.REVIEW_TAKEN_BY_OTHER -> R.string.mod_msg_review_taken_by_other
         DetailMessage.APPROVED -> R.string.mod_msg_approved
+        DetailMessage.FINISHED -> R.string.mod_msg_finished
         DetailMessage.COMMENT_ERROR -> R.string.post_detail_msg_comment_error
     }
 )

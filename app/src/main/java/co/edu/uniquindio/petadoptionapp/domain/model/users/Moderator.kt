@@ -16,6 +16,10 @@ package co.edu.uniquindio.petadoptionapp.domain.model.users
 data class Moderator(
     val account: Account = Account(role = UserRole.MODERATOR),
     val name: String = "",
+    // Teléfono de contacto (se ve en su perfil).
+    val phone: String = "",
+    // Verificación en dos pasos al iniciar sesión.
+    val twoFactorEnabled: Boolean = false,
     // Desactiva al moderador sin borrar su historial.
     val active: Boolean = true,
     // Publicaciones que ha verificado.

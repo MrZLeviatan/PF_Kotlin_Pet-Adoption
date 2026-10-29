@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 // Qué muestra la vista previa del último mensaje; el texto lo pone la UI con strings.xml.
-enum class ChatPreviewKind { TEXT, INTEREST_SENT, INTEREST_RECEIVED }
+enum class ChatPreviewKind { TEXT, PHOTO, INTEREST_SENT, INTEREST_RECEIVED }
 
 /** Un chat de la lista, listo para dibujar. */
 data class ChatSummaryUi(
@@ -139,6 +139,7 @@ class ChatListViewModel @Inject constructor(
             isOtherDeleted = other.deleted,
             postTitle = title,
             previewKind = when {
+                lastMessageType == MessageType.IMAGE -> ChatPreviewKind.PHOTO
                 lastMessageType != MessageType.ADOPTION_INTEREST -> ChatPreviewKind.TEXT
                 fromMe -> ChatPreviewKind.INTEREST_SENT
                 else -> ChatPreviewKind.INTEREST_RECEIVED

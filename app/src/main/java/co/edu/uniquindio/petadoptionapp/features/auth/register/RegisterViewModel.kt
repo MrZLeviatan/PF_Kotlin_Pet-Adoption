@@ -10,6 +10,7 @@ import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.auth.Credentials
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 import co.edu.uniquindio.petadoptionapp.domain.model.users.Account
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.CheckRegistrationAvailabilityUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.RegisterUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.UserValidator
@@ -30,7 +31,8 @@ enum class RegisterField { NAME, EMAIL, PHONE, PASSWORD, CONFIRM_PASSWORD }
 enum class FieldError { EMPTY, INVALID, TAKEN, WEAK, MISMATCH }
 
 /** Errores del intento de registro que no pertenecen a un campo concreto. */
-enum class RegisterError { LOCATION, GENERIC }
+// TAKEN: correo o teléfono ya usados (se revisa al pasar al segundo paso).
+enum class RegisterError { LOCATION, TAKEN, GENERIC }
 
 /** Estado completo del registro. Un solo ViewModel para ambas fases: no se pierde nada al avanzar. */
 data class RegisterUiState(
@@ -52,6 +54,8 @@ data class RegisterUiState(
     val termsAccepted: Boolean = false,
     val registerError: RegisterError? = null,
     val isLoading: Boolean = false,
+    // Revisando si el correo y el teléfono están libres antes del segundo paso.
+    val isCheckingAvailability: Boolean = false,
     val showSuccessDialog: Boolean = false,
 ) {
     // Se calcula con la misma regla del Use Case: "Baja" significa que sería rechazada.
@@ -83,6 +87,7 @@ sealed interface RegisterEvent {
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
+    private val checkAvailability: CheckRegistrationAvailabilityUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -100,12 +105,12 @@ class RegisterViewModel @Inject constructor(
         _uiState.update { it.copy(fullName = value, nameError = validateName(value)) }
 
     fun onEmailChange(value: String) =
-        _uiState.update { it.copy(email = value, emailError = validateEmail(value)) }
+        _uiState.update { it.copy(email = value, emailError = validateEmail(value), registerError = it.registerError.clearedIfTaken()) }
 
     // Solo dígitos y con el máximo del validador: así nunca se escribe un teléfono imposible.
     fun onPhoneChange(value: String) {
         val digits = value.filter(Char::isDigit).take(UserValidator.MAX_PHONE_LENGTH)
-        _uiState.update { it.copy(phone = digits, phoneError = validatePhone(digits)) }
+        _uiState.update { it.copy(phone = digits, phoneError = validatePhone(digits), registerError = it.registerError.clearedIfTaken()) }
     }
 
     fun onPasswordChange(value: String) = _uiState.update {
@@ -139,10 +144,34 @@ class RegisterViewModel @Inject constructor(
     fun onAddressChange(value: String) = _uiState.update { it.copy(address = value) }
     fun onTermsChange(value: Boolean) = _uiState.update { it.copy(termsAccepted = value) }
 
-    /** Valida toda la fase 1 y solo avanza si es correcta; si no, muestra todos los errores. */
-    fun onNextStep() = _uiState.update { state ->
-        val validated = state.withAllPersonalDataErrors()
-        if (validated.isPersonalDataValid) validated.copy(step = 2) else validated
+    /**
+     Valida toda la fase 1; si el formato es correcto, revisa que el correo y el teléfono no los use otra
+     cuenta y solo entonces avanza. Si alguno está ocupado, se marca su campo y se avisa debajo.
+     */
+    fun onNextStep() {
+        val validated = _uiState.value.withAllPersonalDataErrors()
+        _uiState.value = validated
+        if (!validated.isPersonalDataValid || validated.isCheckingAvailability) return
+
+        _uiState.update { it.copy(isCheckingAvailability = true, registerError = null) }
+        viewModelScope.launch {
+            checkAvailability(validated.email, validated.phone)
+                .onSuccess { availability ->
+                    _uiState.update {
+                        if (availability.isAvailable) {
+                            it.copy(isCheckingAvailability = false, step = 2)
+                        } else {
+                            it.copy(
+                                isCheckingAvailability = false,
+                                emailError = if (availability.emailTaken) FieldError.TAKEN else it.emailError,
+                                phoneError = if (availability.phoneTaken) FieldError.TAKEN else it.phoneError,
+                                registerError = RegisterError.TAKEN,
+                            )
+                        }
+                    }
+                }
+                .onFailure { _uiState.update { it.copy(isCheckingAvailability = false, registerError = RegisterError.GENERIC) } }
+        }
     }
 
     fun onPreviousStep() = _uiState.update { it.copy(step = (it.step - 1).coerceAtLeast(1)) }
@@ -204,6 +233,9 @@ class RegisterViewModel @Inject constructor(
     }
 
     // Muestra el error de un solo campo (al perder el foco).
+    // Al cambiar el correo o el teléfono, el aviso de "ya utilizado" deja de aplicar.
+    private fun RegisterError?.clearedIfTaken(): RegisterError? = takeUnless { it == RegisterError.TAKEN }
+
     private fun RegisterUiState.withErrorFor(field: RegisterField) = when (field) {
         RegisterField.NAME -> copy(nameError = validateName(fullName))
         RegisterField.EMAIL -> copy(emailError = validateEmail(email))

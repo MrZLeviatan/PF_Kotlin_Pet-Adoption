@@ -15,6 +15,9 @@ object ChatValidator {
     fun isMessageValid(text: String): Boolean =
         text.trim().let { it.isNotEmpty() && it.length <= MAX_MESSAGE_LENGTH }
 
+    // El pie de una foto puede ir vacío, pero no pasar del máximo de un mensaje.
+    fun isCaptionValid(text: String): Boolean = text.trim().length <= MAX_MESSAGE_LENGTH
+
     // Define una función pública que verifica el mensaje opcional de la solicitud (puede ir vacío).
     fun isAdoptionMessageValid(text: String): Boolean =
         text.trim().length <= AdoptionRequest.MAX_MESSAGE_LENGTH

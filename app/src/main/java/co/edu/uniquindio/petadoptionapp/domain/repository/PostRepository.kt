@@ -123,6 +123,14 @@ interface PostRepository {
     suspend fun getInReviewBy(moderatorId: String): Result<List<Post>>
 
     /**
+    Obtiene todas las publicaciones que un moderador revisó o tiene en revisión (para su dashboard).
+
+    - Qué envía ([moderatorId]): El moderador.
+    - Qué recibe: Un [Result] con las verificadas, rechazadas y en revisión a su nombre (no las eliminadas).
+     */
+    suspend fun getReviewedBy(moderatorId: String): Result<List<Post>>
+
+    /**
     Cuenta publicaciones de toda la aplicación según su verificación (alimenta el dashboard de moderación).
 
     - Qué envía: Los [statuses] de verificación y, opcionales, las [priorities] de la IA, quién la revisó ([reviewedBy])

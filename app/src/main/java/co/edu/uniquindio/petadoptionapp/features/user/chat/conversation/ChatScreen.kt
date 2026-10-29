@@ -53,6 +53,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
+import co.edu.uniquindio.petadoptionapp.core.component.photo.ImageSourcePicker
+import co.edu.uniquindio.petadoptionapp.core.component.photo.PhotoViewerDialog
+import coil3.compose.AsyncImage
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.BackButton
 import co.edu.uniquindio.petadoptionapp.core.component.form.MessageInputBar
@@ -103,6 +111,7 @@ fun ChatScreen(
             onTextChange = viewModel::onTextChange,
             onSend = viewModel::onSend,
             onLoadOlder = viewModel::onLoadOlder,
+            onImagePicked = viewModel::onImagePicked,
             onDelete = viewModel::onDeleteClick,
             onDeleteForEveryone = { viewModel.onDeleteConfirm(forEveryone = true) },
             onDeleteForMe = { viewModel.onDeleteConfirm(forEveryone = false) },
@@ -119,6 +128,7 @@ private data class ChatActions(
     val onTextChange: (String) -> Unit = {},
     val onSend: () -> Unit = {},
     val onLoadOlder: () -> Unit = {},
+    val onImagePicked: (String) -> Unit = {},
     val onDelete: () -> Unit = {},
     val onDeleteForEveryone: () -> Unit = {},
     val onDeleteForMe: () -> Unit = {},
@@ -222,6 +232,8 @@ private fun ChatContent(uiState: ChatUiState, actions: ChatActions) {
                     .padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
+        // Adjuntar foto: cámara (pide permiso) o galería; se envía apenas se elige.
+        var showPhotoSheet by rememberSaveable { mutableStateOf(false) }
         MessageInputBar(
             text = uiState.text,
             onTextChange = actions.onTextChange,
@@ -230,6 +242,20 @@ private fun ChatContent(uiState: ChatUiState, actions: ChatActions) {
             sendDescription = stringResource(R.string.chat_send),
             maxLength = ChatValidator.MAX_MESSAGE_LENGTH,
             isSending = uiState.isSending,
+            leading = {
+                IconButton(onClick = { showPhotoSheet = true }, enabled = !uiState.isSending) {
+                    Icon(
+                        Icons.Outlined.AddPhotoAlternate,
+                        contentDescription = stringResource(R.string.chat_attach_photo),
+                        tint = AppTheme.colors.textPrimary,
+                    )
+                }
+            },
+        )
+        ImageSourcePicker(
+            visible = showPhotoSheet,
+            onDismiss = { showPhotoSheet = false },
+            onPicked = { urls -> urls.firstOrNull()?.let(actions.onImagePicked) },
         )
     }
 }
@@ -355,7 +381,25 @@ private fun MessageBubble(message: ChatMessageUi, postTitle: String?, isSeen: Bo
                     color = AppTheme.colors.textPrimary,
                 )
             }
-            // En el automático, [text] es el mensaje opcional que escribió quien solicitó.
+            if (message.type == MessageType.IMAGE && message.imageUrl != null) {
+                // Foto: tocarla la abre a pantalla completa.
+                var showViewer by rememberSaveable { mutableStateOf(false) }
+                AsyncImage(
+                    model = message.imageUrl,
+                    contentDescription = stringResource(R.string.chat_photo_description),
+                    contentScale = ContentScale.Crop,
+                    placeholder = ColorPainter(AppTheme.colors.surfaceTag),
+                    modifier = Modifier
+                        .size(width = 220.dp, height = 240.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable(onClickLabel = stringResource(R.string.photo_viewer_open), role = Role.Image) { showViewer = true },
+                )
+                if (showViewer) {
+                    PhotoViewerDialog(imageUrls = listOf(message.imageUrl), initialPage = 0, onDismiss = { showViewer = false })
+                }
+                if (message.text.isNotBlank()) Spacer(Modifier.height(6.dp))
+            }
+            // En el automático, [text] es el mensaje opcional que escribió quien solicitó; en una foto, su pie.
             if (message.text.isNotBlank()) {
                 Text(text = message.text, style = MaterialTheme.typography.bodyMedium, color = AppTheme.colors.textPrimary)
             }

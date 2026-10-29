@@ -232,6 +232,9 @@ private fun UnreadBadge(count: Int) {
 private fun previewText(chat: ChatSummaryUi): String = when (chat.previewKind) {
     ChatPreviewKind.INTEREST_SENT -> stringResource(R.string.chats_preview_interest_sent)
     ChatPreviewKind.INTEREST_RECEIVED -> stringResource(R.string.chats_preview_interest_received)
+    ChatPreviewKind.PHOTO -> stringResource(R.string.chats_preview_photo).let { photo ->
+        if (chat.isLastFromMe) stringResource(R.string.chats_you_prefix, photo) else photo
+    }
     ChatPreviewKind.TEXT -> if (chat.isLastFromMe) stringResource(R.string.chats_you_prefix, chat.lastMessage) else chat.lastMessage
 }
 

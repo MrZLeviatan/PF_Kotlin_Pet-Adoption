@@ -250,11 +250,19 @@ private fun PersonalDataStep(uiState: RegisterUiState, actions: RegisterActions)
 
     Spacer(Modifier.height(32.dp))
 
+    // Correo o teléfono ya usados por otra cuenta (se revisa al tocar "Siguiente").
+    if (uiState.step == 1) {
+        registerErrorMessage(uiState.registerError)?.let { message ->
+            ErrorText(text = message, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(12.dp))
+        }
+    }
+
     PrimaryButton(
         text = stringResource(R.string.register_next_button),
         onClick = actions.onNextClick,
-        // Habilitado solo con todos los campos válidos.
-        enabled = uiState.isPersonalDataValid,
+        // Habilitado solo con todos los campos válidos (y mientras no se esté revisando).
+        enabled = uiState.isPersonalDataValid && !uiState.isCheckingAvailability,
     )
 
     Spacer(Modifier.height(16.dp))
@@ -363,6 +371,7 @@ private fun confirmPasswordErrorMessage(error: FieldError?): String? = when (err
 private fun registerErrorMessage(error: RegisterError?): String? = when (error) {
     null -> null
     RegisterError.LOCATION -> stringResource(R.string.register_error_location)
+    RegisterError.TAKEN -> stringResource(R.string.register_error_taken)
     RegisterError.GENERIC -> stringResource(R.string.register_error_generic)
 }
 

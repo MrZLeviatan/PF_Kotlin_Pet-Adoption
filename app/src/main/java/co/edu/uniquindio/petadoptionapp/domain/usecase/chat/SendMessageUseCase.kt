@@ -22,11 +22,12 @@ class SendMessageUseCase(
     private val notify: NotifyUseCase
 ) {
     // Define la función asíncrona principal que recibe el ID del chat y el texto, devolviendo un resultado con el objeto del mensaje enviado.
-    suspend operator fun invoke(chatId: String, text: String): Result<Message> {
+    // Con [imageUrl] envía una foto; el texto es entonces un pie de foto opcional.
+    suspend operator fun invoke(chatId: String, text: String, imageUrl: String? = null): Result<Message> {
 
-        // 1. Formato del texto, sin internet.
-        // Válida que el texto del mensaje cumpla con las reglas permitidas y retorna un fallo si no es válido.
-        if (!ChatValidator.isMessageValid(text)) return Result.failure(ChatException.InvalidMessage)
+        // 1. Formato del texto, sin internet (una foto puede ir sin texto).
+        val validText = if (imageUrl.isNullOrBlank()) ChatValidator.isMessageValid(text) else ChatValidator.isCaptionValid(text)
+        if (!validText) return Result.failure(ChatException.InvalidMessage)
 
         // 2. La persona debe participar en el chat.
         // Confirma que el usuario actual participa en el chat y obtiene su membresía, retornando un fallo si no está autorizado.
@@ -36,8 +37,9 @@ class SendMessageUseCase(
         // Construye una instancia del modelo Message asignando el ID del remitente desde la membresía, el tipo de texto, el contenido recortado y la marca de tiempo actual.
         val message = Message(
             senderId = membership.account.id,
-            type = MessageType.TEXT,
+            type = if (imageUrl.isNullOrBlank()) MessageType.TEXT else MessageType.IMAGE,
             text = text.trim(),
+            imageUrl = imageUrl?.takeIf { it.isNotBlank() },
             sentAt = System.currentTimeMillis()
         )
 

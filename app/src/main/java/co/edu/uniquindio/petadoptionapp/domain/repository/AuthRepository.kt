@@ -82,6 +82,14 @@ interface AuthRepository {
     suspend fun register(credentials: Credentials): Result<String>
 
     /**
+     ¿Ya hay una cuenta con ese correo? Se revisa antes del segundo paso del registro.
+
+     - Qué envía ([email]): El correo normalizado (sin espacios y en minúsculas).
+     - Qué recibe: `true` si ya está registrado.
+     */
+    suspend fun isEmailRegistered(email: String): Boolean
+
+    /**
      Completa la cuenta de la sesión con los datos que Firebase Auth no guarda (alias y rol).
 
      - Qué envía ([account]): La cuenta con su alias, ya guardada en el perfil.

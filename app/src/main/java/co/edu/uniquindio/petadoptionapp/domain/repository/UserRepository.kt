@@ -52,6 +52,13 @@ interface UserRepository {
      */
     suspend fun findModeratorById(id: String): Moderator?
 
+    /**
+    Activa o desactiva la verificación en dos pasos de un moderador.
+    - Qué envía: El [id] del moderador y si queda [enabled].
+    - Qué recibe: Un [Result<Unit>]; falla si el moderador no existe.
+     */
+    suspend fun updateModeratorTwoFactor(id: String, enabled: Boolean): Result<Unit>
+
 
     /**
     Busca perfiles cuyo alias empiece por el texto escrito.

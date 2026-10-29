@@ -33,6 +33,8 @@ data class ChatMessageUi(
     val type: MessageType,
     val text: String,
     val sentAt: Long,
+    // Foto del mensaje (tipo IMAGE).
+    val imageUrl: String? = null,
 )
 
 data class ChatUiState(
@@ -154,6 +156,17 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** Envía una foto (ya guardada en la app). Como en el texto, aparece sola por el flujo en vivo. */
+    fun onImagePicked(url: String) {
+        if (_uiState.value.isSending) return
+        _uiState.update { it.copy(isSending = true, sendError = false) }
+        viewModelScope.launch {
+            sendMessage(chatId, "", imageUrl = url)
+                .onSuccess { _uiState.update { it.copy(isSending = false) } }
+                .onFailure { _uiState.update { it.copy(isSending = false, sendError = true) } }
+        }
+    }
+
     fun onLoadOlder() {
         val oldest = (older.firstOrNull() ?: live.firstOrNull()) ?: return
         if (_uiState.value.isLoadingOlder) return
@@ -194,7 +207,7 @@ class ChatViewModel @Inject constructor(
     private fun publishMessages() {
         val all = (older + live).distinctBy { it.id }.sortedBy { it.sentAt }
         _uiState.update { state ->
-            state.copy(messages = all.map { ChatMessageUi(it.id, it.senderId == myId, it.type, it.text, it.sentAt) })
+            state.copy(messages = all.map { ChatMessageUi(it.id, it.senderId == myId, it.type, it.text, it.sentAt, it.imageUrl) })
         }
         lastChat?.let(::updateSeen)
     }

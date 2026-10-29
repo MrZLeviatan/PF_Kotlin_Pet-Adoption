@@ -50,7 +50,8 @@ object SeedData {
     val moderators = listOf(
         Moderator(
             account = Account(id = "m1", email = "mod@petadoption.com", userName = "mod_01", role = UserRole.MODERATOR),
-            name = "Moderador Uno"
+            name = "Moderador Uno",
+            phone = "3109876543"
         )
     )
 
@@ -102,7 +103,7 @@ object SeedData {
             vaccinated = true, neutered = false,
             photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro"),
-            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
+            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1", reviewedAt = hoursAgo(5 * 24)),
             createdAt = hoursAgo(6 * 24)
         ),
         // Verificada: gato perdido.
@@ -143,7 +144,7 @@ object SeedData {
             animalTypeId = "bird", photoUrls = listOf("https://picsum.photos/400?random=15"),
             location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro"),
             status = PostStatus.FINISHED, finishedAt = hoursAgo(3),
-            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
+            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1", reviewedAt = hoursAgo(26)),
             createdAt = hoursAgo(10)
         ),
         // Pendientes de moderación (de luis_9), con prioridades distintas para ordenar la cola.

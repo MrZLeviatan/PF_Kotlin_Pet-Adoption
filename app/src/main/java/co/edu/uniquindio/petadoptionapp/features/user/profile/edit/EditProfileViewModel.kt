@@ -28,8 +28,9 @@ enum class EditProfileError { LOCATION, GENERIC }
 data class EditProfileUiState(
     // Solo lectura: identifican a la persona pero no se editan aquí.
     val userName: String = "",
-    val photoUrl: String? = null,
     val email: String = "",
+    // Foto de perfil: se cambia con la cámara o la galería.
+    val photoUrl: String? = null,
     // Campos editables.
     val fullName: String = "",
     val phone: String = "",
@@ -48,13 +49,15 @@ data class EditProfileUiState(
     val savedPhone: String = "",
     val savedCity: String = "",
     val savedAddress: String = "",
+    val savedPhotoUrl: String? = null,
 ) {
     // Se compara sin espacios sobrantes: agregar un espacio al final no cuenta como cambio.
     val hasChanges: Boolean
         get() = fullName.trim() != savedFullName.trim() ||
             phone != savedPhone ||
             city.trim() != savedCity.trim() ||
-            address.trim() != savedAddress.trim()
+            address.trim() != savedAddress.trim() ||
+            photoUrl != savedPhotoUrl
 
     // "Guardar Cambios" solo se habilita si hay algo nuevo y todo es válido.
     val canSave: Boolean
@@ -107,6 +110,7 @@ class EditProfileViewModel @Inject constructor(
                     savedPhone = user.phone,
                     savedCity = user.location.city,
                     savedAddress = user.location.address,
+                    savedPhotoUrl = user.photoUrl,
                     isLoaded = true,
                 )
             }
@@ -114,6 +118,9 @@ class EditProfileViewModel @Inject constructor(
     }
 
     // Al escribir se valida de inmediato, igual que en el registro.
+    // Nueva foto (ya guardada en la app); se aplica al tocar "Guardar Cambios".
+    fun onPhotoPicked(url: String) = _uiState.update { it.copy(photoUrl = url, saveError = null) }
+
     fun onFullNameChange(value: String) =
         _uiState.update { it.copy(fullName = value, nameError = validateName(value), saveError = null) }
 
@@ -154,6 +161,7 @@ class EditProfileViewModel @Inject constructor(
                             savedPhone = it.phone,
                             savedCity = it.city,
                             savedAddress = it.address,
+                            savedPhotoUrl = it.photoUrl,
                         )
                     }
                 }

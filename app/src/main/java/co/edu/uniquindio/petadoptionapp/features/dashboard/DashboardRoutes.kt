@@ -19,6 +19,8 @@ sealed class DashboardRoutes {
 
     @Serializable data object HomeMonitor : DashboardRoutes()
     @Serializable data object Publications : DashboardRoutes()
+    // Dashboard de desempeño del moderador (reemplaza a Mensajes para este rol).
+    @Serializable data object ModeratorStats : DashboardRoutes()
 
 
     // Rutas compartidas entre ambos roles

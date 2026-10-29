@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.ui.graphics.vector.ImageVector
 import co.edu.uniquindio.petadoptionapp.R
@@ -33,7 +34,10 @@ enum class DashboardDestination(
     DASHBOARD(R.string.nav_dashboard, Icons.Outlined.Dashboard, setOf(UserRole.MODERATOR), DashboardRoutes.HomeMonitor),
     PUBLICATIONS(R.string.nav_feeds, Icons.Outlined.Storage, setOf(UserRole.MODERATOR), DashboardRoutes.Publications),
 
+    // Mensajes es del usuario; en su lugar el moderador tiene su dashboard de desempeño.
+    MESSAGES(R.string.nav_messages, Icons.Outlined.ChatBubbleOutline, setOf(UserRole.USER), DashboardRoutes.Messages),
+    STATS(R.string.nav_stats, Icons.Outlined.Insights, setOf(UserRole.MODERATOR), DashboardRoutes.ModeratorStats),
+
     // Compartidas
-    MESSAGES(R.string.nav_messages, Icons.Outlined.ChatBubbleOutline, UserRole.entries.toSet(), DashboardRoutes.Messages),
     PROFILE(R.string.nav_profile, Icons.Outlined.AccountCircle, UserRole.entries.toSet(), DashboardRoutes.Profile)
 }

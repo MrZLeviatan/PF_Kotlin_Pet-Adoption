@@ -81,6 +81,8 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
         return Result.success(id)
     }
 
+    override suspend fun isEmailRegistered(email: String): Boolean = findByEmail(email) != null
+
     // Guarda el alias y el rol en la cuenta (también para los próximos inicios de sesión) y en la sesión abierta.
     override suspend fun updateSessionAccount(account: Account): Result<Unit> {
         val stored = accounts[account.id] ?: return Result.failure(AuthException.NotAuthenticated)

@@ -4,6 +4,11 @@
 
     <!-- Agrega este permiso para permitir la conexión a Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Cámara para tomar fotos (perfil, publicaciones y chat). Se pide en el momento de usarla. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- La app funciona sin cámara (puede elegir de la galería): no se exige al instalar. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- La galería usa el selector de fotos del sistema: no hace falta permiso de almacenamiento. -->
     <application
         android:name=".PetAdoptionApp"
         android:allowBackup="true"

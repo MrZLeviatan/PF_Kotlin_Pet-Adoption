@@ -15,7 +15,10 @@ data class Message(
     // Tipo de mensaje.
     val type: MessageType = MessageType.TEXT,
     // Contenido del mensaje; vacío en mensajes automáticos (la UI pone el texto desde strings.xml).
+    // En una foto es el pie de foto (puede ir vacío).
     val text: String = "",
+    // Dirección de la foto si el mensaje es de tipo IMAGE; null en los demás.
+    val imageUrl: String? = null,
     // Momento del envío, en milisegundos (epoch). Se usa para ordenar.
     val sentAt: Long = System.currentTimeMillis()
 )

@@ -10,5 +10,7 @@ enum class MessageType {
     TEXT,
 
     // Generado por el sistema al pulsar "Me interesa adoptar".
-    ADOPTION_INTEREST
+    ADOPTION_INTEREST,
+    // Una foto (en Message.imageUrl), con texto opcional como pie de foto.
+    IMAGE
 }

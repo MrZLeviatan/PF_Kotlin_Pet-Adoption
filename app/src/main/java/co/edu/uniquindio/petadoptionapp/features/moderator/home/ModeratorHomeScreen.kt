@@ -66,7 +66,8 @@ private val ScreenHorizontalPadding = 16.dp
  - Buscador: publicaciones por título, o personas con "@" (solo usuarios; los moderadores no se buscan).
  - Dashboard: prioridad alta, en revisión y pendientes de toda la app; revisadas hoy, del moderador con sesión.
  - Por revisar: publicaciones que ningún moderador ha tomado, de mayor a menor prioridad.
-   Tocar "Prioridad alta" deja solo las altas y urgentes (otra vez, quita el filtro).
+   Las tarjetas cuentan las que no tienen moderador por prioridad (alta, media, baja) y en total ("Pendientes");
+   tocar una filtra la lista por esa prioridad, y "Pendientes" (o tocar otra vez la misma) muestra todas.
  No decide a dónde navegar: avisa y la navegación resuelve el destino.
  */
 @Composable
@@ -92,7 +93,7 @@ fun ModeratorHomeScreen(
         onPostClick = onPostClick,
         onUserClick = onUserClick,
         onNotificationsClick = onNotificationsClick,
-        onHighPriorityClick = viewModel::onHighPriorityClick,
+        onFilterClick = viewModel::onFilterClick,
     )
 }
 
@@ -105,7 +106,7 @@ private fun ModeratorHomeContent(
     onPostClick: (String) -> Unit,
     onUserClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
-    onHighPriorityClick: () -> Unit = {},
+    onFilterClick: (QueueFilter) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -145,14 +146,14 @@ private fun ModeratorHomeContent(
             }
             else -> PostList(modifier = Modifier.weight(1f)) {
                 item(key = "dashboard") {
-                    ModerationDashboard(state.stats, highPriorityOnly = state.highPriorityOnly, onHighPriorityClick = onHighPriorityClick)
+                    ModerationDashboard(state.stats, filter = state.filter, onFilterClick = onFilterClick)
                 }
                 val queue = state.visibleQueue
-                item(key = "queue-header") { QueueHeader(count = queue.size, highPriorityOnly = state.highPriorityOnly) }
+                item(key = "queue-header") { QueueHeader(count = queue.size, filter = state.filter) }
                 when {
                     state.hasError -> item(key = "error") { ListMessage(stringResource(R.string.mod_home_error), isError = true) }
                     queue.isEmpty() && !state.isLoading -> item(key = "empty") {
-                        ListMessage(stringResource(if (state.highPriorityOnly) R.string.mod_queue_empty_high else R.string.mod_queue_empty))
+                        ListMessage(stringResource(if (state.filter == QueueFilter.ALL) R.string.mod_queue_empty else R.string.mod_queue_empty_filtered))
                     }
                     else -> items(queue, key = { it.id }) { post ->
                         ModerationPostCard(post = post, onClick = { onPostClick(post.id) })
@@ -188,7 +189,7 @@ private fun ListMessage(text: String, isError: Boolean = false) {
 
 // Título y las cuatro métricas en dos filas; cada fila con tarjetas del mismo alto.
 @Composable
-private fun ModerationDashboard(stats: ModerationStats, highPriorityOnly: Boolean, onHighPriorityClick: () -> Unit) {
+private fun ModerationDashboard(stats: ModerationStats, filter: QueueFilter, onFilterClick: (QueueFilter) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = stringResource(R.string.mod_home_dashboard_title),
@@ -196,16 +197,27 @@ private fun ModerationDashboard(stats: ModerationStats, highPriorityOnly: Boolea
             fontWeight = FontWeight.Bold,
             color = AppTheme.colors.textPrimary,
         )
+        // Mismos colores que la prioridad en las tarjetas de la lista.
         StatRow(
             first = StatItem(
                 R.string.mod_stat_high_priority, stats.highPriority, R.string.mod_stat_high_priority_desc, AppTheme.colors.stateError,
-                onClick = onHighPriorityClick, selected = highPriorityOnly,
+                onClick = { onFilterClick(QueueFilter.HIGH) }, selected = filter == QueueFilter.HIGH,
             ),
-            second = StatItem(R.string.mod_stat_in_review, stats.inReview, R.string.mod_stat_in_review_desc, AppTheme.colors.stateWarning),
+            second = StatItem(
+                R.string.mod_stat_medium_priority, stats.mediumPriority, R.string.mod_stat_medium_priority_desc, AppTheme.colors.stateWarning,
+                onClick = { onFilterClick(QueueFilter.MEDIUM) }, selected = filter == QueueFilter.MEDIUM,
+            ),
         )
         StatRow(
-            first = StatItem(R.string.mod_stat_reviewed_today, stats.reviewedToday, R.string.mod_stat_reviewed_today_desc, AppTheme.colors.stateSuccess),
-            second = StatItem(R.string.mod_stat_pending, stats.pending, R.string.mod_stat_pending_desc, AppTheme.colors.textLink),
+            first = StatItem(
+                R.string.mod_stat_low_priority, stats.lowPriority, R.string.mod_stat_low_priority_desc, AppTheme.colors.stateSuccess,
+                onClick = { onFilterClick(QueueFilter.LOW) }, selected = filter == QueueFilter.LOW,
+            ),
+            // "Pendientes" es la vista general: queda marcada cuando no hay filtro.
+            second = StatItem(
+                R.string.mod_stat_pending, stats.pending, R.string.mod_stat_pending_desc, AppTheme.colors.textLink,
+                onClick = { onFilterClick(QueueFilter.ALL) }, selected = filter == QueueFilter.ALL,
+            ),
         )
     }
 }
@@ -245,7 +257,7 @@ private fun StatRow(first: StatItem, second: StatItem) {
 
 // "Por revisar" (o "Prioridad alta" con el filtro) y cuántas hay.
 @Composable
-private fun QueueHeader(count: Int, highPriorityOnly: Boolean) {
+private fun QueueHeader(count: Int, filter: QueueFilter) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -253,7 +265,14 @@ private fun QueueHeader(count: Int, highPriorityOnly: Boolean) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(if (highPriorityOnly) R.string.mod_stat_high_priority else R.string.mod_queue_title),
+            text = stringResource(
+                when (filter) {
+                    QueueFilter.ALL -> R.string.mod_queue_title
+                    QueueFilter.HIGH -> R.string.mod_stat_high_priority
+                    QueueFilter.MEDIUM -> R.string.mod_stat_medium_priority
+                    QueueFilter.LOW -> R.string.mod_stat_low_priority
+                }
+            ),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = AppTheme.colors.textPrimary,
@@ -353,7 +372,7 @@ private fun ModeratorHomePreview() {
                 state = ModeratorHomeUiState(
                     name = "Nicolas",
                     notifications = 3,
-                    stats = ModerationStats(highPriority = 3, inReview = 7, reviewedToday = 12, pending = 2),
+                    stats = ModerationStats(highPriority = 3, mediumPriority = 7, lowPriority = 2, pending = 12),
                     queue = listOf(
                         ModerationPostUi("p6", null, "Perrita herida necesita hogar urgente", "Adopción", PriorityLevel.URGENT,
                             "Animal herido que necesita atención", 5, VerificationStatus.UNVERIFIED),
