@@ -81,6 +81,15 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
         return Result.success(id)
     }
 
+    // Guarda el alias y el rol en la cuenta (también para los próximos inicios de sesión) y en la sesión abierta.
+    override suspend fun updateSessionAccount(account: Account): Result<Unit> {
+        val stored = accounts[account.id] ?: return Result.failure(AuthException.NotAuthenticated)
+        val updated = stored.copy(userName = account.userName, role = account.role)
+        accounts[account.id] = updated
+        if (_currentAccount.value?.id == account.id) _currentAccount.value = updated
+        return Result.success(Unit)
+    }
+
     // Define la función asíncrona para cerrar la sesión actual limpiando el flujo de la cuenta autenticada.
     override suspend fun logout() {
         // Establece el valor de la cuenta actual en nulo para finalizar la sesión.

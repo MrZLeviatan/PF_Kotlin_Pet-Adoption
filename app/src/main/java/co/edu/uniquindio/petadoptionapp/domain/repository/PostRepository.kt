@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.domain.repository
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostFilter
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.post.PriorityLevel
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Verification
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 
@@ -112,6 +113,29 @@ interface PostRepository {
     La prioridad de la IA se ordena en el caso de uso, porque Firestore no ordena enums por importancia.
      */
     suspend fun getPendingModeration(limit: Int): Result<List<Post>>
+
+    /**
+    Obtiene las publicaciones que un moderador tomó y todavía no decide.
+
+    - Qué envía ([moderatorId]): El moderador que las revisa.
+    - Qué recibe: Un [Result] con las que siguen en proceso y "en revisión" a su nombre.
+     */
+    suspend fun getInReviewBy(moderatorId: String): Result<List<Post>>
+
+    /**
+    Cuenta publicaciones de toda la aplicación según su verificación (alimenta el dashboard de moderación).
+
+    - Qué envía: Los [statuses] de verificación y, opcionales, las [priorities] de la IA, quién la revisó ([reviewedBy])
+      y desde cuándo ([reviewedSince], en milisegundos).
+    - Qué recibe: La cantidad que cumple. No cuenta las eliminadas.
+    Un conteo de Firestore cuesta mucho menos que descargar los documentos.
+     */
+    suspend fun countForModeration(
+        statuses: Set<VerificationStatus>,
+        priorities: Set<PriorityLevel>? = null,
+        reviewedBy: String? = null,
+        reviewedSince: Long? = null
+    ): Int
 
 
     /**

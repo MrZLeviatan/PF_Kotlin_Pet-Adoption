@@ -1,6 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
+import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseCase
 
@@ -8,6 +9,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseC
 Documenta el caso de uso que entrega al moderador las publicaciones por revisar.
 Las ordena por prioridad sugerida por la IA (urgentes primero) y, a igual prioridad, las más antiguas primero.
 El moderador se toma de la sesión actual, nunca de un parámetro.
+Con [unassignedOnly] deja solo las que ningún moderador ha tomado (las "en revisión" ya tienen dueño).
  */
 class GetModerationQueueUseCase(
     // Inyecta el repositorio de publicaciones.
@@ -19,14 +21,14 @@ class GetModerationQueueUseCase(
     companion object { const val QUEUE_SIZE = 30 }
 
     // Define la función asíncrona principal; ya no recibe parámetros porque la identidad sale de la sesión.
-    suspend operator fun invoke(): Result<List<Post>> {
+    suspend operator fun invoke(unassignedOnly: Boolean = false): Result<List<Post>> {
 
         // Solo un moderador activo accede a la cola.
         requireModerator().getOrElse { return Result.failure(it) }
 
         // Pide las pendientes y las ordena: sin prioridad (-1) queda al final, el resto de mayor a menor.
         return postRepository.getPendingModeration(QUEUE_SIZE).map { posts ->
-            posts.sortedWith(
+            posts.filter { !unassignedOnly || it.verification.status == VerificationStatus.UNVERIFIED }.sortedWith(
                 compareByDescending<Post> { it.verification.priorityLevel?.ordinal ?: -1 }
                     .thenBy { it.createdAt }
             )

@@ -20,8 +20,9 @@ class GetUserProfileUseCase(
 
         // Busca el perfil en el repositorio usando el ID y retorna un fallo si no existe.
         val user = userRepository.findById(userId)
-            ?.takeIf { !it.deleted }
             ?: return Result.failure(UserException.UserNotFound)
+        // Eliminada: se avisa distinto a "no existe" (ej. al abrirla desde un comentario viejo).
+        if (user.deleted) return Result.failure(UserException.UserDeleted)
 
         // Convierte el usuario a perfil público aplicando la privacidad según el espectador y lo retorna como éxito.
         return Result.success(user.toPublicProfile(viewerId))

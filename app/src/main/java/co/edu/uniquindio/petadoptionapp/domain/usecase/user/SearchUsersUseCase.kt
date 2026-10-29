@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.user
 
+import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
+import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSummary
 import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
 import jakarta.inject.Inject
@@ -7,13 +9,14 @@ import jakarta.inject.Inject
 /**
 Documenta el caso de uso que busca usuarios por su alias.
 Evita consultas con textos muy cortos para cuidar la cuota gratuita de lecturas.
-La persona que busca se toma de la sesión, nunca de un parámetro.
+La persona que busca se toma de la sesión, nunca de un parámetro; puede ser un usuario o un moderador.
+Solo se buscan usuarios: los moderadores no aparecen en los resultados (viven en otra colección).
  */
 class SearchUsersUseCase (
     // Inyecta el repositorio de usuarios.
     private val userRepository: UserRepository,
-    // Inyecta el caso de uso que confirma que hay una sesión de usuario.
-    private val requireUser: RequireUserUseCase
+    // Inyecta el repositorio de autenticación para leer la sesión (usuario o moderador).
+    private val authRepository: AuthRepository
 ) {
     companion object {
         // Define el mínimo de caracteres para buscar.
@@ -24,8 +27,9 @@ class SearchUsersUseCase (
 
     suspend operator fun invoke(query: String): Result<List<UserSummary>> {
 
-        // Solo un usuario con sesión puede buscar personas.
-        val session = requireUser().getOrElse { return Result.failure(it) }
+        // Hace falta una sesión (de usuario o de moderador) para buscar personas.
+        val session = authRepository.currentAccount.value
+            ?: return Result.failure(AuthException.NotAuthenticated)
 
         // Limpia el texto; si es muy corto, devuelve lista vacía sin consultar.
         val clean = query.trim().removePrefix("@")

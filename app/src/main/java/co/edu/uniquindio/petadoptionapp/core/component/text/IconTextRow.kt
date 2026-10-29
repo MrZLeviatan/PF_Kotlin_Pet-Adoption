@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,8 @@ fun IconTextRow(
     iconSize: Dp = 16.dp,
     spacing: Dp = 8.dp,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
+    // Con un límite, lo que sobra termina en "…" (ej. el título de la publicación en la lista de chats).
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     Row(
         modifier = modifier,
@@ -44,6 +47,8 @@ fun IconTextRow(
             text = text,
             style = style,
             color = AppTheme.colors.textPrimary,
+            maxLines = maxLines,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

@@ -3,7 +3,6 @@ package co.edu.uniquindio.petadoptionapp.features.user.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,25 +13,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,7 +42,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -60,6 +53,8 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.form.SearchField
+import co.edu.uniquindio.petadoptionapp.core.component.header.HomeHeader
+import co.edu.uniquindio.petadoptionapp.core.component.list.UserSearchResults
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTag
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
@@ -143,7 +138,8 @@ private fun HomeUserContent(
             userName = state.userName,
             city = state.city,
             notifications = state.notifications,
-            onNotificationsClick = onNotificationsClick
+            onNotificationsClick = onNotificationsClick,
+            horizontalPadding = ScreenHorizontalPadding
         )
 
         // Buscador de publicaciones (y de personas con @): el estado vive en el ViewModel.
@@ -157,7 +153,12 @@ private fun HomeUserContent(
 
         when {
             // Búsqueda de personas (el texto empieza con @).
-            state.isSearchingUsers -> UserResults(users = state.users, onUserClick = onUserClick)
+            state.isSearchingUsers -> UserSearchResults(
+                users = state.users,
+                onUserClick = onUserClick,
+                modifier = Modifier.weight(1f),
+                horizontalPadding = ScreenHorizontalPadding
+            )
             // Error al cargar el feed.
             state.hasError -> CenteredMessage(stringResource(R.string.home_error_generic), isError = true)
             // Buscó algo y no hay coincidencias.
@@ -188,112 +189,6 @@ private fun HomeUserContent(
 private fun ColumnScope.CenteredMessage(text: String, isError: Boolean = false) {
     Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
         StatusMessage(text = text, isError = isError)
-    }
-}
-
-// Lista de personas encontradas; al tocar una, abre su perfil.
-@Composable
-private fun ColumnScope.UserResults(users: List<UserSummary>, onUserClick: (String) -> Unit) {
-    if (users.isEmpty()) {
-        CenteredMessage(stringResource(R.string.home_users_empty))
-        return
-    }
-    LazyColumn(
-        modifier = Modifier.weight(1f),
-        contentPadding = PaddingValues(horizontal = ScreenHorizontalPadding, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(users, key = { it.id }) { user ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onUserClick(user.id) }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AsyncImage(
-                    model = user.photoUrl,
-                    contentDescription = stringResource(R.string.home_user_photo_description, user.userName),
-                    contentScale = ContentScale.Crop,
-                    placeholder = ColorPainter(Color.LightGray),
-                    modifier = Modifier.size(44.dp).clip(CircleShape)
-                )
-                Text(
-                    text = "@${user.userName}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = AppTheme.colors.textPrimary
-                )
-            }
-        }
-    }
-}
-
-// Cabecera: saludo y ciudad a la izquierda, campana con contador a la derecha.
-@Composable
-private fun HomeHeader(
-    userName: String,
-    city: String,
-    notifications: Int,
-    onNotificationsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = ScreenHorizontalPadding, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = stringResource(R.string.home_welcome, userName),
-                style = MaterialTheme.typography.headlineSmall,
-                color = AppTheme.colors.textPrimary
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = city,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AppTheme.colors.textPrimary
-                )
-                Icon(
-                    imageVector = Icons.Filled.LocationOn,
-                    contentDescription = null,
-                    tint = AppTheme.colors.stateError,   // CAMBIAR si tienes un color propio para el pin
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-
-        // Botón circular con la campana; el clip va antes del clickable para que el efecto sea circular.
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .clickable(onClick = onNotificationsClick)
-                .background(AppTheme.colors.background, CircleShape)        // CAMBIAR: fondo claro
-                .border(1.dp, AppTheme.colors.textPrimary, CircleShape),    // CAMBIAR: color de borde
-            contentAlignment = Alignment.Center
-        ) {
-            BadgedBox(
-                modifier = Modifier.offset(x = (-1).dp),
-                badge = {
-                    // Sin notificaciones no se dibuja la insignia (evita mostrar un "0").
-                    if (notifications > 0) {
-                        Badge(
-                            containerColor = AppTheme.colors.textPrimary,   // CAMBIAR: color de acento
-                            contentColor = AppTheme.colors.background
-                        ) { Text(text = "$notifications") }
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = stringResource(R.string.home_notifications_description),
-                    tint = AppTheme.colors.textPrimary
-                )
-            }
-        }
     }
 }
 

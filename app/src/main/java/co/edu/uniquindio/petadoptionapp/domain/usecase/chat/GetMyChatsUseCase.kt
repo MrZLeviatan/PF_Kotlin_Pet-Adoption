@@ -19,6 +19,9 @@ class GetMyChatsUseCase(
         // Obtiene la sesión del usuario actual o retorna un fallo si no está autenticado.
         val session = requireUser().getOrElse { return Result.failure(it) }
         // Solicita al repositorio los chats en los que participa el usuario utilizando su ID, el tamaño de página y el paginador, retornando el resultado.
+        // Los chats abiertos con "Empezar a chatear" en los que nadie ha escrito aún no se listan:
+        // aparecen con el primer mensaje, como en WhatsApp (en Firestore: where lastSenderId != "").
         return chatRepository.getChatsByParticipant(session.id, PAGE_SIZE, afterChatId)
+            .map { chats -> chats.filter { it.lastSenderId.isNotBlank() } }
     }
 }

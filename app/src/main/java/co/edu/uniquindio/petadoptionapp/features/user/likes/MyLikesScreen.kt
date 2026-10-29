@@ -30,6 +30,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.button.TextActionButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostMetaLine
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostSummaryCard
@@ -189,16 +190,6 @@ private fun LikedPostItem(post: LikedPostUi, onClick: () -> Unit, onRemove: () -
         },
     )
 }
-
-// Menos de 24 horas se muestra en horas; desde ahí, en días.
-@Composable
-private fun agoText(ageHours: Int): String =
-    if (ageHours < 24) {
-        pluralStringResource(R.plurals.common_time_hours_ago, ageHours, ageHours)
-    } else {
-        val days = ageHours / 24
-        pluralStringResource(R.plurals.common_time_days_ago, days, days)
-    }
 
 @Composable
 private fun CenteredStatus(text: String, isError: Boolean = false) {

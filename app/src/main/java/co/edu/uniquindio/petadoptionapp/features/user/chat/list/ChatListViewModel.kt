@@ -2,7 +2,10 @@ package co.edu.uniquindio.petadoptionapp.features.user.chat.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Chat
+import co.edu.uniquindio.petadoptionapp.domain.model.users.Account
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.MessageType
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.DeleteChatUseCase
@@ -23,9 +26,12 @@ enum class ChatPreviewKind { TEXT, INTEREST_SENT, INTEREST_RECEIVED }
 data class ChatSummaryUi(
     val id: String,
     val otherUserId: String,
-    // Nombre real si su perfil es público; si no, el alias.
+    // Alias (userName) de la otra persona; vacío si su cuenta fue eliminada.
     val otherName: String,
     val otherPhotoUrl: String?,
+    val isOtherDeleted: Boolean,
+    // Publicación de la que trata el chat; null si no hay o ya no se puede ver.
+    val postTitle: String?,
     val previewKind: ChatPreviewKind,
     val lastMessage: String,
     // El último mensaje es mío: la vista previa empieza con "Tú: ".
@@ -44,9 +50,12 @@ data class ChatListUiState(
     val isDeleting: Boolean = false,
     val deleteError: Boolean = false,
 ) {
-    /** Chats que coinciden con la búsqueda (por nombre, sin importar mayúsculas). */
+    /** Chats que coinciden con la búsqueda: por la persona (alias) o por la publicación, sin importar mayúsculas. */
     val visibleChats: List<ChatSummaryUi>
-        get() = query.trim().let { q -> if (q.isEmpty()) chats else chats.filter { it.otherName.contains(q, ignoreCase = true) } }
+        get() = query.trim().removePrefix("@").let { q ->
+            if (q.isEmpty()) chats
+            else chats.filter { it.otherName.contains(q, ignoreCase = true) || it.postTitle?.contains(q, ignoreCase = true) == true }
+        }
 }
 
 /**
@@ -58,21 +67,25 @@ class ChatListViewModel @Inject constructor(
     private val observeSession: ObserveSessionUseCase,
     private val getMyChats: GetMyChatsUseCase,
     private val getUserProfile: GetUserProfileUseCase,
+    private val getPostDetail: GetPostDetailUseCase,
     private val deleteChat: DeleteChatUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatListUiState())
     val uiState: StateFlow<ChatListUiState> = _uiState.asStateFlow()
 
-    // Perfiles ya consultados: al recargar no se vuelven a pedir.
-    private val profiles = mutableMapOf<String, Pair<String, String?>>()
+    // Perfiles y títulos ya consultados: al recargar no se vuelven a pedir.
+    private val profiles = mutableMapOf<String, OtherProfile>()
+    private val postTitles = mutableMapOf<String, String?>()
+
+    private data class OtherProfile(val userName: String, val photoUrl: String?, val deleted: Boolean)
 
     fun refresh() {
         val session = observeSession().value ?: return
         viewModelScope.launch {
             getMyChats()
                 .onSuccess { chats ->
-                    val items = chats.mapNotNull { it.toUi(session.id) }
+                    val items = chats.mapNotNull { it.toUi(session) }
                     _uiState.update { it.copy(chats = items, isLoading = false, hasError = false) }
                 }
                 .onFailure { _uiState.update { it.copy(isLoading = false, hasError = true) } }
@@ -102,20 +115,29 @@ class ChatListViewModel @Inject constructor(
         }
     }
 
-    private suspend fun Chat.toUi(myId: String): ChatSummaryUi? {
+    private suspend fun Chat.toUi(session: Account): ChatSummaryUi? {
+        val myId = session.id
         val otherId = otherParticipantId(myId) ?: return null
         // Si el perfil no se pudo leer, se muestra vacío y se reintenta en la próxima recarga.
-        val (name, photo) = profiles[otherId]
-            ?: getUserProfile(otherId, myId).getOrNull()
-                ?.let { (it.name?.takeIf(String::isNotBlank) ?: it.userName) to it.photoUrl }
-                ?.also { profiles[otherId] = it }
-            ?: ("" to null)
+        val other = profiles[otherId] ?: run {
+            val result = getUserProfile(otherId, myId)
+            when {
+                result.isSuccess -> result.getOrThrow().let { OtherProfile(it.userName, it.photoUrl, deleted = false) }
+                result.exceptionOrNull() === UserException.UserDeleted -> OtherProfile("", null, deleted = true)
+                else -> null
+            }?.also { profiles[otherId] = it }
+        } ?: OtherProfile("", null, deleted = false)
+        val title = postId?.let { id ->
+            if (id in postTitles) postTitles[id] else getPostDetail(session, id).getOrNull()?.title.also { postTitles[id] = it }
+        }
         val fromMe = lastSenderId == myId
         return ChatSummaryUi(
             id = id,
             otherUserId = otherId,
-            otherName = name,
-            otherPhotoUrl = photo,
+            otherName = other.userName,
+            otherPhotoUrl = other.photoUrl,
+            isOtherDeleted = other.deleted,
+            postTitle = title,
             previewKind = when {
                 lastMessageType != MessageType.ADOPTION_INTEREST -> ChatPreviewKind.TEXT
                 fromMe -> ChatPreviewKind.INTEREST_SENT

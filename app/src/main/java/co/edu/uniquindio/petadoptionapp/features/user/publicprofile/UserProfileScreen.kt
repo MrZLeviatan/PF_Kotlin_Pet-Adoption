@@ -28,7 +28,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.outlined.PersonOff
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import co.edu.uniquindio.petadoptionapp.core.component.icon.IconCircle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.card.BadgeItem
 import co.edu.uniquindio.petadoptionapp.core.component.card.LevelProgressCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.NoticeBanner
@@ -92,6 +101,7 @@ private fun UserProfileContent(
 
         when {
             uiState.isLoading -> Unit
+            uiState.isDeleted -> DeletedAccountMessage()
             uiState.notFound -> CenteredMessage(stringResource(R.string.user_profile_not_found))
             uiState.hasError -> CenteredMessage(stringResource(R.string.user_profile_error), isError = true)
             else -> ProfileBody(uiState = uiState, onPostClick = onPostClick, onCallClick = onCallClick)
@@ -236,15 +246,32 @@ private fun PublicPostItem(post: PublicPostUi, onClick: () -> Unit) {
     )
 }
 
-// Menos de 24 horas se muestra en horas; desde ahí, en días (mismo criterio que "Mis publicaciones").
 @Composable
-private fun agoText(ageHours: Int): String =
-    if (ageHours < 24) {
-        pluralStringResource(R.plurals.common_time_hours_ago, ageHours, ageHours)
-    } else {
-        val days = ageHours / 24
-        pluralStringResource(R.plurals.common_time_days_ago, days, days)
+private fun DeletedAccountMessage() {
+    // Ícono, título y explicación: se entiende que la persona ya no está, no que algo falló.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = ScreenHorizontalPadding, vertical = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        IconCircle(icon = Icons.Outlined.PersonOff, size = 72.dp, containerColor = AppTheme.colors.surfaceTag)
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.user_profile_deleted_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = AppTheme.colors.textPrimary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.user_profile_deleted_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppTheme.colors.textPrimary,
+            textAlign = TextAlign.Center,
+        )
     }
+}
 
 @Composable
 private fun CenteredMessage(text: String, isError: Boolean = false) {

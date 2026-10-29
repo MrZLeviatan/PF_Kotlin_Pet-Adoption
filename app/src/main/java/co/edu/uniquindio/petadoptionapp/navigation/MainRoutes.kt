@@ -70,6 +70,9 @@ sealed class MainRoutes {
 
     @Serializable data class UserProfile(val userId: String) : MainRoutes()
 
+    // Moderador: motivo para rechazar la publicación que tiene en revisión (sin barra)
+    @Serializable data class RejectPost(val postId: String) : MainRoutes()
+
     // Una conversación (sin barra). Se abre desde Mensajes, una notificación o "Me interesa adoptar".
     @Serializable data class Chat(val chatId: String) : MainRoutes()
 

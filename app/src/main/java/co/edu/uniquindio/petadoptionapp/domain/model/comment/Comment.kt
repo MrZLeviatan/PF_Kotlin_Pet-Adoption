@@ -107,8 +107,8 @@ data class Comment(
         /**
          Crea una respuesta a [parent]. Si el padre ya es una respuesta (está en
          el último nivel, [MAX_DEPTH]), la nueva se "aplana": queda en el mismo
-         hilo, bajo el comentario principal, y [replyToUserName] indica a quién
-         se contesta. Al responder al principal no hace falta "@alias".
+         hilo, bajo el comentario principal. En todas las respuestas [replyToUserName]
+         indica a quién se contesta ("@alias: respuesta").
          */
         fun createReply(
             id: String,
@@ -125,7 +125,7 @@ data class Comment(
                 postId = parent.postId,
                 parentId = if (flatten) parent.parentId else parent.id,
                 depth = if (flatten) parent.depth else parent.depth + 1,
-                replyToUserName = if (flatten) parent.authorName else null,
+                replyToUserName = parent.authorName,
                 authorId = authorId,
                 authorName = authorName,
                 authorPhotoUrl = authorPhotoUrl,

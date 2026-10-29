@@ -81,6 +81,16 @@ interface AuthRepository {
      */
     suspend fun register(credentials: Credentials): Result<String>
 
+    /**
+     Completa la cuenta de la sesión con los datos que Firebase Auth no guarda (alias y rol).
+
+     - Qué envía ([account]): La cuenta con su alias, ya guardada en el perfil.
+     - Qué recibe: Un [Result<Unit>] que confirma que la sesión quedó actualizada.
+     Sin esto, una cuenta recién creada tendría el alias vacío en la sesión (y así saldría en
+     comentarios, notificaciones y chats). Con Firebase, el alias se lee del documento del usuario.
+     */
+    suspend fun updateSessionAccount(account: Account): Result<Unit>
+
 
     // Recuperación de contraseña
 

@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.features.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrength
+import co.edu.uniquindio.petadoptionapp.core.component.form.passwordStrengthOf
 import co.edu.uniquindio.petadoptionapp.core.util.UserNameGenerator
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.error.UserException
@@ -240,7 +241,6 @@ class RegisterViewModel @Inject constructor(
 
     companion object {
         private const val MAX_USERNAME_ATTEMPTS = 5
-        private const val STRONG_PASSWORD_LENGTH = 12
 
         // TEMPORAL (Mapbox): centro de Armenia, el mismo de SeedData.
         private const val DEFAULT_LATITUDE = 4.5339
@@ -278,13 +278,7 @@ class RegisterViewModel @Inject constructor(
             else -> null
         }
 
-        // Baja = la rechazaría el Use Case. Media = cumple la regla. Alta = además es larga y con símbolo.
-        fun strengthOf(password: String): PasswordStrength? = when {
-            password.isEmpty() -> null
-            !AuthValidator.isPasswordValid(password) -> PasswordStrength.WEAK
-            password.length >= STRONG_PASSWORD_LENGTH && password.any { !it.isLetterOrDigit() } ->
-                PasswordStrength.STRONG
-            else -> PasswordStrength.MEDIUM
-        }
+        // La regla vive junto a la barra (la comparte Cambiar contraseña).
+        fun strengthOf(password: String): PasswordStrength? = passwordStrengthOf(password)
     }
 }

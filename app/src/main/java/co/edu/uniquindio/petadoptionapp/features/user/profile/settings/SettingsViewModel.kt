@@ -11,6 +11,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.DeleteAccountUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateSettingsUseCase
+import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrength
+import co.edu.uniquindio.petadoptionapp.core.component.form.passwordStrengthOf
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -22,21 +25,56 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 // Errores del diálogo de cambio de contraseña; el texto lo pone la UI con strings.xml.
-enum class PasswordDialogError { WRONG_PASSWORD, WEAK_PASSWORD, SAME_PASSWORD, MISMATCH, GENERIC }
+enum class PasswordDialogError { WRONG_PASSWORD, WEAK_PASSWORD, SAME_PASSWORD, GENERIC }
 
 // Errores del diálogo de eliminar cuenta.
 enum class DeleteDialogError { WRONG_PASSWORD, GENERIC }
 
 // Campos del diálogo "Cambiar contraseña". Solo existe mientras el diálogo está abierto.
+// Campos del diálogo "Cambiar contraseña": su error se muestra desde que se tocan.
+enum class PasswordField { CURRENT, NEW, CONFIRM }
+
+// Error de un campo (igual que en Registro); el texto lo pone la pantalla.
+enum class PasswordFieldError { EMPTY, WEAK, SAME, MISMATCH }
+
 data class PasswordDialogState(
     val currentPassword: String = "",
     val newPassword: String = "",
     val confirmPassword: String = "",
+    val touched: Set<PasswordField> = emptySet(),
+    // Error que devuelve el caso de uso (contraseña actual incorrecta, etc.).
     val error: PasswordDialogError? = null,
     val isLoading: Boolean = false,
 ) {
+    private val currentValidation: PasswordFieldError?
+        get() = if (currentPassword.isEmpty()) PasswordFieldError.EMPTY else null
+
+    // Misma regla que al crear la cuenta (AuthValidator) y distinta de la actual.
+    private val newValidation: PasswordFieldError?
+        get() = when {
+            newPassword.isEmpty() -> PasswordFieldError.EMPTY
+            !AuthValidator.isPasswordValid(newPassword) -> PasswordFieldError.WEAK
+            newPassword == currentPassword -> PasswordFieldError.SAME
+            else -> null
+        }
+
+    private val confirmValidation: PasswordFieldError?
+        get() = when {
+            confirmPassword.isEmpty() -> PasswordFieldError.EMPTY
+            confirmPassword != newPassword -> PasswordFieldError.MISMATCH
+            else -> null
+        }
+
+    val currentError: PasswordFieldError? get() = currentValidation.takeIf { PasswordField.CURRENT in touched }
+    val newError: PasswordFieldError? get() = newValidation.takeIf { PasswordField.NEW in touched }
+    val confirmError: PasswordFieldError? get() = confirmValidation.takeIf { PasswordField.CONFIRM in touched }
+
+    // Barra de seguridad de la nueva contraseña (como en Registro).
+    val strength: PasswordStrength? get() = passwordStrengthOf(newPassword)
+
+    // Se calcula con los valores, no con los errores visibles: un campo sin tocar tampoco cuenta como válido.
     val isFilled: Boolean
-        get() = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank()
+        get() = currentValidation == null && newValidation == null && confirmValidation == null
 }
 
 // Campo del diálogo "Eliminar cuenta": se confirma con la contraseña.
@@ -135,18 +173,21 @@ class SettingsViewModel @Inject constructor(
 
     fun onPasswordDialogDismiss() = _uiState.update { it.copy(passwordDialog = null) }
 
-    fun onCurrentPasswordChange(value: String) = updatePasswordDialog { it.copy(currentPassword = value, error = null) }
+    fun onCurrentPasswordChange(value: String) =
+        updatePasswordDialog { it.copy(currentPassword = value, touched = it.touched + PasswordField.CURRENT, error = null) }
 
-    fun onNewPasswordChange(value: String) = updatePasswordDialog { it.copy(newPassword = value, error = null) }
+    fun onNewPasswordChange(value: String) =
+        updatePasswordDialog { it.copy(newPassword = value, touched = it.touched + PasswordField.NEW, error = null) }
 
-    fun onConfirmPasswordChange(value: String) = updatePasswordDialog { it.copy(confirmPassword = value, error = null) }
+    fun onConfirmPasswordChange(value: String) =
+        updatePasswordDialog { it.copy(confirmPassword = value, touched = it.touched + PasswordField.CONFIRM, error = null) }
 
     fun onPasswordConfirm() {
         val dialog = _uiState.value.passwordDialog ?: return
-        if (!dialog.isFilled || dialog.isLoading) return
-        // La coincidencia es solo de la pantalla; el resto de reglas las valida el caso de uso.
-        if (dialog.newPassword != dialog.confirmPassword) {
-            updatePasswordDialog { it.copy(error = PasswordDialogError.MISMATCH) }
+        if (dialog.isLoading) return
+        // Si algo falta o no cumple, se muestran los errores de todos los campos (como en Registro).
+        if (!dialog.isFilled) {
+            updatePasswordDialog { it.copy(touched = PasswordField.entries.toSet()) }
             return
         }
         updatePasswordDialog { it.copy(isLoading = true) }

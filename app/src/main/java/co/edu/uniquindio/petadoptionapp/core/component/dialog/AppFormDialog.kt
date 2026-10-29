@@ -29,9 +29,9 @@ import androidx.compose.ui.window.DialogProperties
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.DangerButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
-import co.edu.uniquindio.petadoptionapp.core.component.text.LinkText
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -105,11 +105,13 @@ fun AppFormDialog(
                 PrimaryButton(text = confirmText, onClick = onConfirm, enabled = canConfirm)
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
-            LinkText(
+            // Cancelar como botón delineado (igual que "Cerrar sesión"), del mismo tamaño que confirmar.
+            SecondaryButton(
                 text = stringResource(R.string.common_cancel),
-                onClick = { if (!isLoading) onDismiss() },
+                onClick = onDismiss,
+                enabled = !isLoading,
             )
         }
     }

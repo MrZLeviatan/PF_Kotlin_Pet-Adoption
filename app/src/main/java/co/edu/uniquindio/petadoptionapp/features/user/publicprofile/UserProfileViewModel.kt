@@ -56,6 +56,8 @@ data class UserProfileUiState(
     val posts: List<PublicPostUi> = emptyList(),
     val isLoading: Boolean = true,
     val notFound: Boolean = false,
+    // La cuenta fue eliminada por su dueño.
+    val isDeleted: Boolean = false,
     val hasError: Boolean = false,
 ) {
     // Mismo cálculo que en Mi Perfil: avance dentro del nivel actual.
@@ -96,7 +98,7 @@ class UserProfileViewModel @Inject constructor(
     }
 
     fun load() {
-        _uiState.update { it.copy(isLoading = true, hasError = false, notFound = false) }
+        _uiState.update { it.copy(isLoading = true, hasError = false, notFound = false, isDeleted = false) }
         viewModelScope.launch {
             // Quien mira se toma de la sesión: la privacidad la decide el dominio.
             val viewerId = observeSession().value?.id.orEmpty()
@@ -105,7 +107,8 @@ class UserProfileViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         notFound = error === UserException.UserNotFound,
-                        hasError = error !== UserException.UserNotFound,
+                        isDeleted = error === UserException.UserDeleted,
+                        hasError = error !== UserException.UserNotFound && error !== UserException.UserDeleted,
                     )
                 }
                 return@launch

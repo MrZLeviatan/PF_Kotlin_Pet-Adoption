@@ -35,6 +35,8 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.HourglassTop
+import androidx.compose.material.icons.outlined.AssignmentInd
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
@@ -81,7 +83,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
+import co.edu.uniquindio.petadoptionapp.core.component.photo.PhotoViewerDialog
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
 import co.edu.uniquindio.petadoptionapp.core.component.card.NoticeBanner
@@ -102,7 +113,9 @@ import java.util.Locale
 /**
 Detalle de una publicación. Cambia según quién la mira:
 - El dueño ve "Editar" (solo mientras está en revisión) y "Eliminar".
-- Los demás ven "Me interesa adoptar" (si la categoría lo permite) y "Es importante".
+- Un moderador: "Seleccionar para revisión" si nadie la revisa; "Aprobar" y "Rechazar" si es suya;
+  un aviso si la revisa otro moderador.
+- Los demás ven "Me interesa adoptar" (si la categoría lo permite) o, si no, "Empezar a chatear", y "Es importante".
 Los comentarios se ven de a tres; "Ver todos" abre la pantalla completa para comentar y responder.
 Conecta el [PostDetailViewModel] con la UI; [PostDetailContent] solo dibuja.
  */
@@ -115,6 +128,8 @@ fun PostDetailScreen(
     onEditPost: (postId: String) -> Unit,
     onAuthorClick: (userId: String) -> Unit,
     onOpenChat: (chatId: String) -> Unit,
+    // Moderador: abre la pantalla para escribir el motivo del rechazo.
+    onRejectPost: (postId: String) -> Unit = {},
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -157,6 +172,12 @@ fun PostDetailScreen(
                 onDeleteDismiss = viewModel::onDeleteDismiss,
                 onImportant = viewModel::onImportantClick,
                 onAdoptionInterest = viewModel::onAdoptionInterestClick,
+                onStartChat = viewModel::onStartChatClick,
+                onTakeReview = viewModel::onTakeReviewClick,
+                onApprove = viewModel::onApproveClick,
+                onApproveConfirm = viewModel::onApproveConfirm,
+                onApproveDismiss = viewModel::onApproveDismiss,
+                onReject = { uiState.post?.let { onRejectPost(it.id) } },
                 onOpenComments = { uiState.post?.let { onOpenComments(it.id, null) } },
                 onReply = { comment -> uiState.post?.let { onOpenComments(it.id, comment.id) } },
                 onAuthorClick = { uiState.author?.let { onAuthorClick(it.id) } },
@@ -185,6 +206,12 @@ private data class PostDetailActions(
     val onDeleteDismiss: () -> Unit = {},
     val onImportant: () -> Unit = {},
     val onAdoptionInterest: () -> Unit = {},
+    val onStartChat: () -> Unit = {},
+    val onTakeReview: () -> Unit = {},
+    val onApprove: () -> Unit = {},
+    val onApproveConfirm: () -> Unit = {},
+    val onApproveDismiss: () -> Unit = {},
+    val onReject: () -> Unit = {},
     val onOpenComments: () -> Unit = {},
     val onCommentLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
@@ -233,7 +260,17 @@ private fun PostDetailContent(
                 .weight(1f)
                 .verticalScroll(rememberScrollState()),
         ) {
-            PostImageHeader(imageUrls = post.photoUrls, onBack = actions.onBack, onShare = actions.onShare)
+            // Tocar una foto la abre a pantalla completa (con su carrusel); al cerrar se vuelve aquí.
+            var viewerPage by rememberSaveable { mutableStateOf<Int?>(null) }
+            PostImageHeader(
+                imageUrls = post.photoUrls,
+                onBack = actions.onBack,
+                onShare = actions.onShare,
+                onPhotoClick = { page -> viewerPage = page },
+            )
+            viewerPage?.let { page ->
+                PhotoViewerDialog(imageUrls = post.photoUrls, initialPage = page, onDismiss = { viewerPage = null })
+            }
 
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -249,6 +286,9 @@ private fun PostDetailContent(
                     // Rechazada: el motivo del moderador y solo "Eliminar" (no se edita).
                     RejectedNotice(reason = post.rejectionReason)
                     if (uiState.isOwner) OwnerActions(onEdit = null, onDelete = actions.onDelete)
+                } else if (uiState.moderatorReview != null) {
+                    // Moderador: arriba, como las acciones del dueño (diseño "Aprobar / Rechazar").
+                    ModeratorActions(review = uiState.moderatorReview, isTaking = uiState.isTakingReview, actions = actions)
                 } else if (uiState.isOwner) {
                     // El dueño tiene sus acciones arriba; los demás, debajo de los datos (como en el diseño).
                     // Ya verificada no se edita (solo se finaliza o elimina), igual que en UpdatePostUseCase.
@@ -259,7 +299,8 @@ private fun PostDetailContent(
                 uiState.author?.let { AuthorCard(author = it, isOwner = uiState.isOwner, onViewProfile = actions.onAuthorClick) }
                 PostInfoCard(post)
 
-                if (!uiState.isOwner && post.isPublic) {
+                // Los moderadores solo revisan: sin "Me interesa adoptar", chat ni "Es importante".
+                if (!uiState.isOwner && !uiState.isModerator && post.isPublic) {
                     VisitorActions(uiState = uiState, post = post, actions = actions)
                 }
 
@@ -270,13 +311,14 @@ private fun PostDetailContent(
                     totalComments = post.commentCount,
                     uiState = uiState,
                     canComment = post.isPublic,
+                    canReply = post.isPublic && !uiState.isModerator,
                     actions = actions,
                 )
             }
         }
 
-        // Solo se comenta en publicaciones visibles al público (regla del caso de uso).
-        if (post.isPublic) {
+        // Solo se comenta en publicaciones visibles al público (regla del caso de uso), y no como moderador.
+        if (post.isPublic && !uiState.isModerator) {
             CommentInputBar(
                 viewerName = uiState.viewerName,
                 viewerPhotoUrl = uiState.viewerPhotoUrl,
@@ -300,10 +342,23 @@ private fun PostDetailContent(
             isDestructive = true,
         )
     }
+
+    // Moderador: confirmar antes de aprobar (la publicación pasa al feed público).
+    if (uiState.showApproveDialog) {
+        AppConfirmDialog(
+            title = stringResource(R.string.mod_approve_title),
+            message = stringResource(R.string.mod_approve_message),
+            confirmText = stringResource(R.string.mod_approve),
+            cancelText = stringResource(R.string.common_cancel),
+            onConfirm = actions.onApproveConfirm,
+            onDismiss = actions.onApproveDismiss,
+            isLoading = uiState.isApproving,
+        )
+    }
 }
 
 @Composable
-private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare: () -> Unit) {
+private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare: () -> Unit, onPhotoClick: (page: Int) -> Unit) {
     // Sin fotos se muestra la imagen local para no dejar el espacio vacío.
     val pageCount = imageUrls.size.coerceAtLeast(1)
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -319,7 +374,9 @@ private fun PostImageHeader(imageUrls: List<String>, onBack: () -> Unit, onShare
                 placeholder = ColorPainter(AppTheme.colors.surfaceTag),
                 error = painterResource(R.drawable.hero_image),
                 fallback = painterResource(R.drawable.hero_image),
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(onClickLabel = stringResource(R.string.photo_viewer_open), role = Role.Image) { onPhotoClick(page) },
             )
         }
 
@@ -398,9 +455,49 @@ private fun RoundIconButton(
     }
 }
 
-// Dueño: editar (principal) y eliminar (delineado en rojo).
+// Moderador: tomarla para revisión, decidirla (si es suya) o el aviso de que la revisa otro.
 @Composable
+private fun ModeratorActions(review: ModeratorReview, isTaking: Boolean, actions: PostDetailActions) {
+    when (review) {
+        ModeratorReview.AVAILABLE -> PillButton(
+            text = stringResource(R.string.mod_take_review),
+            icon = Icons.Outlined.AssignmentInd,
+            onClick = actions.onTakeReview,
+            enabled = !isTaking,
+            containerColor = AppTheme.colors.actionPrimary,
+            contentColor = AppTheme.colors.onActionPrimary,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        ModeratorReview.MINE -> Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            PillButton(
+                text = stringResource(R.string.mod_approve),
+                icon = Icons.Outlined.CheckCircle,
+                onClick = actions.onApprove,
+                containerColor = AppTheme.colors.actionPrimary,
+                contentColor = AppTheme.colors.onActionPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            PillButton(
+                text = stringResource(R.string.mod_reject),
+                icon = Icons.Outlined.Block,
+                onClick = actions.onReject,
+                containerColor = AppTheme.colors.surface,
+                contentColor = AppTheme.colors.stateError,
+                border = BorderStroke(1.dp, AppTheme.colors.stateError),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        ModeratorReview.OTHER -> NoticeBanner(
+            message = stringResource(R.string.mod_in_review_by_other),
+            icon = Icons.Outlined.HourglassTop,
+        )
+        ModeratorReview.CLOSED -> Unit
+    }
+}
+
+// Dueño: editar (principal) y eliminar (delineado en rojo).
 // Sin [onEdit] (verificada o rechazada) solo queda "Eliminar", a todo el ancho.
+@Composable
 private fun OwnerActions(onEdit: (() -> Unit)?, onDelete: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (onEdit != null) {
@@ -485,6 +582,20 @@ private fun VisitorActions(uiState: PostDetailUiState, post: PostDetailUi, actio
                     .weight(1f)
                     .fillMaxHeight(),
             )
+        } else {
+            // Perdidos, encontrados, veterinaria...: no hay solicitud, se escribe directo al autor.
+            PillButton(
+                text = stringResource(R.string.post_detail_start_chat),
+                icon = Icons.AutoMirrored.Outlined.Chat,
+                onClick = actions.onStartChat,
+                enabled = !uiState.isStartingChat,
+                containerColor = AppTheme.colors.actionPrimary,
+                contentColor = AppTheme.colors.onActionPrimary,
+                maxLines = 2,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            )
         }
         // Mismo texto y colores invertidos que en el feed cuando ya votó ("Marcada como importante").
         PillButton(
@@ -515,6 +626,8 @@ private fun PillButton(
     border: BorderStroke? = null,
     // 2 en los botones del visitante, para que "Marcada como importante" no se corte.
     maxLines: Int = 1,
+    // Más aire a los lados en un botón suelto (ej. "Ver perfil"), para que no se vea apretado.
+    horizontalPadding: Dp = 8.dp,
 ) {
     Button(
         onClick = onClick,
@@ -522,7 +635,7 @@ private fun PillButton(
         modifier = modifier.heightIn(min = 48.dp),
         shape = RoundedCornerShape(50),
         border = border,
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor,
@@ -633,6 +746,8 @@ private fun AuthorCard(author: PostAuthorUi, isOwner: Boolean, onViewProfile: ()
                     onClick = onViewProfile,
                     containerColor = AppTheme.colors.actionPrimary,
                     contentColor = AppTheme.colors.onActionPrimary,
+                    horizontalPadding = 20.dp,
+                    modifier = Modifier.widthIn(min = 128.dp),
                 )
             }
         }
@@ -713,6 +828,8 @@ private fun PostCommentsPreview(
     totalComments: Int,
     uiState: PostDetailUiState,
     canComment: Boolean,
+    // Responder: no para moderadores, aunque los comentarios estén abiertos.
+    canReply: Boolean = canComment,
     actions: PostDetailActions,
 ) {
     val comments = uiState.comments
@@ -752,7 +869,7 @@ private fun PostCommentsPreview(
                 comment = comment,
                 onLikeClick = { actions.onCommentLike(comment.id) },
                 onReplyClick = { actions.onReply(comment) },
-                canReply = canComment,
+                canReply = canReply,
                 onAuthorClick = { actions.onCommentAuthorClick(comment.authorId) },
             )
         }
@@ -791,16 +908,6 @@ private fun locationText(post: PostDetailUi): String {
     return listOfNotNull(place.ifBlank { null }, distance).joinToString(" • ")
 }
 
-// Menos de 24 horas se muestra en horas; desde ahí, en días.
-@Composable
-private fun agoText(ageHours: Int): String =
-    if (ageHours < 24) {
-        pluralStringResource(R.plurals.common_time_hours_ago, ageHours, ageHours)
-    } else {
-        val days = ageHours / 24
-        pluralStringResource(R.plurals.common_time_days_ago, days, days)
-    }
-
 @Composable
 private fun sizeText(size: AnimalSize?): String = when (size) {
     null -> stringResource(R.string.post_detail_unknown)
@@ -821,6 +928,9 @@ private fun detailMessageText(message: DetailMessage): String = stringResource(
     when (message) {
         DetailMessage.ALREADY_REQUESTED -> R.string.post_detail_msg_already_requested
         DetailMessage.ACTION_ERROR -> R.string.post_detail_msg_error
+        DetailMessage.REVIEW_TAKEN -> R.string.mod_msg_review_taken
+        DetailMessage.REVIEW_TAKEN_BY_OTHER -> R.string.mod_msg_review_taken_by_other
+        DetailMessage.APPROVED -> R.string.mod_msg_approved
         DetailMessage.COMMENT_ERROR -> R.string.post_detail_msg_comment_error
     }
 )

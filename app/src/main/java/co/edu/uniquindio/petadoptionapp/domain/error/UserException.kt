@@ -39,6 +39,9 @@ sealed class UserException : Exception() {
     // No existe el usuario buscado (por ejemplo, al abrir un perfil ajeno).
     object UserNotFound : UserException()
 
+    // La cuenta existió, pero su dueño la eliminó (su perfil ya no se muestra).
+    object UserDeleted : UserException()
+
     // Ocurre cuando una persona intenta modificar o eliminar el perfil de otra.
     object NotAllowed : UserException()
 

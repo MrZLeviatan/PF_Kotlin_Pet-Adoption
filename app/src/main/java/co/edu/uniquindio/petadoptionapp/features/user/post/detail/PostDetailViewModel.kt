@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.domain.error.AdoptionException
+import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalType
@@ -12,11 +13,13 @@ import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.users.User
+import co.edu.uniquindio.petadoptionapp.domain.model.users.UserRole
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.LoadCatalogUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveAnimalTypesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveCategoriesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.GetMyAdoptionRequestUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.StartChatUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.SendAdoptionInterestUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.CreateCommentUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetCommentsUseCase
@@ -24,7 +27,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.GetLikedCommentsU
 import co.edu.uniquindio.petadoptionapp.domain.usecase.comment.ToggleCommentLikeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyVotedPostIdsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.ToggleImportantUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.ApprovePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.DeletePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.StartReviewUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetUserProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
@@ -80,12 +85,26 @@ data class PostAuthorUi(
 )
 
 // Mensajes cortos (snackbar); el texto lo pone la UI con strings.xml.
-enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR }
+enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR, REVIEW_TAKEN, REVIEW_TAKEN_BY_OTHER, APPROVED }
+
+/**
+ Qué puede hacer el moderador que mira la publicación:
+ AVAILABLE = nadie la revisa (puede tomarla), MINE = la revisa él (aprobar o rechazar),
+ OTHER = la revisa otro moderador (solo un aviso), CLOSED = ya fue aprobada o rechazada.
+ */
+enum class ModeratorReview { AVAILABLE, MINE, OTHER, CLOSED }
 
 data class PostDetailUiState(
     val post: PostDetailUi? = null,
     val author: PostAuthorUi? = null,
     val isOwner: Boolean = false,
+    // Un moderador la está viendo (desde su inicio): no adopta, no vota, no chatea ni comenta.
+    val isModerator: Boolean = false,
+    // Solo para moderadores (null para los demás).
+    val moderatorReview: ModeratorReview? = null,
+    val isTakingReview: Boolean = false,
+    val showApproveDialog: Boolean = false,
+    val isApproving: Boolean = false,
     val isLoading: Boolean = true,
     val notFound: Boolean = false,
     // Vista previa: los primeros comentarios principales (como en Facebook).
@@ -100,6 +119,8 @@ data class PostDetailUiState(
     // Chat de la solicitud ya enviada: el botón pasa a ser "Ir al chat".
     val adoptionChatId: String? = null,
     val isSendingInterest: Boolean = false,
+    // "Empezar a chatear" (publicaciones que no son de adopción) mientras se abre el chat.
+    val isStartingChat: Boolean = false,
     val showDeleteDialog: Boolean = false,
     val isDeleting: Boolean = false,
     val message: DetailMessage? = null,
@@ -128,8 +149,11 @@ class PostDetailViewModel @Inject constructor(
     private val toggleImportant: ToggleImportantUseCase,
     private val getMyVotedPostIds: GetMyVotedPostIdsUseCase,
     private val sendAdoptionInterest: SendAdoptionInterestUseCase,
+    private val startChat: StartChatUseCase,
     private val getMyAdoptionRequest: GetMyAdoptionRequestUseCase,
     private val deletePost: DeletePostUseCase,
+    private val startReview: StartReviewUseCase,
+    private val approvePost: ApprovePostUseCase,
     private val getUserProfile: GetUserProfileUseCase,
 ) : ViewModel() {
 
@@ -180,6 +204,8 @@ class PostDetailViewModel @Inject constructor(
                 it.copy(
                     post = post.toUi(observeCategories().value, observeAnimalTypes().value),
                     isOwner = isOwner,
+                    isModerator = session.role == UserRole.MODERATOR,
+                    moderatorReview = if (session.role == UserRole.MODERATOR) post.reviewFor(session.id) else null,
                     isLoading = false,
                     notFound = false,
                 )
@@ -303,6 +329,23 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     "Empezar a chatear" (perdidos, encontrados, veterinaria...): abre el chat de esta publicación con su autor.
+     Si ya existía, StartChatUseCase devuelve el mismo (id fijo por persona y publicación), así no se duplica.
+     */
+    fun onStartChatClick() {
+        if (_uiState.value.isStartingChat) return
+        _uiState.update { it.copy(isStartingChat = true) }
+        viewModelScope.launch {
+            startChat(postId)
+                .onSuccess { chat ->
+                    _uiState.update { it.copy(isStartingChat = false) }
+                    _events.send(PostDetailEvent.OpenChat(chat.id))
+                }
+                .onFailure { _uiState.update { it.copy(isStartingChat = false, message = DetailMessage.ACTION_ERROR) } }
+        }
+    }
+
     private fun openAdoptionChat(chatId: String) {
         _uiState.update { it.copy(isSendingInterest = false, adoptionRequested = true, adoptionChatId = chatId) }
         _events.trySend(PostDetailEvent.OpenChat(chatId))
@@ -333,6 +376,47 @@ class PostDetailViewModel @Inject constructor(
     }
 
     fun onMessageShown() = _uiState.update { it.copy(message = null) }
+
+    // --- Acciones del moderador ---
+
+    /** "Seleccionar para revisión": queda a su nombre ("en revisión") y nadie más puede decidirla. */
+    fun onTakeReviewClick() {
+        if (_uiState.value.isTakingReview) return
+        _uiState.update { it.copy(isTakingReview = true) }
+        viewModelScope.launch {
+            startReview(postId)
+                .onSuccess { _uiState.update { it.copy(isTakingReview = false, message = DetailMessage.REVIEW_TAKEN) } }
+                .onFailure { error ->
+                    // Otro moderador la tomó un instante antes: se avisa y se muestra su estado real.
+                    val message = if (error === PostException.ReviewedByAnotherModerator) DetailMessage.REVIEW_TAKEN_BY_OTHER else DetailMessage.ACTION_ERROR
+                    _uiState.update { it.copy(isTakingReview = false, message = message) }
+                }
+            refresh()
+        }
+    }
+
+    fun onApproveClick() = _uiState.update { it.copy(showApproveDialog = true) }
+
+    fun onApproveDismiss() = _uiState.update { if (it.isApproving) it else it.copy(showApproveDialog = false) }
+
+    /** Aprueba: aparece en el feed y el autor recibe la notificación (lo hace el caso de uso). */
+    fun onApproveConfirm() {
+        if (_uiState.value.isApproving) return
+        _uiState.update { it.copy(isApproving = true) }
+        viewModelScope.launch {
+            approvePost(postId)
+                .onSuccess { _uiState.update { it.copy(isApproving = false, showApproveDialog = false, message = DetailMessage.APPROVED) } }
+                .onFailure { _uiState.update { it.copy(isApproving = false, showApproveDialog = false, message = DetailMessage.ACTION_ERROR) } }
+            refresh()
+        }
+    }
+
+    private fun Post.reviewFor(moderatorId: String): ModeratorReview = when (verification.status) {
+        VerificationStatus.UNVERIFIED -> ModeratorReview.AVAILABLE
+        VerificationStatus.IN_PROCESS ->
+            if (verification.reviewedBy == moderatorId) ModeratorReview.MINE else ModeratorReview.OTHER
+        else -> ModeratorReview.CLOSED
+    }
 
     private fun Post.toUi(categories: List<Category>, types: List<AnimalType>): PostDetailUi {
         val category = categories.firstOrNull { it.id == categoryId }

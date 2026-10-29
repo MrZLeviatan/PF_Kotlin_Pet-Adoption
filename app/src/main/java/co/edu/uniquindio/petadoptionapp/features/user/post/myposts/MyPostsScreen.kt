@@ -35,10 +35,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.button.TextActionButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostMetaLine
 import co.edu.uniquindio.petadoptionapp.core.component.card.PostSummaryCard
@@ -280,11 +282,14 @@ private fun ActiveFooter(onFinish: () -> Unit) {
 // Aviso fijo de las finalizadas: el caso ya se cerró y la publicación queda como historial.
 @Composable
 private fun FinishedFooter() {
+    // Misma letra que "No editable en revisión" (labelSmall), un punto más grande; labelMedium es el estilo de los enlaces.
     IconTextRow(
         icon = Icons.Outlined.CheckCircle,
         text = stringResource(R.string.post_finished_notice),
         modifier = Modifier.padding(vertical = 12.dp),
-        style = MaterialTheme.typography.labelMedium,
+        iconSize = 14.dp,
+        spacing = 6.dp,
+        style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp),
     )
 }
 
@@ -334,16 +339,6 @@ private fun DeleteFooter(onDelete: () -> Unit, note: String) {
         )
     }
 }
-
-// Menos de 24 horas se muestra en horas; desde ahí, en días.
-@Composable
-private fun agoText(ageHours: Int): String =
-    if (ageHours < 24) {
-        pluralStringResource(R.plurals.common_time_hours_ago, ageHours, ageHours)
-    } else {
-        val days = ageHours / 24
-        pluralStringResource(R.plurals.common_time_days_ago, days, days)
-    }
 
 // Traducen el estado (lógica) al texto, color o recurso (presentación).
 @Composable

@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Pets
@@ -95,7 +97,8 @@ fun ChatScreen(
         uiState = uiState,
         actions = ChatActions(
             onBack = onBack,
-            onUserClick = { if (uiState.otherUserId.isNotEmpty()) onUserClick(uiState.otherUserId) },
+            // Una cuenta eliminada no tiene perfil que abrir.
+            onUserClick = { if (uiState.otherUserId.isNotEmpty() && !uiState.isOtherDeleted) onUserClick(uiState.otherUserId) },
             onPostClick = { uiState.postId?.let(onPostClick) },
             onTextChange = viewModel::onTextChange,
             onSend = viewModel::onSend,
@@ -184,16 +187,28 @@ private fun ChatContent(uiState: ChatUiState, actions: ChatActions) {
                     if (previous == null || !isSameChatDay(previous.sentAt, message.sentAt)) {
                         DaySeparator(chatDayText(message.sentAt))
                     }
-                    MessageBubble(message = message, postTitle = uiState.postTitle)
+                    MessageBubble(
+                        message = message,
+                        postTitle = uiState.postTitle,
+                        isSeen = message.isMine && message.sentAt <= uiState.seenUntil,
+                    )
+                    // "Visto" bajo mi último mensaje leído, con el mismo estilo que la hora de la burbuja.
                     if (message.id == uiState.seenMessageId) {
-                        Text(
-                            text = stringResource(R.string.chat_seen),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = AppTheme.colors.textPrimary,
+                        Row(
                             modifier = Modifier
                                 .align(Alignment.End)
-                                .padding(top = 2.dp, end = 4.dp),
-                        )
+                                .padding(top = 4.dp, end = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Filled.DoneAll, contentDescription = null, tint = AppTheme.colors.textLink, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.chat_seen),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = AppTheme.colors.textLink,
+                            )
+                        }
                     }
                 }
             }
@@ -229,8 +244,9 @@ private fun ChatHeader(uiState: ChatUiState, actions: ChatActions) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BackButton(onClick = actions.onBack)
+        val name = if (uiState.isOtherDeleted) stringResource(R.string.chat_deleted_user) else uiState.otherName
         UserAvatar(
-            name = uiState.otherName,
+            name = name,
             photoUrl = uiState.otherPhotoUrl,
             size = 40.dp,
             modifier = Modifier.clickable(role = Role.Button, onClick = actions.onUserClick),
@@ -238,7 +254,7 @@ private fun ChatHeader(uiState: ChatUiState, actions: ChatActions) {
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                text = uiState.otherName,
+                text = name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = AppTheme.colors.textPrimary,
@@ -303,7 +319,7 @@ private fun DaySeparator(text: String) {
 
 // Burbuja: a la derecha y amarilla si es mía; a la izquierda y clara si es de la otra persona.
 @Composable
-private fun MessageBubble(message: ChatMessageUi, postTitle: String?) {
+private fun MessageBubble(message: ChatMessageUi, postTitle: String?, isSeen: Boolean) {
     val shape = if (message.isMine) {
         RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 4.dp)
     } else {
@@ -343,14 +359,29 @@ private fun MessageBubble(message: ChatMessageUi, postTitle: String?) {
             if (message.text.isNotBlank()) {
                 Text(text = message.text, style = MaterialTheme.typography.bodyMedium, color = AppTheme.colors.textPrimary)
             }
-            Text(
-                text = chatClockText(message.sentAt),
-                fontSize = 10.sp,
-                color = AppTheme.colors.textPrimary.copy(alpha = 0.7f),
+            // Hora abajo a la derecha, separada del texto; en los míos, un check (enviado) o doble (visto).
+            Row(
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(top = 2.dp),
-            )
+                    .padding(top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = chatClockText(message.sentAt),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = AppTheme.colors.textPrimary.copy(alpha = 0.65f),
+                )
+                if (message.isMine) {
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        imageVector = if (isSeen) Icons.Filled.DoneAll else Icons.Filled.Done,
+                        contentDescription = stringResource(if (isSeen) R.string.chat_seen else R.string.chat_sent),
+                        tint = if (isSeen) AppTheme.colors.textLink else AppTheme.colors.textPrimary.copy(alpha = 0.65f),
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
         }
     }
 }

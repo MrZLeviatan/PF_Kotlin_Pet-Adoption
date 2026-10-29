@@ -26,6 +26,9 @@ object PostValidator {
     // Define el tamaño mínimo del motivo de rechazo.
     const val MIN_REJECTION_REASON_LENGTH = 10
 
+    // Mínimo de la descripción que escribe el moderador al rechazar (además del motivo elegido).
+    const val MIN_REJECTION_DESCRIPTION_LENGTH = 20
+
     // Define una función pública que verifica que el título esté dentro del rango de tamaño.
     fun isTitleValid(title: String): Boolean =
         title.trim().length in MIN_TITLE_LENGTH..MAX_TITLE_LENGTH

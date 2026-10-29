@@ -525,4 +525,54 @@
     <string name="chat_long_press_label">Ver opciones</string>
     <string name="notifications_delete">Eliminar notificación</string>
     <string name="notifications_delete_error">No se pudo eliminar la notificación.</string>
+    <string name="post_detail_start_chat">Empezar a chatear</string>
+
+    <!-- Inicio del moderador -->
+    <string name="mod_home_search_placeholder">Buscar publicaciones o @usuarios</string>
+    <string name="mod_home_dashboard_title">Dashboard de moderación</string>
+    <string name="mod_stat_high_priority">Prioridad alta</string>
+    <string name="mod_stat_high_priority_desc">Publicaciones que requieren atención inmediata.</string>
+    <string name="mod_stat_in_review">En revisión</string>
+    <string name="mod_stat_in_review_desc">Publicaciones esperando decisión de moderación.</string>
+    <string name="mod_stat_reviewed_today">Revisadas hoy</string>
+    <string name="mod_stat_reviewed_today_desc">Publicaciones que aprobaste o rechazaste hoy.</string>
+    <string name="mod_stat_pending">Pendientes</string>
+    <string name="mod_stat_pending_desc">Publicaciones sin moderador asignado.</string>
+    <string name="mod_queue_title">Por revisar</string>
+    <plurals name="mod_queue_count">
+        <item quantity="one">%1$d publicación</item>
+        <item quantity="other">%1$d publicaciones</item>
+    </plurals>
+    <string name="mod_queue_empty">No hay publicaciones esperando moderador. ¡Todo al día!</string>
+    <string name="mod_home_error">No se pudo cargar el dashboard de moderación.</string>
+    <string name="mod_priority_urgent">Urgente</string>
+    <string name="mod_priority_high">Prioridad alta</string>
+    <string name="mod_priority_medium">Prioridad media</string>
+    <string name="mod_priority_low">Prioridad baja</string>
+    <string name="mod_priority_none">Sin prioridad</string>
+    <string name="mod_status_in_review">En revisión</string>
+    <string name="mod_status_pending">Sin moderador</string>
+    <string name="mod_status_verified">Verificada</string>
+    <string name="mod_status_rejected">Rechazada</string>
+    <string name="mod_queue_empty_high">No hay publicaciones de prioridad alta esperando moderador.</string>
+    <string name="mod_take_review">Seleccionar para revisión</string>
+    <string name="mod_approve">Aprobar publicación</string>
+    <string name="mod_reject">Rechazar publicación</string>
+    <string name="mod_in_review_by_other">En revisión por otro moderador.</string>
+    <string name="mod_msg_review_taken">Publicación seleccionada correctamente. Ahora está en tu revisión.</string>
+    <string name="mod_msg_review_taken_by_other">Otro moderador la seleccionó antes que tú.</string>
+    <string name="mod_msg_approved">Publicación aprobada. Ya aparece en el feed.</string>
+    <string name="mod_approve_title">¿Aprobar publicación?</string>
+    <string name="mod_approve_message">Aparecerá en el feed público y le avisaremos al autor.</string>
+    <string name="mod_reject_error">No se pudo rechazar la publicación. Intenta de nuevo.</string>
+    <string name="mod_reviews_title">Mis revisiones</string>
+    <string name="mod_reviews_empty">No tienes publicaciones en revisión. Selecciona una desde el inicio.</string>
+    <string name="mod_reviews_error">No se pudieron cargar tus publicaciones en revisión.</string>
+    <string name="photo_viewer_open">Ampliar foto</string>
+    <string name="photo_viewer_close">Cerrar foto</string>
+    <string name="user_profile_deleted_title">Cuenta eliminada</string>
+    <string name="user_profile_deleted_message">Esta persona eliminó su cuenta, por eso su perfil y sus publicaciones ya no están disponibles.</string>
+    <string name="chat_deleted_user">Cuenta eliminada</string>
+    <string name="chats_search_placeholder_full">Buscar por persona o publicación</string>
+    <string name="chat_sent">Enviado</string>
 </resources>

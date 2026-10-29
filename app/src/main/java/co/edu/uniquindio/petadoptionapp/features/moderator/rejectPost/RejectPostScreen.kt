@@ -19,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.NoticeBanner
@@ -27,23 +27,27 @@ import co.edu.uniquindio.petadoptionapp.core.component.form.AppChipGroup
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextArea
 import co.edu.uniquindio.petadoptionapp.core.component.form.RequiredLabel
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
+import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 private val ScreenHorizontalPadding = 24.dp
 
 /**
-Pantalla donde el moderador indica por qué rechaza una publicación.
+Pantalla donde el moderador indica por qué rechaza una publicación (la que tiene en revisión).
+Al confirmar llama a RejectPostUseCase, que guarda el motivo y notifica al autor.
 Conecta el [RejectPostViewModel] con la UI; [RejectPostContent] solo dibuja.
  */
 @Composable
 fun RejectPostScreen(
     onBack: () -> Unit,
     onRejected: () -> Unit,
-    viewModel: RejectPostViewModel = viewModel(),
+    viewModel: RejectPostViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnRejected by rememberUpdatedState(onRejected)
+    val reasonLabel = uiState.selectedReason?.let { stringResource(it.labelRes()) }.orEmpty()
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -58,7 +62,7 @@ fun RejectPostScreen(
         onBack = onBack,
         onReasonSelected = viewModel::onReasonSelected,
         onDescriptionChange = viewModel::onDescriptionChange,
-        onConfirmClick = viewModel::onConfirmClick,
+        onConfirmClick = { viewModel.onConfirmClick(reasonLabel) },
     )
 }
 
@@ -119,7 +123,15 @@ private fun RejectPostContent(
                 onValueChange = onDescriptionChange,
                 placeholder = stringResource(R.string.reject_description_placeholder),
                 maxLength = RejectPostUiState.MAX_DESCRIPTION_LENGTH,
+                errorText = when (uiState.descriptionError) {
+                    null -> null
+                    DescriptionError.EMPTY -> stringResource(R.string.create_post_error_required)
+                    DescriptionError.TOO_SHORT ->
+                        stringResource(R.string.create_post_error_min, PostValidator.MIN_REJECTION_DESCRIPTION_LENGTH)
+                },
             )
+
+            if (uiState.hasError) ErrorText(text = stringResource(R.string.mod_reject_error))
         }
 
         PrimaryButton(

@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +41,7 @@ import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.form.SearchField
 import co.edu.uniquindio.petadoptionapp.core.component.icon.UserAvatar
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
 import co.edu.uniquindio.petadoptionapp.core.component.text.StatusMessage
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
@@ -101,7 +104,7 @@ private fun ChatListContent(
         SearchField(
             query = uiState.query,
             onQueryChange = onQueryChange,
-            placeholder = stringResource(R.string.chats_search_placeholder),
+            placeholder = stringResource(R.string.chats_search_placeholder_full),
             iconDescription = stringResource(R.string.chats_search_description),
             borderColor = AppTheme.colors.border,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),
@@ -147,12 +150,13 @@ private fun ChatRow(chat: ChatSummaryUi, onClick: () -> Unit, onLongClick: () ->
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            UserAvatar(name = chat.otherName, photoUrl = chat.otherPhotoUrl, size = 44.dp)
+            val name = if (chat.isOtherDeleted) stringResource(R.string.chat_deleted_user) else chat.otherName
+            UserAvatar(name = name, photoUrl = chat.otherPhotoUrl, size = 44.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = chat.otherName,
+                        text = name,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
@@ -166,6 +170,17 @@ private fun ChatRow(chat: ChatSummaryUi, onClick: () -> Unit, onLongClick: () ->
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.stateSuccess,
+                    )
+                }
+                // Publicación de la que trata el chat (dos chats con la misma persona se distinguen así).
+                chat.postTitle?.let { title ->
+                    IconTextRow(
+                        icon = Icons.Outlined.Pets,
+                        text = title,
+                        iconSize = 12.dp,
+                        spacing = 4.dp,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
                     )
                 }
                 Spacer(Modifier.height(2.dp))
@@ -229,10 +244,10 @@ private fun ChatListPreview() {
             uiState = ChatListUiState(
                 isLoading = false,
                 chats = listOf(
-                    ChatSummaryUi("1", "u1", "María González", null, ChatPreviewKind.TEXT, "¿Podemos vernos mañana para conocer a Luna?", false, now - 60_000, 2),
-                    ChatSummaryUi("2", "u2", "Carlos Ruiz", null, ChatPreviewKind.TEXT, "¿Cómo es su temperamento con niños pequeños?", true, now - 3_600_000, 0),
-                    ChatSummaryUi("3", "u3", "Ana Martínez", null, ChatPreviewKind.INTEREST_RECEIVED, "", false, now - 26 * 3_600_000, 0),
-                    ChatSummaryUi("4", "u4", "Pedro López", null, ChatPreviewKind.TEXT, "¿Aceptan solicitudes de adopción desde Medellín?", false, now - 50 * 3_600_000, 0),
+                    ChatSummaryUi("1", "u1", "María González", null, false, "Luna busca hogar", ChatPreviewKind.TEXT, "¿Podemos vernos mañana para conocer a Luna?", false, now - 60_000, 2),
+                    ChatSummaryUi("2", "u2", "Carlos Ruiz", null, false, "Luna busca hogar", ChatPreviewKind.TEXT, "¿Cómo es su temperamento con niños pequeños?", true, now - 3_600_000, 0),
+                    ChatSummaryUi("3", "u3", "Ana Martínez", null, false, "Luna busca hogar", ChatPreviewKind.INTEREST_RECEIVED, "", false, now - 26 * 3_600_000, 0),
+                    ChatSummaryUi("4", "u4", "Pedro López", null, false, "Luna busca hogar", ChatPreviewKind.TEXT, "¿Aceptan solicitudes de adopción desde Medellín?", false, now - 50 * 3_600_000, 0),
                 ),
             ),
             padding = PaddingValues(),

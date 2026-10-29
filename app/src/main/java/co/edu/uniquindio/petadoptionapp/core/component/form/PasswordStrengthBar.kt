@@ -19,9 +19,24 @@ import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
 /** Niveles de seguridad. Quién los calcula se decide después, en el ViewModel. */
 enum class PasswordStrength { WEAK, MEDIUM, STRONG }
+
+// Largo desde el que una contraseña con símbolo cuenta como "Alta".
+private const val STRONG_PASSWORD_LENGTH = 12
+
+/**
+ Fuerza de una contraseña, con la misma regla que los casos de uso (AuthValidator).
+ Baja = la rechazarían. Media = cumple la regla. Alta = además es larga y con símbolo. Vacía = null (sin barra).
+ */
+fun passwordStrengthOf(password: String): PasswordStrength? = when {
+    password.isEmpty() -> null
+    !AuthValidator.isPasswordValid(password) -> PasswordStrength.WEAK
+    password.length >= STRONG_PASSWORD_LENGTH && password.any { !it.isLetterOrDigit() } -> PasswordStrength.STRONG
+    else -> PasswordStrength.MEDIUM
+}
 
 /**
 Barra de tres segmentos (rojo, amarillo, verde) con el texto "Seguridad: Media".

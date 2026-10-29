@@ -27,6 +27,8 @@ fun AppTextArea(
     placeholder: String,
     maxLength: Int,
     modifier: Modifier = Modifier,
+    // Con error: borde rojo y el mensaje junto al contador ("Mínimo 20 caracteres (5/500 caracteres)").
+    errorText: String? = null,
 ) {
     OutlinedTextField(
         value = value,
@@ -35,9 +37,11 @@ fun AppTextArea(
             .fillMaxWidth()
             .heightIn(min = 180.dp),
         placeholder = { Text(text = placeholder, style = MaterialTheme.typography.bodyMedium) },
+        isError = errorText != null,
         supportingText = {
+            val counter = stringResource(R.string.common_char_counter, value.length, maxLength)
             Text(
-                text = stringResource(R.string.common_char_counter, value.length, maxLength),
+                text = errorText?.let { "$it ($counter)" } ?: counter,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.End,
             )
@@ -55,6 +59,11 @@ fun AppTextArea(
             unfocusedPlaceholderColor = AppTheme.colors.stateDisabled,
             focusedSupportingTextColor = AppTheme.colors.textPrimary,
             unfocusedSupportingTextColor = AppTheme.colors.textPrimary,
+            errorContainerColor = AppTheme.colors.surface,
+            errorBorderColor = AppTheme.colors.stateError,
+            errorSupportingTextColor = AppTheme.colors.stateError,
+            errorCursorColor = AppTheme.colors.stateError,
+            errorTextColor = AppTheme.colors.textPrimary,
         ),
     )
 }

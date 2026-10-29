@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.features.dashboard
 
+import co.edu.uniquindio.petadoptionapp.features.moderator.home.ModeratorHomeScreen
+import co.edu.uniquindio.petadoptionapp.features.moderator.reviews.MyReviewsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.chat.list.ChatListScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -52,8 +54,15 @@ fun DashboardNavigation(
         composable<DashboardRoutes.Explore> { PlaceholderScreen("Explore", padding) }
 
         // Moderador
-        composable<DashboardRoutes.HomeMonitor> { PlaceholderScreen("HomeMonitor", padding) }
-        composable<DashboardRoutes.Publications> { PlaceholderScreen("Publications", padding) }
+        composable<DashboardRoutes.HomeMonitor> {
+            ModeratorHomeScreen(
+                padding = padding,
+                onPostClick = onPostClick,
+                onUserClick = onUserClick,
+                onNotificationsClick = onNotificationsClick
+            )
+        }
+        composable<DashboardRoutes.Publications> { MyReviewsScreen(padding = padding, onPostClick = onPostClick) }
 
         // Compartidas
         composable<DashboardRoutes.Messages> { ChatListScreen(padding = padding, onChatClick = onChatClick) }

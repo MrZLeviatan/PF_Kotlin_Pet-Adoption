@@ -32,6 +32,13 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.MarkNotifica
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetFeedUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostStatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetModerationQueueUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.ApprovePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.RejectPostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.StartReviewUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetMyReviewsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetModerationStatsUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.user.GetCurrentModeratorUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetUserPostsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.AwardPointsUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.reputation.EvaluateMyBadgesUseCase
@@ -66,6 +73,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.MarkChatReadUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.ObserveMessagesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.RequireChatMemberUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.SendMessageUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.StartChatUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.chat.adoption.GetMyAdoptionRequestUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.importantVote.GetMyImportantPostsUseCase
@@ -173,8 +181,8 @@ object UseCaseModule {
     @ViewModelScoped
     fun providesSearchUsersUseCase(
         userRepository: UserRepository,
-        requiredUser: RequireUserUseCase,
-    ): SearchUsersUseCase = SearchUsersUseCase(userRepository, requiredUser)
+        authRepository: AuthRepository,
+    ): SearchUsersUseCase = SearchUsersUseCase(userRepository, authRepository)
 
 
     @Provides
@@ -182,6 +190,13 @@ object UseCaseModule {
     fun providesRequireUserUseCase(
         authRepository: AuthRepository,
     ): RequireUserUseCase = RequireUserUseCase(authRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesRequireModeratorUseCase(
+        authRepository: AuthRepository,
+        userRepository: UserRepository,
+    ): RequireModeratorUseCase = RequireModeratorUseCase(authRepository, userRepository)
 
 
     @Provides
@@ -284,6 +299,61 @@ object UseCaseModule {
         postRepository: PostRepository,
         requiredUser: RequireUserUseCase
     ): GetPostStatsUseCase = GetPostStatsUseCase(postRepository, requiredUser)
+
+    // Moderación
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetModerationStatsUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+    ): GetModerationStatsUseCase = GetModerationStatsUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetModerationQueueUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+    ): GetModerationQueueUseCase = GetModerationQueueUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetCurrentModeratorUseCase(
+        requireModerator: RequireModeratorUseCase,
+        userRepository: UserRepository,
+    ): GetCurrentModeratorUseCase = GetCurrentModeratorUseCase(requireModerator, userRepository)
+
+    @Provides
+    @ViewModelScoped
+    fun providesStartReviewUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+    ): StartReviewUseCase = StartReviewUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesGetMyReviewsUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+    ): GetMyReviewsUseCase = GetMyReviewsUseCase(postRepository, requireModerator)
+
+    @Provides
+    @ViewModelScoped
+    fun providesApprovePostUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+        notify: NotifyUseCase,
+        awardPoints: AwardPointsUseCase,
+    ): ApprovePostUseCase = ApprovePostUseCase(postRepository, requireModerator, notify, awardPoints)
+
+    @Provides
+    @ViewModelScoped
+    fun providesRejectPostUseCase(
+        postRepository: PostRepository,
+        requireModerator: RequireModeratorUseCase,
+        notify: NotifyUseCase,
+        awardPoints: AwardPointsUseCase,
+    ): RejectPostUseCase = RejectPostUseCase(postRepository, requireModerator, notify, awardPoints)
 
 
 
@@ -449,6 +519,14 @@ object UseCaseModule {
         chatRepository: ChatRepository,
         requireChatMember: RequireChatMemberUseCase,
     ): DeleteChatUseCase = DeleteChatUseCase(chatRepository, requireChatMember)
+
+    @Provides
+    @ViewModelScoped
+    fun providesStartChatUseCase(
+        chatRepository: ChatRepository,
+        postRepository: PostRepository,
+        requireUser: RequireUserUseCase,
+    ): StartChatUseCase = StartChatUseCase(chatRepository, postRepository, requireUser)
 
 
     // Comentarios

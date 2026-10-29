@@ -31,6 +31,7 @@ import co.edu.uniquindio.petadoptionapp.features.user.post.comments.CommentsScre
 import co.edu.uniquindio.petadoptionapp.features.user.post.detail.PostDetailScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.ProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.metric.MetricsScreen
+import co.edu.uniquindio.petadoptionapp.features.moderator.rejectpost.RejectPostScreen
 import co.edu.uniquindio.petadoptionapp.features.user.chat.conversation.ChatScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.edit.EditProfileScreen
 import co.edu.uniquindio.petadoptionapp.features.user.profile.settings.SettingsScreen
@@ -244,7 +245,16 @@ fun AppNavigation() {
                 onOpenComments = { postId, replyTo -> navController.navigate(MainRoutes.PostComments(postId, replyTo)) },
                 onEditPost = { postId -> navController.navigate(MainRoutes.EditPost(postId)) },
                 onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
-                onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) }
+                onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) },
+                onRejectPost = { postId -> navController.navigate(MainRoutes.RejectPost(postId)) }
+            )
+        }
+
+        // Rechazar publicación (moderador). Al terminar vuelve al detalle, que se recarga y muestra el motivo.
+        composable<MainRoutes.RejectPost> {
+            RejectPostScreen(
+                onBack = { navController.popBackStack() },
+                onRejected = { navController.popBackStack() }
             )
         }
 

@@ -29,7 +29,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.form.MessageInputBar
@@ -126,10 +130,16 @@ private fun CommentBody(comment: CommentUi) {
         )
         return
     }
-    // "@alias" solo cuando se contestó a otra respuesta del hilo.
-    val prefix = comment.replyToUserName?.let { "@$it " }.orEmpty()
+    // Respuestas: "@alias: respuesta", con el alias resaltado para ver a quién se contesta.
+    val replyTo = comment.replyToUserName?.takeIf { it.isNotBlank() }
     Text(
-        text = prefix + comment.text,
+        text = buildAnnotatedString {
+            if (replyTo != null) {
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = AppTheme.colors.textLink)) { append("@$replyTo") }
+                append(": ")
+            }
+            append(comment.text)
+        },
         style = MaterialTheme.typography.bodyMedium,
         color = AppTheme.colors.textPrimary,
     )
@@ -209,7 +219,9 @@ fun CommentThread(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 // Las respuestas no tienen su propio "Ver respuestas": todo el hilo vive aquí.
-                replies[comment.id].orEmpty().forEach { reply ->
+                // Las guardadas antes de tener "a quién responde" contestan al comentario principal.
+                replies[comment.id].orEmpty().forEach { stored ->
+                    val reply = if (stored.replyToUserName.isNullOrBlank()) stored.copy(replyToUserName = comment.authorName) else stored
                     CommentItem(
                         comment = reply,
                         onLikeClick = { onLike(reply.id) },

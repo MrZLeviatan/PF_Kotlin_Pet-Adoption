@@ -6,6 +6,7 @@ import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostFilter
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostSort
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
+import co.edu.uniquindio.petadoptionapp.domain.model.post.PriorityLevel
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Verification
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
@@ -122,6 +123,29 @@ class PostRepositoryImpl @Inject constructor() : PostRepository {
         }
         return Result.success(Unit)
     }
+
+    override suspend fun countForModeration(
+        statuses: Set<VerificationStatus>,
+        priorities: Set<PriorityLevel>?,
+        reviewedBy: String?,
+        reviewedSince: Long?
+    ): Int = posts.value.values.count {
+        val v = it.verification
+        it.status != PostStatus.DELETED &&
+            v.status in statuses &&
+            (priorities == null || v.priorityLevel in priorities) &&
+            (reviewedBy == null || v.reviewedBy == reviewedBy) &&
+            (reviewedSince == null || (v.reviewedAt ?: 0L) >= reviewedSince)
+    }
+
+    override suspend fun getInReviewBy(moderatorId: String): Result<List<Post>> =
+        Result.success(
+            posts.value.values.filter {
+                it.status == PostStatus.IN_PROGRESS &&
+                    it.verification.status == VerificationStatus.IN_PROCESS &&
+                    it.verification.reviewedBy == moderatorId
+            }
+        )
 
     override suspend fun getPendingModeration(limit: Int): Result<List<Post>> =
         Result.success(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
@@ -30,12 +29,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.core.component.indicator.StatusIndicator
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -125,24 +124,6 @@ fun PostSummaryCard(
             HorizontalDivider(color = AppTheme.colors.border)
             footer()
         }
-    }
-}
-
-// Píldora con un punto de color. Decorativa: el estado también lo dice el encabezado de la sección.
-@Composable
-private fun StatusIndicator(color: Color) {
-    Box(
-        modifier = Modifier
-            .size(width = 24.dp, height = 14.dp)
-            .border(1.dp, AppTheme.colors.border, CircleShape)
-            .clearAndSetSemantics {},
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color, CircleShape),
-        )
     }
 }
 

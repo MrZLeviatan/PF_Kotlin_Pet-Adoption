@@ -112,7 +112,7 @@ object SeedData {
             animalTypeId = "cat", breed = "Mestizo", size = AnimalSize.SMALL, ageInMonths = 24,
             photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
-            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
+            verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1", reviewedAt = hoursAgo(1)),
             importantCount = 3, createdAt = hoursAgo(4 * 24)
         ),
         // Sin verificar, con prioridad sugerida: aparece en la cola del moderador.
@@ -133,7 +133,7 @@ object SeedData {
             animalTypeId = "dog", photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
             location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
             verification = Verification(status = VerificationStatus.REJECTED, reviewedBy = "m1",
-                rejectionReason = "No se permite la venta de animales"),
+                rejectionReason = "No se permite la venta de animales", reviewedAt = hoursAgo(2)),
             createdAt = hoursAgo(24)
         ),
         // Finalizada: ya no sale en el feed.
@@ -145,6 +145,47 @@ object SeedData {
             status = PostStatus.FINISHED, finishedAt = hoursAgo(3),
             verification = Verification(status = VerificationStatus.VERIFIED, reviewedBy = "m1"),
             createdAt = hoursAgo(10)
+        ),
+        // Pendientes de moderación (de luis_9), con prioridades distintas para ordenar la cola.
+        Post(
+            id = "p6", authorId = "u2", title = "Perrita herida necesita hogar urgente", categoryId = "adoption",
+            description = "La encontré atropellada; ya la vio un veterinario, pero no puedo quedármela.",
+            animalTypeId = "dog", breed = "Criolla", size = AnimalSize.MEDIUM,
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
+            location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
+            verification = Verification(status = VerificationStatus.UNVERIFIED,
+                priorityLevel = PriorityLevel.URGENT, priorityReason = "Animal herido que necesita atención"),
+            createdAt = hoursAgo(5)
+        ),
+        // En revisión: ya la tomó un moderador, por eso no sale en la cola del inicio.
+        Post(
+            id = "p7", authorId = "u2", title = "Gatitos abandonados en una caja", categoryId = "found",
+            description = "Cuatro gatitos de pocas semanas, los dejaron frente a mi casa.",
+            animalTypeId = "cat", size = AnimalSize.SMALL,
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
+            location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
+            verification = Verification(status = VerificationStatus.IN_PROCESS, reviewedBy = "m1",
+                priorityLevel = PriorityLevel.HIGH, priorityReason = "Animales muy pequeños sin cuidado"),
+            createdAt = hoursAgo(26)
+        ),
+        Post(
+            id = "p8", authorId = "u2", title = "Jornada de vacunación gratuita", categoryId = "veterinary",
+            description = "Este sábado en el parque principal, de 8 a 12.",
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
+            location = Location(4.5339, -75.6811, "Armenia", "Colombia", "Centro"),
+            verification = Verification(status = VerificationStatus.UNVERIFIED,
+                priorityLevel = PriorityLevel.LOW, priorityReason = "Evento informativo"),
+            createdAt = hoursAgo(3)
+        ),
+        Post(
+            id = "p9", authorId = "u2", title = "Perro perdido cerca del estadio", categoryId = "lost",
+            description = "Labrador café, responde al nombre de Toby.",
+            animalTypeId = "dog", breed = "Labrador", size = AnimalSize.LARGE,
+            photoUrls = listOf("https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"),
+            location = Location(4.5402, -75.6658, "Armenia", "Colombia", "Norte"),
+            verification = Verification(status = VerificationStatus.UNVERIFIED,
+                priorityLevel = PriorityLevel.MEDIUM, priorityReason = "Mascota perdida recientemente"),
+            createdAt = hoursAgo(8)
         )
     )
 
@@ -195,7 +236,7 @@ object SeedData {
         CHAT_P2 to listOf(
             Message(id = "m6", senderId = "u1", text = "Hola, creo que vi a tu gato cerca del parque del norte.", sentAt = minutesAgo(3 * 24 * 60)),
             Message(id = "m7", senderId = "u2", text = "¿En serio? ¿Recuerdas a qué hora fue?", sentAt = minutesAgo(3 * 24 * 60 - 15)),
-            Message(id = "m8", senderId = "u1", text = "Como a las 6 de la tarde, tenía el collar azul.", sentAt = minutesAgo(3 * 24 * 60 - 10)),
+            Message(id = "m8", senderId = "u1", text = "Como a las 6 de la tarde, tenía el collar azul.", sentAt = minutesAgo(3 * 24 * 60 - 20)),
         ),
     )
 
@@ -210,9 +251,9 @@ object SeedData {
         ),
         Chat(
             id = CHAT_P2, participantIds = listOf("u2", "u1"), postId = "p2",
-            lastMessage = "Como a las 6 de la tarde, tenía el collar azul.", lastMessageAt = minutesAgo(3 * 24 * 60 - 10), lastSenderId = "u1",
+            lastMessage = "Como a las 6 de la tarde, tenía el collar azul.", lastMessageAt = minutesAgo(3 * 24 * 60 - 20), lastSenderId = "u1",
             unreadCounts = mapOf("u1" to 0, "u2" to 0),
-            lastReadAt = mapOf("u1" to minutesAgo(3 * 24 * 60 - 10), "u2" to minutesAgo(3 * 24 * 60 - 5)),
+            lastReadAt = mapOf("u1" to minutesAgo(3 * 24 * 60 - 20), "u2" to minutesAgo(3 * 24 * 60 - 25)),
             createdAt = minutesAgo(3 * 24 * 60)
         ),
     )

@@ -3,6 +3,7 @@ package co.edu.uniquindio.petadoptionapp.features.user.chat.conversation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Chat
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Message
 import co.edu.uniquindio.petadoptionapp.domain.model.messaging.MessageType
@@ -38,8 +39,11 @@ data class ChatUiState(
     val isLoading: Boolean = true,
     val notFound: Boolean = false,
     val otherUserId: String = "",
+    // Alias de la otra persona (como en la lista de chats).
     val otherName: String = "",
     val otherPhotoUrl: String? = null,
+    // Su cuenta fue eliminada: el encabezado lo dice y no se abre su perfil.
+    val isOtherDeleted: Boolean = false,
     // Publicación que originó el chat; el título es null si ya no se puede ver.
     val postId: String? = null,
     val postTitle: String? = null,
@@ -47,6 +51,8 @@ data class ChatUiState(
     val messages: List<ChatMessageUi> = emptyList(),
     // Id de mi último mensaje si la otra persona ya lo vio ("Visto").
     val seenMessageId: String? = null,
+    // Hasta cuándo leyó la otra persona: mis mensajes enviados antes llevan el doble check de "visto".
+    val seenUntil: Long = 0L,
     val canLoadOlder: Boolean = false,
     val isLoadingOlder: Boolean = false,
     val text: String = "",
@@ -107,13 +113,11 @@ class ChatViewModel @Inject constructor(
         val otherId = chat.otherParticipantId(myId).orEmpty()
         _uiState.update { it.copy(isLoading = false, otherUserId = otherId, postId = chat.postId) }
 
-        // Encabezado: la otra persona (nombre real si su perfil es público) y la publicación.
+        // Encabezado: el alias de la otra persona (o que eliminó su cuenta) y la publicación.
         launch {
-            getUserProfile(otherId, myId).onSuccess { profile ->
-                _uiState.update {
-                    it.copy(otherName = profile.name?.takeIf(String::isNotBlank) ?: profile.userName, otherPhotoUrl = profile.photoUrl)
-                }
-            }
+            getUserProfile(otherId, myId)
+                .onSuccess { profile -> _uiState.update { it.copy(otherName = profile.userName, otherPhotoUrl = profile.photoUrl) } }
+                .onFailure { error -> if (error === UserException.UserDeleted) _uiState.update { it.copy(isOtherDeleted = true) } }
         }
         chat.postId?.let { postId ->
             launch {
@@ -203,6 +207,6 @@ class ChatViewModel @Inject constructor(
         val otherId = chat.otherParticipantId(myId) ?: return
         val lastMine = (older + live).lastOrNull { it.senderId == myId }
         val seen = lastMine?.takeIf { chat.isMessageSeenBy(otherId, it) }?.id
-        _uiState.update { it.copy(seenMessageId = seen) }
+        _uiState.update { it.copy(seenMessageId = seen, seenUntil = chat.lastReadAt[otherId] ?: 0L) }
     }
 }

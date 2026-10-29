@@ -39,6 +39,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppConfirmDialog
 import co.edu.uniquindio.petadoptionapp.core.component.card.SectionCard
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppFormDialog
+import co.edu.uniquindio.petadoptionapp.core.component.form.PasswordStrengthBar
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.form.SettingActionRow
@@ -263,6 +264,7 @@ private fun ChangePasswordDialog(dialog: PasswordDialogState, actions: SettingsA
             onValueChange = actions.onCurrentPasswordChange,
             label = stringResource(R.string.settings_current_password),
             leadingIcon = Icons.Outlined.Lock,
+            errorMessage = fieldErrorMessage(dialog.currentError, PasswordField.CURRENT),
             isPassword = true,
             textStyle = DialogFieldTextStyle,
         )
@@ -271,14 +273,18 @@ private fun ChangePasswordDialog(dialog: PasswordDialogState, actions: SettingsA
             onValueChange = actions.onNewPasswordChange,
             label = stringResource(R.string.settings_new_password),
             leadingIcon = Icons.Outlined.Key,
+            errorMessage = fieldErrorMessage(dialog.newError, PasswordField.NEW),
             isPassword = true,
             textStyle = DialogFieldTextStyle,
         )
+        // Igual que al crear la cuenta: aparece apenas hay algo escrito.
+        dialog.strength?.let { PasswordStrengthBar(strength = it) }
         AppTextField(
             value = dialog.confirmPassword,
             onValueChange = actions.onConfirmPasswordChange,
             label = stringResource(R.string.settings_confirm_password),
             leadingIcon = Icons.Outlined.Key,
+            errorMessage = fieldErrorMessage(dialog.confirmError, PasswordField.CONFIRM),
             isPassword = true,
             textStyle = DialogFieldTextStyle,
             imeAction = ImeAction.Done,
@@ -313,6 +319,18 @@ private fun DeleteAccountDialog(dialog: DeleteDialogState, actions: SettingsActi
     }
 }
 
+// Textos de los errores por campo: los mismos de Registro.
+@Composable
+private fun fieldErrorMessage(error: PasswordFieldError?, field: PasswordField): String? = when (error) {
+    null -> null
+    PasswordFieldError.EMPTY -> stringResource(
+        if (field == PasswordField.CONFIRM) R.string.register_error_confirm_empty else R.string.register_error_password_empty
+    )
+    PasswordFieldError.WEAK -> stringResource(R.string.register_error_password_weak)
+    PasswordFieldError.SAME -> stringResource(R.string.settings_error_same_password)
+    PasswordFieldError.MISMATCH -> stringResource(R.string.register_error_password_mismatch)
+}
+
 // Traducen el tipo de error (lógica) al texto del recurso (presentación).
 @Composable
 private fun passwordErrorMessage(error: PasswordDialogError?): String? = when (error) {
@@ -320,7 +338,6 @@ private fun passwordErrorMessage(error: PasswordDialogError?): String? = when (e
     PasswordDialogError.WRONG_PASSWORD -> stringResource(R.string.settings_error_wrong_password)
     PasswordDialogError.WEAK_PASSWORD -> stringResource(R.string.register_error_password_weak)
     PasswordDialogError.SAME_PASSWORD -> stringResource(R.string.settings_error_same_password)
-    PasswordDialogError.MISMATCH -> stringResource(R.string.register_error_password_mismatch)
     PasswordDialogError.GENERIC -> stringResource(R.string.settings_error_generic)
 }
 

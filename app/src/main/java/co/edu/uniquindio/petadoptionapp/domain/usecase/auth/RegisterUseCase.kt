@@ -80,8 +80,11 @@ class RegisterUseCase(
         // 6. Guardar el perfil; si falla, cerrar sesión para no dejarla a medias.
 
         return userRepository.save(user).fold(
-            // Retorna el éxito con la cuenta creada si se guarda correctamente.
-            onSuccess = { Result.success(account) },
+            // La sesión queda con el alias (si no, saldría vacío en comentarios, chats y notificaciones).
+            onSuccess = {
+                authRepository.updateSessionAccount(account)
+                Result.success(account)
+            },
             // Ejecuta este bloque si falla el almacenamiento del perfil.
             onFailure = { error ->
                 // Cierra la sesión y elimina la cuenta en caso de fallo.
