@@ -19,7 +19,7 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.ObserveCategories
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.CreatePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.UpdatePostUseCase
-import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.location.ReverseGeocodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -71,9 +71,13 @@ data class CreatePostUiState(
     // Paso 3: fotos (direcciones de las imágenes).
     val photos: List<String> = emptyList(),
 
-    // Paso 4: ubicación. Por ahora es la del perfil; el mapa se agrega con Mapbox.
+    // Paso 4: ubicación. "Ubicación actual" (permiso y GPS) o un punto elegido en el mapa.
     val useCurrentLocation: Boolean = true,
-    val profileLocation: Location = Location(),
+    val currentLocation: Location? = null,
+    val isLocating: Boolean = false,
+    // No se pudo obtener la ubicación actual (permiso negado o sin señal).
+    val locationUnavailable: Boolean = false,
+    val mapLocation: Location? = null,
 
     // Catálogos activos (los define el moderador).
     val categories: List<Category> = emptyList(),
@@ -102,8 +106,11 @@ data class CreatePostUiState(
     val breedError: FieldError? get() = shown(CreatePostField.BREED, validateLength(breed, MIN_BREED_LENGTH, Int.MAX_VALUE))
     val ageError: FieldError? get() = shown(CreatePostField.AGE, validateAge())
 
+    // La ubicación de la publicación según la opción elegida.
+    val postLocation: Location? get() = if (useCurrentLocation) currentLocation else mapLocation
+
     // La ubicación sirve si tiene coordenadas (regla de la publicación).
-    val hasUsableLocation: Boolean get() = useCurrentLocation && profileLocation.hasCoordinates()
+    val hasUsableLocation: Boolean get() = postLocation?.hasCoordinates() == true
 
     // Al crear siempre hay algo que enviar; al editar, solo si cambió algún dato.
     val hasChanges: Boolean get() = originalPost == null || toPost(originalPost) != originalPost
@@ -123,7 +130,7 @@ data class CreatePostUiState(
         vaccinated = vaccinated,
         neutered = neutered,
         photoUrls = photos,
-        location = profileLocation,
+        location = postLocation ?: Location(),
     )
 
     /** Habilita "Continuar"/"Publicar" según el paso. */
@@ -170,13 +177,13 @@ data class CreatePostUiState(
 class CreatePostViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val observeSession: ObserveSessionUseCase,
-    observeCurrentUser: ObserveCurrentUserUseCase,
     private val observeCategories: ObserveCategoriesUseCase,
     private val observeAnimalTypes: ObserveAnimalTypesUseCase,
     private val loadCatalog: LoadCatalogUseCase,
     private val createPost: CreatePostUseCase,
     private val getPostDetail: GetPostDetailUseCase,
     private val updatePost: UpdatePostUseCase,
+    private val reverseGeocode: ReverseGeocodeUseCase,
 ) : ViewModel() {
 
     // Publicación a editar; null = crear una nueva.
@@ -197,16 +204,8 @@ class CreatePostViewModel @Inject constructor(
             }
         }
 
-        if (editingPostId != null) {
-            loadPostToEdit(editingPostId)
-        } else {
-            // La ubicación de una publicación nueva es, por ahora, la del perfil.
-            viewModelScope.launch {
-                observeCurrentUser().collect { user ->
-                    _uiState.update { it.copy(profileLocation = user?.location ?: Location()) }
-                }
-            }
-        }
+        // La ubicación de una publicación nueva se toma en el paso 4 (actual o en el mapa).
+        if (editingPostId != null) loadPostToEdit(editingPostId)
     }
 
     /**
@@ -247,7 +246,9 @@ class CreatePostViewModel @Inject constructor(
                     vaccinated = post.vaccinated ?: false,
                     neutered = post.neutered ?: false,
                     photos = post.photoUrls,
-                    profileLocation = post.location,
+                    // Al editar se parte del punto guardado, en el mapa.
+                    useCurrentLocation = false,
+                    mapLocation = post.location,
                 )
                 // La referencia pasa por el formulario: así un "no se sabe" (null) que el formulario
                 // muestra como "no" no cuenta como cambio.
@@ -302,6 +303,23 @@ class CreatePostViewModel @Inject constructor(
     // --- Paso 4 ---
 
     fun onUseCurrentLocationChange(value: Boolean) = _uiState.update { it.copy(useCurrentLocation = value, publishError = null) }
+
+    // La pantalla pidió el permiso y está leyendo el GPS.
+    fun onLocatingStarted() = _uiState.update { it.copy(isLocating = true, locationUnavailable = false) }
+
+    /** Ubicación actual del teléfono (o null si no se pudo): se le busca la dirección. */
+    fun onCurrentLocationResult(latitude: Double?, longitude: Double?) {
+        if (latitude == null || longitude == null) {
+            _uiState.update { it.copy(isLocating = false, locationUnavailable = true) }
+            return
+        }
+        viewModelScope.launch {
+            val location = reverseGeocode(latitude, longitude)
+            _uiState.update { it.copy(isLocating = false, currentLocation = location, publishError = null) }
+        }
+    }
+
+    fun onMapLocationPicked(location: Location) = _uiState.update { it.copy(mapLocation = location, publishError = null) }
 
     // --- Navegación entre pasos y publicación ---
 

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     // Habilita este módulo como una aplicación de Android.
     alias(libs.plugins.android.application)
@@ -10,6 +12,13 @@ plugins {
     // Agrega KSP, el procesador que genera el código de Hilt.
     alias(libs.plugins.devtools.ksp)
 }
+
+// Llaves en local.properties (nunca en git). Se leen aquí y pasan a BuildConfig.
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun localKey(name: String): String = localProperties.getProperty(name).orEmpty()
 
 android {
     namespace = "co.edu.uniquindio.petadoptionapp"
@@ -26,6 +35,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Cloudinary: subida sin firma (el API secret nunca va en la app).
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localKey("CLOUDINARY_CLOUD_NAME")}\"")
+        buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localKey("CLOUDINARY_UPLOAD_PRESET")}\"")
     }
 
     buildTypes {
@@ -42,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -79,6 +93,13 @@ dependencies {
 
     // DataStore: guardado local de preferencias (se usará después, para la sesión).
     implementation(libs.data.store)
+
+    // Idioma de la app (español, inglés, francés) también en Android < 13.
+    implementation(libs.androidx.appcompat)
+    // Subida de imágenes a Cloudinary (API REST).
+    implementation(libs.okhttp)
+    // Mapas: MapLibre (código abierto, sin tokens) con el estilo gratuito de OpenFreeMap.
+    implementation(libs.maplibre.android)
 
     // Pruebas
     testImplementation(libs.junit)

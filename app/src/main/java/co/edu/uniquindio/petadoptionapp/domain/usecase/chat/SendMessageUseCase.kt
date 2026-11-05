@@ -6,6 +6,8 @@ import co.edu.uniquindio.petadoptionapp.domain.model.messaging.MessageType
 import co.edu.uniquindio.petadoptionapp.domain.model.notification.NotificationType
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImageFolder
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.ChatValidator
 
 /**
@@ -19,7 +21,9 @@ class SendMessageUseCase(
     // Inyecta el caso de uso que confirma que la persona participa en el chat.
     private val requireChatMember: RequireChatMemberUseCase,
     // Inyecta el caso de uso que crea notificaciones.
-    private val notify: NotifyUseCase
+    private val notify: NotifyUseCase,
+    // Inyecta el caso de uso que sube las fotos del chat a Cloudinary.
+    private val uploadImages: UploadImagesUseCase
 ) {
     // Define la función asíncrona principal que recibe el ID del chat y el texto, devolviendo un resultado con el objeto del mensaje enviado.
     // Con [imageUrl] envía una foto; el texto es entonces un pie de foto opcional.
@@ -33,13 +37,16 @@ class SendMessageUseCase(
         // Confirma que el usuario actual participa en el chat y obtiene su membresía, retornando un fallo si no está autorizado.
         val membership = requireChatMember(chatId).getOrElse { return Result.failure(it) }
 
-        // 3. Arma el mensaje con el remitente de la sesión, nunca el de un parámetro.
+        // 3. Si es una foto, se sube primero (en el chat queda su URL pública).
+        val finalImage = uploadImages(imageUrl?.takeIf { it.isNotBlank() }, ImageFolder.CHATS).getOrElse { return Result.failure(it) }
+
+        // 3b. Arma el mensaje con el remitente de la sesión, nunca el de un parámetro.
         // Construye una instancia del modelo Message asignando el ID del remitente desde la membresía, el tipo de texto, el contenido recortado y la marca de tiempo actual.
         val message = Message(
             senderId = membership.account.id,
-            type = if (imageUrl.isNullOrBlank()) MessageType.TEXT else MessageType.IMAGE,
+            type = if (finalImage == null) MessageType.TEXT else MessageType.IMAGE,
             text = text.trim(),
-            imageUrl = imageUrl?.takeIf { it.isNotBlank() },
+            imageUrl = finalImage,
             sentAt = System.currentTimeMillis()
         )
 

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- res/values/themes.xml -->
-    <style name="Theme.PetAdoptionApp" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- AppCompat: lo pide el cambio de idioma de la app (AppCompatActivity) también en Android < 13. -->
+    <style name="Theme.PetAdoptionApp" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">#FFFFF6E0</item>
     </style>
 </resources>

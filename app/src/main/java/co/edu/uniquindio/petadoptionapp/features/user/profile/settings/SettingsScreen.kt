@@ -33,6 +33,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.window.Dialog
+import co.edu.uniquindio.petadoptionapp.core.util.AppLanguage
+import co.edu.uniquindio.petadoptionapp.core.util.currentAppLanguage
+import co.edu.uniquindio.petadoptionapp.core.util.setAppLanguage
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.DangerButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
@@ -184,6 +204,22 @@ private fun SettingsContent(
                 }
             }
 
+            // Idioma de la app (usuario y moderador): español, inglés o francés.
+            var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
+            SectionCard(
+                title = stringResource(R.string.settings_language),
+                icon = Icons.Outlined.Language,
+            ) {
+                SettingActionRow(
+                    icon = Icons.Outlined.Translate,
+                    title = stringResource(R.string.settings_language_current, languageName(currentAppLanguage())),
+                    onClick = { showLanguageDialog = true },
+                )
+            }
+            if (showLanguageDialog) {
+                LanguageDialog(onDismiss = { showLanguageDialog = false })
+            }
+
             if (uiState.settingsError) {
                 ErrorText(
                     text = stringResource(R.string.settings_error_save),
@@ -322,6 +358,58 @@ private fun DeleteAccountDialog(dialog: DeleteDialogState, actions: SettingsActi
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(onDone = { actions.onDeleteConfirm() }),
         )
+    }
+}
+
+// Cada idioma se muestra en su propio idioma, así se reconoce aunque la app esté en otro.
+private fun languageName(language: AppLanguage): String = when (language) {
+    AppLanguage.SPANISH -> "Español"
+    AppLanguage.ENGLISH -> "English"
+    AppLanguage.FRENCH -> "Français"
+}
+
+// Elegir el idioma: al tocar uno se aplica de inmediato (la app se vuelve a dibujar en ese idioma).
+@Composable
+private fun LanguageDialog(onDismiss: () -> Unit) {
+    val current = currentAppLanguage()
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(AppTheme.colors.surface, RoundedCornerShape(24.dp))
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_language),
+                style = MaterialTheme.typography.titleLarge,
+                color = AppTheme.colors.textPrimary,
+            )
+            Spacer(Modifier.height(4.dp))
+            AppLanguage.entries.forEach { language ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .selectable(selected = language == current, role = Role.RadioButton) {
+                            onDismiss()
+                            if (language != current) setAppLanguage(language)
+                        }
+                        .padding(vertical = 10.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = language == current,
+                        onClick = null,
+                        colors = RadioButtonDefaults.colors(selectedColor = AppTheme.colors.actionSecondary),
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(languageName(language), style = MaterialTheme.typography.bodyLarge, color = AppTheme.colors.textPrimary)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            SecondaryButton(text = stringResource(R.string.common_cancel), onClick = onDismiss)
+        }
     }
 }
 

@@ -56,6 +56,9 @@ data class PostDetailUi(
     val title: String,
     val city: String,
     val address: String,
+    // Coordenadas guardadas (el mapa las muestra corridas, como zona aproximada).
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val country: String,
     // Distancia a quien mira; null si alguno no tiene coordenadas.
     val distanceKm: Double?,
@@ -451,6 +454,8 @@ class PostDetailViewModel @Inject constructor(
             isVerified = verification.status == VerificationStatus.VERIFIED,
             title = title,
             city = location.city,
+            latitude = location.latitude,
+            longitude = location.longitude,
             address = location.address,
             country = location.country,
             distanceKm = viewer?.location?.distanceKmTo(location),

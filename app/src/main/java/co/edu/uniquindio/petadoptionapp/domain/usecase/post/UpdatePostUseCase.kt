@@ -1,5 +1,8 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
+import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImageFolder
+
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
@@ -19,7 +22,9 @@ class UpdatePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
     // Inyecta el caso de uso que revisa las categorías y tipos de animal.
-    private val checkPostCatalog: CheckPostCatalogUseCase
+    private val checkPostCatalog: CheckPostCatalogUseCase,
+    // Inyecta el caso de uso que sube a Cloudinary las fotos nuevas.
+    private val uploadImages: UploadImagesUseCase
 ) {
     // Define la función asíncrona que recibe el autor y la publicación a editar, y devuelve el resultado.
     suspend operator fun invoke(userId: String, edited: Post): Result<Unit> {
@@ -43,9 +48,13 @@ class UpdatePostUseCase(
         // Verifica que la categoría y el tipo de animal existan y estén activos.
         checkPostCatalog(edited.categoryId, edited.animalTypeId).getOrElse { return Result.failure(it) }
 
+        // Sube solo las fotos nuevas (las que ya están en Cloudinary quedan igual).
+        val photoUrls = uploadImages(edited.photoUrls, ImageFolder.POSTS).getOrElse { return Result.failure(it) }
+
         // Reinicia la verificación (y el resumen de IA) y guarda solo el contenido.
         return postRepository.updateContent(
             edited.copy(
+                photoUrls = photoUrls,
                 verification = Verification(),
                 aiSummary = null,
                 updatedAt = System.currentTimeMillis()

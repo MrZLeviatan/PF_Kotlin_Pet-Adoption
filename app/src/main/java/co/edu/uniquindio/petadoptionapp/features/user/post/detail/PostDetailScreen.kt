@@ -91,6 +91,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import co.edu.uniquindio.petadoptionapp.core.component.photo.PhotoViewerDialog
+import co.edu.uniquindio.petadoptionapp.core.component.map.AppMap
+import co.edu.uniquindio.petadoptionapp.core.component.map.MapArea
+import co.edu.uniquindio.petadoptionapp.core.util.APPROXIMATE_RADIUS_METERS
+import co.edu.uniquindio.petadoptionapp.core.util.approximatePoint
+import androidx.compose.ui.draw.clip
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
@@ -312,7 +317,7 @@ private fun PostDetailContent(
                 }
 
                 PostDescription(post)
-                PostLocation(post)
+                PostLocation(post, isOwner = uiState.isOwner)
                 HorizontalDivider(color = AppTheme.colors.border.copy(alpha = 0.5f))
                 PostCommentsPreview(
                     totalComments = post.commentCount,
@@ -837,19 +842,45 @@ private fun PostDescription(post: PostDetailUi) {
     }
 }
 
-// Por ahora el recuadro del mapa queda vacío (se agregará con Mapbox).
+// Mapa (MapLibre) con la zona aproximada; sin coordenadas, el recuadro vacío.
 @Composable
-private fun PostLocation(post: PostDetailUi) {
+private fun PostLocation(post: PostDetailUi, isOwner: Boolean) {
     Column {
         SectionTitle(stringResource(R.string.post_detail_location))
         Spacer(modifier = Modifier.height(8.dp))
-        LocationMapPlaceholder(onSetLocationClick = null, height = 140.dp)
+        // Zona aproximada: el punto se corre unos cientos de metros y se dibuja un círculo, nunca la dirección exacta.
+        val lat = post.latitude
+        val lng = post.longitude
+        if (lat != null && lng != null) {
+            val approx = approximatePoint(lat, lng, post.id)
+            AppMap(
+                center = approx,
+                zoom = 14.0,
+                areas = listOf(MapArea(approx, APPROXIMATE_RADIUS_METERS, AppTheme.colors.brand)),
+                interactive = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+            )
+        } else {
+            LocationMapPlaceholder(onSetLocationClick = null, height = 140.dp)
+        }
         Spacer(modifier = Modifier.height(8.dp))
+        // El dueño ve su dirección; los demás, solo la zona y la ciudad.
         DetailIconText(
             icon = Icons.Outlined.LocationOn,
-            text = listOf(post.address, post.city, post.country).filter { it.isNotBlank() }.joinToString(", "),
+            text = if (isOwner) listOf(post.address, post.city, post.country).filter { it.isNotBlank() }.joinToString(", ")
+            else stringResource(R.string.post_detail_location_approx, listOf(post.city, post.country).filter { it.isNotBlank() }.joinToString(", ")),
             bold = true,
         )
+        if (!isOwner) {
+            Text(
+                text = stringResource(R.string.post_detail_location_approx_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = AppTheme.colors.textPrimary,
+            )
+        }
     }
 }
 

@@ -47,6 +47,8 @@ class PostRepositoryImpl @Inject constructor() : PostRepository {
         filter.categoryId?.let { c -> list = list.filter { it.categoryId == c } }
         filter.animalTypeId?.let { a -> list = list.filter { it.animalTypeId == a } }
         filter.city?.let { c -> list = list.filter { it.location.city.equals(c, ignoreCase = true) } }
+        filter.size?.let { s -> list = list.filter { it.size == s } }
+        if (filter.vaccinatedOnly) list = list.filter { it.vaccinated == true }
 
         // Cercanía: se mide la distancia en la app, igual que se hará con Firestore.
         if (filter.hasNearbyArea()) {

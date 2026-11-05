@@ -12,6 +12,11 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ChangePasswordUseCas
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LoginUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.RegisterUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.location.ReverseGeocodeUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.location.SearchAddressUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.GeocodingRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImageStorageRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.CheckRegistrationAvailabilityUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ResendTwoFactorCodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.SendPasswordResetUseCase
@@ -132,6 +137,20 @@ object UseCaseModule {
 
 
     // Registrar Cuenta
+
+    @Provides
+    @ViewModelScoped
+    fun providesSearchAddressUseCase(geocoding: GeocodingRepository): SearchAddressUseCase = SearchAddressUseCase(geocoding)
+
+    @Provides
+    @ViewModelScoped
+    fun providesReverseGeocodeUseCase(geocoding: GeocodingRepository): ReverseGeocodeUseCase = ReverseGeocodeUseCase(geocoding)
+
+    @Provides
+    @ViewModelScoped
+    fun providesUploadImagesUseCase(
+        imageStorage: ImageStorageRepository,
+    ): UploadImagesUseCase = UploadImagesUseCase(imageStorage)
 
     @Provides
     @ViewModelScoped
@@ -403,7 +422,8 @@ object UseCaseModule {
     fun providesUpdateProfileUseCase(
         userRepository: UserRepository,
         requireOwnUser: RequireOwnUserUseCase,
-    ): UpdateProfileUseCase = UpdateProfileUseCase(userRepository, requireOwnUser)
+        uploadImages: UploadImagesUseCase,
+    ): UpdateProfileUseCase = UpdateProfileUseCase(userRepository, requireOwnUser, uploadImages)
 
     @Provides
     @ViewModelScoped
@@ -528,7 +548,8 @@ object UseCaseModule {
         chatRepository: ChatRepository,
         requireChatMember: RequireChatMemberUseCase,
         notify: NotifyUseCase,
-    ): SendMessageUseCase = SendMessageUseCase(chatRepository, requireChatMember, notify)
+        uploadImages: UploadImagesUseCase,
+    ): SendMessageUseCase = SendMessageUseCase(chatRepository, requireChatMember, notify, uploadImages)
 
     @Provides
     @ViewModelScoped
@@ -623,14 +644,16 @@ object UseCaseModule {
     fun providesCreatePostUseCase(
         postRepository: PostRepository,
         checkPostCatalog: CheckPostCatalogUseCase,
-    ): CreatePostUseCase = CreatePostUseCase(postRepository, checkPostCatalog)
+        uploadImages: UploadImagesUseCase,
+    ): CreatePostUseCase = CreatePostUseCase(postRepository, checkPostCatalog, uploadImages)
 
     @Provides
     @ViewModelScoped
     fun providesUpdatePostUseCase(
         postRepository: PostRepository,
         checkPostCatalog: CheckPostCatalogUseCase,
-    ): UpdatePostUseCase = UpdatePostUseCase(postRepository, checkPostCatalog)
+        uploadImages: UploadImagesUseCase,
+    ): UpdatePostUseCase = UpdatePostUseCase(postRepository, checkPostCatalog, uploadImages)
 
 
     // Home Moderador

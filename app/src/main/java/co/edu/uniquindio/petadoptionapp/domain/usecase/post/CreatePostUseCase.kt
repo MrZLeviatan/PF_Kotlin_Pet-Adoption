@@ -1,5 +1,8 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
+import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImageFolder
+
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Verification
@@ -15,7 +18,9 @@ class CreatePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
     // Inyecta el caso de uso que revisa las categorías y tipos de animal.
-    private val checkPostCatalog: CheckPostCatalogUseCase
+    private val checkPostCatalog: CheckPostCatalogUseCase,
+    // Inyecta el caso de uso que sube las fotos a Cloudinary.
+    private val uploadImages: UploadImagesUseCase
 ) {
     // Define la función asíncrona que recibe el autor y el borrador, y devuelve la publicación guardada.
     suspend operator fun invoke(authorId: String, draft: Post): Result<Post> {
@@ -26,9 +31,13 @@ class CreatePostUseCase(
         // Verifica que la categoría y el tipo de animal existan y estén activos.
         checkPostCatalog(draft.categoryId, draft.animalTypeId).getOrElse { return Result.failure(it) }
 
+        // Sube las fotos (después de validar, para no subir nada si la publicación no es válida).
+        val photoUrls = uploadImages(draft.photoUrls, ImageFolder.POSTS).getOrElse { return Result.failure(it) }
+
         // Fuerza los valores iniciales para que nadie se salte la moderación ni infle contadores.
         val now = System.currentTimeMillis()
         val post = draft.copy(
+            photoUrls = photoUrls,
             id = "",
             authorId = authorId,
             status = PostStatus.IN_PROGRESS,

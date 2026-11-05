@@ -6,6 +6,7 @@ import co.edu.uniquindio.petadoptionapp.features.moderator.stats.ModeratorStatsS
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import co.edu.uniquindio.petadoptionapp.features.moderator.reviews.MyReviewsScreen
 import co.edu.uniquindio.petadoptionapp.features.user.chat.list.ChatListScreen
+import co.edu.uniquindio.petadoptionapp.features.user.explore.ExploreScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,7 +55,7 @@ fun DashboardNavigation(
                 onNotificationsClick = onNotificationsClick
             )
         }
-        composable<DashboardRoutes.Explore> { PlaceholderScreen("Explore", padding) }
+        composable<DashboardRoutes.Explore> { ExploreScreen(padding = padding, onPostClick = onPostClick) }
 
         // Moderador
         composable<DashboardRoutes.HomeMonitor> {

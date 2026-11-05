@@ -82,6 +82,9 @@ fun CreatePostScreen(
             onAddPhotos = viewModel::onAddPhotos,
             onRemovePhoto = viewModel::onRemovePhoto,
             onUseCurrentLocationChange = viewModel::onUseCurrentLocationChange,
+            onLocatingStarted = viewModel::onLocatingStarted,
+            onCurrentLocationResult = viewModel::onCurrentLocationResult,
+            onMapLocationPicked = viewModel::onMapLocationPicked,
             onViewPost = { state.savedPostId?.let(onViewPost) },
             onGoHome = onGoHome,
         ),
@@ -105,6 +108,9 @@ data class CreatePostActions(
     val onAddPhotos: (List<String>) -> Unit = {},
     val onRemovePhoto: (Int) -> Unit = {},
     val onUseCurrentLocationChange: (Boolean) -> Unit = {},
+    val onLocatingStarted: () -> Unit = {},
+    val onCurrentLocationResult: (Double?, Double?) -> Unit = { _, _ -> },
+    val onMapLocationPicked: (co.edu.uniquindio.petadoptionapp.domain.model.location.Location) -> Unit = {},
     val onViewPost: () -> Unit = {},
     val onGoHome: () -> Unit = {},
 )
@@ -269,7 +275,7 @@ private fun CreatePostStep4Preview() {
         CreatePostContent(
             state = previewCatalogState.copy(
                 step = 4,
-                profileLocation = co.edu.uniquindio.petadoptionapp.domain.model.location.Location(4.53, -75.68, "Armenia", "Colombia", "Calle 20 Norte"),
+                currentLocation = co.edu.uniquindio.petadoptionapp.domain.model.location.Location(4.53, -75.68, "Armenia", "Colombia", "Calle 20 Norte"),
             ),
             actions = CreatePostActions(),
         )

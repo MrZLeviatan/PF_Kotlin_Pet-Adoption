@@ -34,7 +34,7 @@ private val MapCornerRadius = 16.dp
 
 /**
 Cuadro provisional donde irá el mapa.
-TODO (Mapbox): reemplazar el contenido del Box por el MapView; el botón
+TODO (MapLibre): donde aún se use, reemplazar el contenido del Box por el MapView; el botón
 "Establecer mi ubicación" se queda como overlay y la firma no cambia.
 Con [onSetLocationClick] en `null` es solo de lectura: el recuadro vacío, sin botón
 (ej. la ubicación aproximada de una publicación).

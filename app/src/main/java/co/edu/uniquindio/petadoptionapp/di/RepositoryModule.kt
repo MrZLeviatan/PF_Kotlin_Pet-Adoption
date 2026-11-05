@@ -1,6 +1,10 @@
 package co.edu.uniquindio.petadoptionapp.di
 
 import co.edu.uniquindio.petadoptionapp.data.repository.memory.AuthRepositoryImpl
+import co.edu.uniquindio.petadoptionapp.data.repository.remote.CloudinaryImageRepository
+import co.edu.uniquindio.petadoptionapp.data.repository.device.AndroidGeocodingRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.GeocodingRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.ImageStorageRepository
 import co.edu.uniquindio.petadoptionapp.data.repository.memory.CatalogRepositoryImpl
 import co.edu.uniquindio.petadoptionapp.data.repository.memory.ChatRepositoryImpl
 import co.edu.uniquindio.petadoptionapp.data.repository.memory.CommentRepositoryImpl
@@ -34,6 +38,10 @@ abstract class RepositoryModule {
 
     // Enlaza la implementación en memoria del repositorio de autenticación con su respectiva interfaz del dominio como un singleton.
     @Binds @Singleton abstract fun bindAuth(impl: AuthRepositoryImpl): AuthRepository
+    // Enlaza Cloudinary como almacenamiento de imágenes.
+    @Binds @Singleton abstract fun bindImageStorage(impl: CloudinaryImageRepository): ImageStorageRepository
+    // Enlaza el geocodificador del teléfono (direcciones <-> puntos del mapa).
+    @Binds @Singleton abstract fun bindGeocoding(impl: AndroidGeocodingRepository): GeocodingRepository
     // Enlaza la implementación del repositorio de usuarios con la interfaz UserRepository.
     @Binds @Singleton abstract fun bindUser(impl: UserRepositoryImpl): UserRepository
     // Enlaza la implementación del repositorio de catálogos con la interfaz CatalogRepository.

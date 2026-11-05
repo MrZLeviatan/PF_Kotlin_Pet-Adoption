@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.edu.uniquindio.petadoptionapp.R
+import co.edu.uniquindio.petadoptionapp.core.component.map.LocationPicker
+import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 import co.edu.uniquindio.petadoptionapp.core.component.button.BackButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
@@ -92,12 +94,10 @@ fun RegisterScreen(
             onPasswordChange = viewModel::onPasswordChange,
             onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
             onFocusChange = viewModel::onFocusChange,
-            onCityChange = viewModel::onCityChange,
-            onAddressChange = viewModel::onAddressChange,
+            onLocationPicked = viewModel::onLocationPicked,
             onTermsChange = viewModel::onTermsChange,
             onNextClick = viewModel::onNextStep,
             onPreviousStep = viewModel::onPreviousStep,
-            onSetLocationClick = viewModel::onSetLocationClick,
             onCreateAccountClick = viewModel::onCreateAccountClick,
             onSuccessDialogAccept = viewModel::onSuccessDialogAccept,
             onLoginClick = onBackToLogin,
@@ -116,12 +116,10 @@ private data class RegisterActions(
     val onConfirmPasswordChange: (String) -> Unit = {},
     // Avisa al ViewModel cuándo un campo gana o pierde el foco, para mostrar su error.
     val onFocusChange: (RegisterField, Boolean) -> Unit = { _, _ -> },
-    val onCityChange: (String) -> Unit = {},
-    val onAddressChange: (String) -> Unit = {},
+    val onLocationPicked: (Location) -> Unit = {},
     val onTermsChange: (Boolean) -> Unit = {},
     val onNextClick: () -> Unit = {},
     val onPreviousStep: () -> Unit = {},
-    val onSetLocationClick: () -> Unit = {},
     val onCreateAccountClick: () -> Unit = {},
     val onSuccessDialogAccept: () -> Unit = {},
     val onLoginClick: () -> Unit = {},
@@ -286,22 +284,12 @@ private fun LocationStep(uiState: RegisterUiState, actions: RegisterActions) {
 
     Spacer(Modifier.height(20.dp))
 
-    Column(verticalArrangement = Arrangement.spacedBy(FieldSpacing)) {
-        AppTextField(
-            value = uiState.city,
-            onValueChange = actions.onCityChange,
-            label = stringResource(R.string.register_city_label),
-            leadingIcon = Icons.Outlined.Public,
-        )
-        AppTextField(
-            value = uiState.address,
-            onValueChange = actions.onAddressChange,
-            label = stringResource(R.string.register_address_label),
-            leadingIcon = Icons.Outlined.LocationOn,
-            imeAction = ImeAction.Done,
-        )
-        LocationMapPlaceholder(onSetLocationClick = actions.onSetLocationClick)
-    }
+    // Ciudad (lista desplegable) y dirección (buscada o tocando el mapa) filtran y fijan el punto.
+    LocationPicker(
+        initial = uiState.pickedLocation,
+        onLocationChange = actions.onLocationPicked,
+        key = "register-location",
+    )
 
     Spacer(Modifier.height(24.dp))
 

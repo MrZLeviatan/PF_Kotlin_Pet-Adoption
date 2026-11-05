@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post.filter
 
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 
 /**
@@ -16,6 +17,10 @@ data class PostFilter(
     val center: Location? = null,
     // Radio en kilómetros alrededor de [center] (filtro "cercanos")
     val radiusKm: Double? = null,
+    // Tamaño del animal (null = cualquiera).
+    val size: AnimalSize? = null,
+    // Solo las que tienen las vacunas al día.
+    val vaccinatedOnly: Boolean = false,
     // Orden del resultado.
     val sortBy: PostSort = PostSort.RECENT
 ) {

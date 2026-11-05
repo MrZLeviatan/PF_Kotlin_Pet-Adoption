@@ -1,15 +1,16 @@
 package co.edu.uniquindio.petadoptionapp
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 import co.edu.uniquindio.petadoptionapp.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
+// AppCompatActivity (y no ComponentActivity) para que el idioma elegido en Configuración se aplique en todos los Android.
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Permite que la app se dibuje detrás de la barra de estado y la de navegación del sistema

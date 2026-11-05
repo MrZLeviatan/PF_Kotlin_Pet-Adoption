@@ -1,6 +1,6 @@
 <resources>
     <!--Strings nativos de la App-->
-    <string name="app_name">Kog`Maw adoption app</string>
+    <string name="app_name">Kog`Maw App de Adopción</string>
 
     <!--String nativos de la pantalla Splash de carga-->
         <string name="app_name_pantallas">Huellas</string>
@@ -340,7 +340,7 @@
 
     <!-- Perfil de otra persona -->
     <string name="user_profile_title">Perfil</string>
-    <string name="user_profile_username">@%1$s</string>
+    <string name="user_profile_username">\@%1$s</string>
     <string name="user_profile_private">Este perfil es privado. Solo puedes ver su alias y su foto.</string>
     <string name="user_profile_contact">Contacto</string>
     <string name="user_profile_badges_empty">Aún no tiene insignias</string>
@@ -620,4 +620,46 @@
     <string name="chat_attach_photo">Adjuntar foto</string>
     <string name="chat_photo_description">Foto enviada en el chat</string>
     <string name="register_error_taken">Correo o teléfono ya utilizado. Usa otros datos para crear tu cuenta.</string>
+
+    <!-- Mapas -->
+    <string name="map_city_label">Ciudad</string>
+    <string name="map_address_label">Dirección</string>
+    <string name="map_address_placeholder">Buscar dirección…</string>
+    <string name="map_tap_hint">Toca el mapa para marcar el punto exacto.</string>
+    <string name="map_selected">Ubicación elegida: %1$s</string>
+    <string name="location_permission_title">Permiso de ubicación</string>
+    <string name="location_permission_message">Para usar tu ubicación actual necesitamos acceder a ella. Solo se usa en el momento en que la pides.</string>
+    <string name="location_permission_denied_message">El permiso de ubicación está desactivado. Puedes activarlo en los ajustes de la app, o elegir el punto en el mapa.</string>
+    <string name="create_post_locating">Obteniendo tu ubicación…</string>
+    <string name="create_post_location_unavailable">No pudimos obtener tu ubicación. Revisa el permiso y el GPS, o elige el punto en el mapa.</string>
+    <string name="create_post_use_my_location">Usar mi ubicación actual</string>
+    <string name="create_post_refresh_location">Actualizar ubicación</string>
+
+    <!-- Explorar -->
+    <string name="explore_search_placeholder">Buscar ubicación o dirección…</string>
+    <string name="explore_filters">Filtros</string>
+    <string name="explore_filters_count">Filtros (%1$d)</string>
+    <string name="explore_all">Todos</string>
+    <string name="explore_my_location">Ir a mi ubicación</string>
+    <string name="explore_empty">No hay publicaciones cerca con estos filtros.</string>
+    <string name="explore_view_post">Ver publicación</string>
+    <string name="explore_distance_km">%1$.1f km</string>
+    <string name="explore_clear_filters">Limpiar filtros</string>
+    <string name="explore_filter_category">Categoría</string>
+    <string name="explore_filter_animal">Tipo de animal</string>
+    <string name="explore_filter_vaccines">Estado de vacunación</string>
+    <string name="explore_filter_vaccines_only">Solo con vacunas al día</string>
+    <string name="explore_filter_location">Ubicación</string>
+    <string name="explore_near_me">Cerca de mí</string>
+    <string name="explore_filter_distance">Distancia máxima: %1$d km</string>
+    <plurals name="explore_found">
+        <item quantity="one">Hay %1$d mascota encontrada</item>
+        <item quantity="other">Hay %1$d mascotas encontradas</item>
+    </plurals>
+    <string name="explore_apply_filters">Aplicar filtros (%1$d)</string>
+    <string name="post_detail_location_approx">Zona aproximada en %1$s</string>
+    <string name="post_detail_location_approx_hint">Por seguridad solo se muestra la zona; la dirección exacta no es pública.</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_current">Idioma de la app: %1$s</string>
+    <string name="explore_legend_you">Tú</string>
 </resources>

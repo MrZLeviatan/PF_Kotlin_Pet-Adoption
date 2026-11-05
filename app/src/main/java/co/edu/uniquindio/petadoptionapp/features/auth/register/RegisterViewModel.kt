@@ -51,6 +51,8 @@ data class RegisterUiState(
     // Fase 2
     val city: String = "",
     val address: String = "",
+    // Punto elegido en el mapa (coordenadas); ciudad y dirección salen de aquí.
+    val pickedLocation: Location? = null,
     val termsAccepted: Boolean = false,
     val registerError: RegisterError? = null,
     val isLoading: Boolean = false,
@@ -71,8 +73,9 @@ data class RegisterUiState(
                 RegisterViewModel.validatePassword(password) == null &&
                 RegisterViewModel.validateConfirmPassword(password, confirmPassword) == null
 
+    // Hace falta un punto elegido en el mapa (con su dirección) y aceptar los términos.
     val isLocationDataFilled: Boolean
-        get() = city.isNotBlank() && address.isNotBlank() && termsAccepted
+        get() = pickedLocation?.hasCoordinates() == true && city.isNotBlank() && address.isNotBlank() && termsAccepted
 
     companion object {
         const val TOTAL_STEPS = 2
@@ -140,8 +143,10 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    fun onCityChange(value: String) = _uiState.update { it.copy(city = value) }
-    fun onAddressChange(value: String) = _uiState.update { it.copy(address = value) }
+    // Ubicación elegida en el mapa (ciudad del selector, dirección buscada o del punto tocado).
+    fun onLocationPicked(location: Location) = _uiState.update {
+        it.copy(pickedLocation = location, city = location.city, address = location.address, registerError = null)
+    }
     fun onTermsChange(value: Boolean) = _uiState.update { it.copy(termsAccepted = value) }
 
     /**
@@ -176,10 +181,6 @@ class RegisterViewModel @Inject constructor(
 
     fun onPreviousStep() = _uiState.update { it.copy(step = (it.step - 1).coerceAtLeast(1)) }
 
-    fun onSetLocationClick() {
-        // TODO (Mapbox): obtener la ubicación y rellenar ciudad y dirección.
-    }
-
     fun onCreateAccountClick() {
         val state = _uiState.value
         // Doble protección: el botón ya se deshabilita, pero conviene blindar el toque doble.
@@ -209,12 +210,11 @@ class RegisterViewModel @Inject constructor(
     private suspend fun registerWithUniqueUserName(state: RegisterUiState): Result<Account> {
         val credentials = Credentials(email = state.email.trim(), password = state.password)
 
-        // TODO (Mapbox): reemplazar las coordenadas fijas por las del punto elegido en el mapa.
-        val location = Location(
-            latitude = DEFAULT_LATITUDE,
-            longitude = DEFAULT_LONGITUDE,
+        // El punto elegido en el mapa (isLocationDataFilled garantiza que tiene coordenadas).
+        val picked = state.pickedLocation ?: Location()
+        val location = picked.copy(
             city = state.city.trim(),
-            country = DEFAULT_COUNTRY,
+            country = picked.country.ifBlank { DEFAULT_COUNTRY },
             address = state.address.trim(),
         )
 
@@ -274,9 +274,7 @@ class RegisterViewModel @Inject constructor(
     companion object {
         private const val MAX_USERNAME_ATTEMPTS = 5
 
-        // TEMPORAL (Mapbox): centro de Armenia, el mismo de SeedData.
-        private const val DEFAULT_LATITUDE = 4.5339
-        private const val DEFAULT_LONGITUDE = -75.6811
+        // País por defecto si el geocodificador no lo devuelve.
         private const val DEFAULT_COUNTRY = "Colombia"
 
         // Las mismas reglas que aplica el Use Case: la pantalla nunca acepta algo que él va a rechazar.

@@ -137,7 +137,7 @@ class EditProfileViewModel @Inject constructor(
         _uiState.update { it.copy(address = value, addressError = validateRequired(value), saveError = null) }
 
     fun onSetLocationClick() {
-        // TODO (Mapbox): elegir el punto en el mapa y actualizar coordenadas, ciudad y dirección.
+        // TODO (MapLibre, con LocationPicker): elegir el punto en el mapa y actualizar coordenadas, ciudad y dirección.
     }
 
     fun onSaveClick() {
