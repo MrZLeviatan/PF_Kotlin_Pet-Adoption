@@ -1,5 +1,6 @@
 package co.edu.uniquindio.petadoptionapp.domain.repository
 
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AiReview
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostFilter
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
@@ -154,4 +155,11 @@ interface PostRepository {
     La implementación lo hace en una transacción de Firestore (leer, comparar y escribir).
      */
     suspend fun updateVerification(id: String, expected: VerificationStatus, verification: Verification): Result<Unit>
+
+    /**
+    Guarda el análisis de la IA: la revisión y la prioridad sugerida (con su motivo).
+    - Qué envía: El [id], la [review], la [priority] y el [priorityReason].
+    - Qué recibe: Un [Result<Unit>]. No cambia el estado de verificación.
+     */
+    suspend fun updateAiAnalysis(id: String, review: AiReview, priority: PriorityLevel, priorityReason: String): Result<Unit>
 }

@@ -565,4 +565,40 @@
     <string name="settings_language">Language</string>
     <string name="settings_language_current">App language: %1$s</string>
     <string name="explore_legend_you">You</string>
+    <string name="ai_review_title">AI analysis</string>
+    <string name="ai_review_subtitle">Suggestions for a quick review; the decision is the moderator\'s.</string>
+    <string name="ai_not_analyzed">No AI analysis</string>
+    <string name="ai_not_analyzed_long">This post has no AI analysis yet.</string>
+    <string name="ai_next_action">Next step: %1$s</string>
+    <string name="ai_key_points">Key points</string>
+    <string name="ai_inconsistencies">Inconsistencies</string>
+    <string name="ai_images_ok">The photos match the post</string>
+    <string name="ai_images_not_relevant">The photos don\'t seem to match</string>
+    <string name="ai_inappropriate">Possible inappropriate content</string>
+    <string name="ai_duplicate">Possible duplicate post</string>
+    <string name="ai_open_duplicate">View the similar post</string>
+    <string name="ai_recommended_actions">Recommended actions</string>
+    <string name="ai_analyzed_with">Analyzed with %1$s</string>
+    <string name="ai_analyzing">Analyzing with AI…</string>
+    <string name="ai_analyze">Analyze with AI</string>
+    <string name="ai_reanalyze">Analyze again</string>
+    <string name="ai_chip_inappropriate">Inappropriate</string>
+    <string name="ai_chip_duplicate">Possible duplicate</string>
+    <string name="ai_chip_images">Irrelevant photos</string>
+    <string name="ai_relevance_high">High relevance · %1$d</string>
+    <string name="ai_relevance_medium">Medium relevance · %1$d</string>
+    <string name="ai_relevance_low">Low relevance · %1$d</string>
+    <string name="ai_batch_progress">Analyzing %1$d of %2$d…</string>
+    <string name="ai_batch_done">Analysis finished.</string>
+    <string name="ai_not_configured">AI isn\'t configured: add OPENROUTER_API_KEY to local.properties.</string>
+    <string name="ai_failed">The AI analysis couldn\'t be completed. Please try again.</string>
+    <string name="ai_done">AI analysis updated.</string>
+    <plurals name="ai_chip_inconsistencies">
+        <item quantity="one">%1$d inconsistency</item>
+        <item quantity="other">%1$d inconsistencies</item>
+    </plurals>
+    <plurals name="ai_batch_button">
+        <item quantity="one">Analyze with AI (%1$d not analyzed)</item>
+        <item quantity="other">Analyze with AI (%1$d not analyzed)</item>
+    </plurals>
 </resources>

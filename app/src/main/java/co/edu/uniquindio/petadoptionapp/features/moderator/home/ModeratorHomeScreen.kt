@@ -39,6 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.size
+import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
+import co.edu.uniquindio.petadoptionapp.features.moderator.AiReviewSummary
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.card.StatCard
@@ -94,6 +99,8 @@ fun ModeratorHomeScreen(
         onUserClick = onUserClick,
         onNotificationsClick = onNotificationsClick,
         onFilterClick = viewModel::onFilterClick,
+        onAnalyzePending = viewModel::onAnalyzePendingClick,
+        onAiMessageShown = viewModel::onAiMessageShown,
     )
 }
 
@@ -107,6 +114,8 @@ private fun ModeratorHomeContent(
     onUserClick: (String) -> Unit,
     onNotificationsClick: () -> Unit,
     onFilterClick: (QueueFilter) -> Unit = {},
+    onAnalyzePending: () -> Unit = {},
+    onAiMessageShown: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -150,6 +159,18 @@ private fun ModeratorHomeContent(
                 }
                 val queue = state.visibleQueue
                 item(key = "queue-header") { QueueHeader(count = queue.size, filter = state.filter) }
+                // IA: analizar las que aún no tienen análisis, con su progreso y resultado.
+                if (state.notAnalyzedCount > 0 || state.aiProgress != null || state.aiMessage != null) {
+                    item(key = "ai-batch") {
+                        AiBatchBar(
+                            notAnalyzed = state.notAnalyzedCount,
+                            progress = state.aiProgress,
+                            message = state.aiMessage,
+                            onAnalyze = onAnalyzePending,
+                            onMessageShown = onAiMessageShown,
+                        )
+                    }
+                }
                 when {
                     state.hasError -> item(key = "error") { ListMessage(stringResource(R.string.mod_home_error), isError = true) }
                     queue.isEmpty() && !state.isLoading -> item(key = "empty") {
@@ -255,6 +276,50 @@ private fun StatRow(first: StatItem, second: StatItem) {
     }
 }
 
+// Barra de la IA: "Analizar con IA (N)" o el progreso; al terminar, el resultado.
+@Composable
+private fun AiBatchBar(
+    notAnalyzed: Int,
+    progress: Pair<Int, Int>?,
+    message: AiBatchMessage?,
+    onAnalyze: () -> Unit,
+    onMessageShown: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        when {
+            progress != null -> Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = AppTheme.colors.textPrimary)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.ai_batch_progress, progress.first + 1, progress.second),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AppTheme.colors.textPrimary,
+                )
+            }
+            notAnalyzed > 0 -> SecondaryButton(
+                text = pluralStringResource(R.plurals.ai_batch_button, notAnalyzed, notAnalyzed),
+                icon = Icons.Outlined.AutoAwesome,
+                onClick = onAnalyze,
+            )
+        }
+        message?.let {
+            val text = stringResource(
+                when (it) {
+                    AiBatchMessage.DONE -> R.string.ai_batch_done
+                    AiBatchMessage.NOT_CONFIGURED -> R.string.ai_not_configured
+                    AiBatchMessage.FAILED -> R.string.ai_failed
+                }
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (it == AiBatchMessage.DONE) AppTheme.colors.textPrimary else AppTheme.colors.stateError,
+                modifier = Modifier.clickable(onClick = onMessageShown),
+            )
+        }
+    }
+}
+
 // "Por revisar" (o "Prioridad alta" con el filtro) y cuántas hay.
 @Composable
 private fun QueueHeader(count: Int, filter: QueueFilter) {
@@ -343,6 +408,8 @@ private fun ModerationPostCard(post: ModerationPostUi, onClick: () -> Unit) {
             if (post.priorityReason.isNotBlank()) {
                 IconTextRow(icon = Icons.Outlined.AutoAwesome, text = post.priorityReason, iconSize = 14.dp, spacing = 6.dp, style = MaterialTheme.typography.bodySmall)
             }
+            // Resumen de la IA para revisar rápido: relevancia, alertas, resumen y siguiente acción.
+            AiReviewSummary(review = post.aiReview)
             IconTextRow(
                 icon = Icons.Outlined.Schedule,
                 text = stringResource(R.string.my_posts_published, agoText(post.ageHours)),

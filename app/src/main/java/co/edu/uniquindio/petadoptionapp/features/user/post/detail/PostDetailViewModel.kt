@@ -4,6 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.domain.error.AdoptionException
+import co.edu.uniquindio.petadoptionapp.domain.error.AiException
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AiReview
+import co.edu.uniquindio.petadoptionapp.domain.usecase.ai.AnalyzePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestStatus
 import co.edu.uniquindio.petadoptionapp.domain.model.post.AnimalSize
@@ -89,7 +92,10 @@ data class PostAuthorUi(
 )
 
 // Mensajes cortos (snackbar); el texto lo pone la UI con strings.xml.
-enum class DetailMessage { ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR, REVIEW_TAKEN, REVIEW_TAKEN_BY_OTHER, APPROVED, FINISHED }
+enum class DetailMessage {
+    ALREADY_REQUESTED, ACTION_ERROR, COMMENT_ERROR, REVIEW_TAKEN, REVIEW_TAKEN_BY_OTHER, APPROVED, FINISHED,
+    AI_DONE, AI_NOT_CONFIGURED, AI_FAILED,
+}
 
 /**
  Qué puede hacer el moderador que mira la publicación:
@@ -107,6 +113,9 @@ data class PostDetailUiState(
     val isModerator: Boolean = false,
     // Solo para moderadores (null para los demás).
     val moderatorReview: ModeratorReview? = null,
+    // Análisis de la IA (solo se muestra a moderadores) y si se está pidiendo de nuevo.
+    val aiReview: AiReview? = null,
+    val isAnalyzing: Boolean = false,
     val isTakingReview: Boolean = false,
     val showApproveDialog: Boolean = false,
     val isApproving: Boolean = false,
@@ -162,6 +171,7 @@ class PostDetailViewModel @Inject constructor(
     private val startReview: StartReviewUseCase,
     private val approvePost: ApprovePostUseCase,
     private val finishPost: FinishPostUseCase,
+    private val analyzePost: AnalyzePostUseCase,
     private val getUserProfile: GetUserProfileUseCase,
 ) : ViewModel() {
 
@@ -214,6 +224,7 @@ class PostDetailViewModel @Inject constructor(
                     isOwner = isOwner,
                     isModerator = session.role == UserRole.MODERATOR,
                     moderatorReview = if (session.role == UserRole.MODERATOR) post.reviewFor(session.id) else null,
+                    aiReview = post.aiReview,
                     isLoading = false,
                     notFound = false,
                 )
@@ -415,6 +426,22 @@ class PostDetailViewModel @Inject constructor(
             approvePost(postId)
                 .onSuccess { _uiState.update { it.copy(isApproving = false, showApproveDialog = false, message = DetailMessage.APPROVED) } }
                 .onFailure { _uiState.update { it.copy(isApproving = false, showApproveDialog = false, message = DetailMessage.ACTION_ERROR) } }
+            refresh()
+        }
+    }
+
+    /** Moderador: pide (o repite) el análisis con IA de esta publicación. */
+    fun onAnalyzeClick() {
+        if (_uiState.value.isAnalyzing) return
+        _uiState.update { it.copy(isAnalyzing = true) }
+        viewModelScope.launch {
+            val error = analyzePost(postId).exceptionOrNull()
+            val message = when {
+                error == null -> DetailMessage.AI_DONE
+                error === AiException.NotConfigured -> DetailMessage.AI_NOT_CONFIGURED
+                else -> DetailMessage.AI_FAILED
+            }
+            _uiState.update { it.copy(isAnalyzing = false, message = message) }
             refresh()
         }
     }

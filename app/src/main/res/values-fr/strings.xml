@@ -564,4 +564,40 @@
     <string name="settings_language">Langue</string>
     <string name="settings_language_current">Langue de l\'application : %1$s</string>
     <string name="explore_legend_you">Vous</string>
+    <string name="ai_review_title">Analyse IA</string>
+    <string name="ai_review_subtitle">Suggestions pour une revue rapide ; la décision revient au modérateur.</string>
+    <string name="ai_not_analyzed">Sans analyse IA</string>
+    <string name="ai_not_analyzed_long">Cette publication n\'a pas encore d\'analyse IA.</string>
+    <string name="ai_next_action">Étape suivante : %1$s</string>
+    <string name="ai_key_points">Points clés</string>
+    <string name="ai_inconsistencies">Incohérences</string>
+    <string name="ai_images_ok">Les photos correspondent à la publication</string>
+    <string name="ai_images_not_relevant">Les photos ne semblent pas correspondre</string>
+    <string name="ai_inappropriate">Contenu potentiellement inapproprié</string>
+    <string name="ai_duplicate">Publication potentiellement en double</string>
+    <string name="ai_open_duplicate">Voir la publication similaire</string>
+    <string name="ai_recommended_actions">Actions recommandées</string>
+    <string name="ai_analyzed_with">Analysé avec %1$s</string>
+    <string name="ai_analyzing">Analyse IA en cours…</string>
+    <string name="ai_analyze">Analyser avec l\'IA</string>
+    <string name="ai_reanalyze">Analyser à nouveau</string>
+    <string name="ai_chip_inappropriate">Inapproprié</string>
+    <string name="ai_chip_duplicate">Doublon possible</string>
+    <string name="ai_chip_images">Photos non pertinentes</string>
+    <string name="ai_relevance_high">Pertinence élevée · %1$d</string>
+    <string name="ai_relevance_medium">Pertinence moyenne · %1$d</string>
+    <string name="ai_relevance_low">Pertinence faible · %1$d</string>
+    <string name="ai_batch_progress">Analyse %1$d sur %2$d…</string>
+    <string name="ai_batch_done">Analyse terminée.</string>
+    <string name="ai_not_configured">L\'IA n\'est pas configurée : ajoutez OPENROUTER_API_KEY dans local.properties.</string>
+    <string name="ai_failed">L\'analyse IA n\'a pas pu aboutir. Veuillez réessayer.</string>
+    <string name="ai_done">Analyse IA mise à jour.</string>
+    <plurals name="ai_chip_inconsistencies">
+        <item quantity="one">%1$d incohérence</item>
+        <item quantity="other">%1$d incohérences</item>
+    </plurals>
+    <plurals name="ai_batch_button">
+        <item quantity="one">Analyser avec l\'IA (%1$d non analysée)</item>
+        <item quantity="other">Analyser avec l\'IA (%1$d non analysées)</item>
+    </plurals>
 </resources>

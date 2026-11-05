@@ -13,6 +13,9 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LoginUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ObserveSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.RegisterUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.ai.AnalyzePostUseCase
+import co.edu.uniquindio.petadoptionapp.domain.repository.AiAnalysisRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.PostAnalysisScheduler
 import co.edu.uniquindio.petadoptionapp.domain.usecase.location.ReverseGeocodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.location.SearchAddressUseCase
 import co.edu.uniquindio.petadoptionapp.domain.repository.GeocodingRepository
@@ -145,6 +148,14 @@ object UseCaseModule {
     @Provides
     @ViewModelScoped
     fun providesReverseGeocodeUseCase(geocoding: GeocodingRepository): ReverseGeocodeUseCase = ReverseGeocodeUseCase(geocoding)
+
+    @Provides
+    @ViewModelScoped
+    fun providesAnalyzePostUseCase(
+        postRepository: PostRepository,
+        catalogRepository: CatalogRepository,
+        aiRepository: AiAnalysisRepository,
+    ): AnalyzePostUseCase = AnalyzePostUseCase(postRepository, catalogRepository, aiRepository)
 
     @Provides
     @ViewModelScoped
@@ -645,7 +656,8 @@ object UseCaseModule {
         postRepository: PostRepository,
         checkPostCatalog: CheckPostCatalogUseCase,
         uploadImages: UploadImagesUseCase,
-    ): CreatePostUseCase = CreatePostUseCase(postRepository, checkPostCatalog, uploadImages)
+        analysisScheduler: PostAnalysisScheduler,
+    ): CreatePostUseCase = CreatePostUseCase(postRepository, checkPostCatalog, uploadImages, analysisScheduler)
 
     @Provides
     @ViewModelScoped
@@ -653,7 +665,8 @@ object UseCaseModule {
         postRepository: PostRepository,
         checkPostCatalog: CheckPostCatalogUseCase,
         uploadImages: UploadImagesUseCase,
-    ): UpdatePostUseCase = UpdatePostUseCase(postRepository, checkPostCatalog, uploadImages)
+        analysisScheduler: PostAnalysisScheduler,
+    ): UpdatePostUseCase = UpdatePostUseCase(postRepository, checkPostCatalog, uploadImages, analysisScheduler)
 
 
     // Home Moderador

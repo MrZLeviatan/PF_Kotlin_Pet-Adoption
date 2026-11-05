@@ -39,6 +39,9 @@ android {
         // Cloudinary: subida sin firma (el API secret nunca va en la app).
         buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${localKey("CLOUDINARY_CLOUD_NAME")}\"")
         buildConfigField("String", "CLOUDINARY_UPLOAD_PRESET", "\"${localKey("CLOUDINARY_UPLOAD_PRESET")}\"")
+        // OpenRouter: IA para analizar publicaciones (OPENROUTER_MODEL es opcional).
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"${localKey("OPENROUTER_API_KEY")}\"")
+        buildConfigField("String", "OPENROUTER_MODEL", "\"${localKey("OPENROUTER_MODEL")}\"")
     }
 
     buildTypes {

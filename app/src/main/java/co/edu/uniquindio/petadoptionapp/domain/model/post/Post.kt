@@ -37,8 +37,8 @@ data class Post(
     val status: PostStatus = PostStatus.IN_PROGRESS,
     // Análisis de IA y verificación de moderadores.
     val verification: Verification = Verification(),
-    // Resumen generado por IA; nulo hasta que se genere.
-    val aiSummary: String? = null,
+    // Revisión de la IA (resumen, riesgos, duplicado...); nula hasta que se analice.
+    val aiReview: AiReview? = null,
     // Cantidad de "Es importante".
     val importantCount: Int = 0,
     // Cantidad de comentarios.

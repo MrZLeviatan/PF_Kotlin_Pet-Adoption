@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.data.repository.memory
 
 import co.edu.uniquindio.petadoptionapp.data.repository.send.SeedData
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AiReview
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostFilter
 import co.edu.uniquindio.petadoptionapp.domain.model.post.filter.PostSort
@@ -98,7 +99,7 @@ class PostRepositoryImpl @Inject constructor() : PostRepository {
                     animalTypeId = post.animalTypeId, breed = post.breed, size = post.size,
                     ageInMonths = post.ageInMonths, vaccinated = post.vaccinated, neutered = post.neutered,
                     photoUrls = post.photoUrls, location = post.location,
-                    verification = post.verification, aiSummary = post.aiSummary,
+                    verification = post.verification, aiReview = post.aiReview,
                     updatedAt = post.updatedAt
                 ))
             } ?: map
@@ -169,6 +170,20 @@ class PostRepositoryImpl @Inject constructor() : PostRepository {
                 .sortedBy { it.createdAt }
                 .take(limit)
         )
+
+    override suspend fun updateAiAnalysis(id: String, review: AiReview, priority: PriorityLevel, priorityReason: String): Result<Unit> {
+        if (posts.value[id] == null) return Result.failure(PostException.PostNotFound)
+        // Solo la revisión y la prioridad sugerida: el estado de verificación no cambia.
+        posts.update { map ->
+            map[id]?.let { current ->
+                map + (id to current.copy(
+                    aiReview = review,
+                    verification = current.verification.copy(priorityLevel = priority, priorityReason = priorityReason),
+                ))
+            } ?: map
+        }
+        return Result.success(Unit)
+    }
 
     override suspend fun updateVerification(
         id: String,

@@ -2,7 +2,10 @@ package co.edu.uniquindio.petadoptionapp.features.moderator.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.edu.uniquindio.petadoptionapp.domain.error.AiException
+import co.edu.uniquindio.petadoptionapp.domain.model.post.AiReview
 import co.edu.uniquindio.petadoptionapp.domain.model.post.ModerationStats
+import co.edu.uniquindio.petadoptionapp.domain.usecase.ai.AnalyzePostUseCase
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PriorityLevel
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
@@ -40,7 +43,12 @@ data class ModerationPostUi(
     val priorityReason: String,
     val ageHours: Int,
     val verificationStatus: VerificationStatus,
+    // Análisis de la IA (null = aún sin analizar).
+    val aiReview: AiReview? = null,
 )
+
+/** Resultado del último "Analizar con IA" de la cola. */
+enum class AiBatchMessage { DONE, NOT_CONFIGURED, FAILED }
 
 data class ModeratorHomeUiState(
     val name: String = "",
@@ -58,8 +66,14 @@ data class ModeratorHomeUiState(
     val isSearchingUsers: Boolean = false,
     val isLoading: Boolean = true,
     val hasError: Boolean = false,
+    // "Analizar con IA": progreso (hechas / total) mientras corre, y su resultado.
+    val aiProgress: Pair<Int, Int>? = null,
+    val aiMessage: AiBatchMessage? = null,
 ) {
     val isSearching: Boolean get() = query.isNotBlank()
+
+    // Publicaciones de la cola que la IA aún no analizó.
+    val notAnalyzedCount: Int get() = queue.count { it.aiReview == null }
 
     /** Cola que se muestra según la tarjeta elegida (las mismas reglas que los números de las tarjetas). */
     val visibleQueue: List<ModerationPostUi>
@@ -86,6 +100,7 @@ class ModeratorHomeViewModel @Inject constructor(
     private val observeCategories: ObserveCategoriesUseCase,
     private val countUnread: CountUnreadNotificationsUseCase,
     private val searchUsers: SearchUsersUseCase,
+    private val analyzePost: AnalyzePostUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ModeratorHomeUiState())
@@ -160,5 +175,32 @@ class ModeratorHomeViewModel @Inject constructor(
         priorityReason = verification.priorityReason,
         ageHours = ((System.currentTimeMillis() - createdAt) / 3_600_000L).toInt().coerceAtLeast(0),
         verificationStatus = verification.status,
+        aiReview = aiReview,
     )
+
+    /**
+     Analiza con IA, una por una, las publicaciones de la cola que no tienen análisis
+     (las que se publicaron antes de configurar la IA o cuyo análisis falló).
+     */
+    fun onAnalyzePendingClick() {
+        val pending = _uiState.value.queue.filter { it.aiReview == null }.map { it.id }
+        if (pending.isEmpty() || _uiState.value.aiProgress != null) return
+        viewModelScope.launch {
+            var message = AiBatchMessage.DONE
+            for ((index, id) in pending.withIndex()) {
+                _uiState.update { it.copy(aiProgress = index to pending.size, aiMessage = null) }
+                val error = analyzePost(id).exceptionOrNull()
+                // Sin llave no tiene caso seguir con las demás.
+                if (error === AiException.NotConfigured) {
+                    message = AiBatchMessage.NOT_CONFIGURED
+                    break
+                }
+                if (error != null) message = AiBatchMessage.FAILED
+            }
+            _uiState.update { it.copy(aiProgress = null, aiMessage = message) }
+            refresh()
+        }
+    }
+
+    fun onAiMessageShown() = _uiState.update { it.copy(aiMessage = null) }
 }

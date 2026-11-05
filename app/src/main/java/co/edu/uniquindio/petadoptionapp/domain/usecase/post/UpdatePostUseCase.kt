@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
 import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.repository.ImageFolder
+import co.edu.uniquindio.petadoptionapp.domain.repository.PostAnalysisScheduler
 
 import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
@@ -24,7 +25,9 @@ class UpdatePostUseCase(
     // Inyecta el caso de uso que revisa las categorías y tipos de animal.
     private val checkPostCatalog: CheckPostCatalogUseCase,
     // Inyecta el caso de uso que sube a Cloudinary las fotos nuevas.
-    private val uploadImages: UploadImagesUseCase
+    private val uploadImages: UploadImagesUseCase,
+    // Vuelve a pedir el análisis con IA: el contenido cambió.
+    private val analysisScheduler: PostAnalysisScheduler
 ) {
     // Define la función asíncrona que recibe el autor y la publicación a editar, y devuelve el resultado.
     suspend operator fun invoke(userId: String, edited: Post): Result<Unit> {
@@ -56,9 +59,9 @@ class UpdatePostUseCase(
             edited.copy(
                 photoUrls = photoUrls,
                 verification = Verification(),
-                aiSummary = null,
+                aiReview = null,
                 updatedAt = System.currentTimeMillis()
             )
-        )
+        ).onSuccess { analysisScheduler.schedule(edited.id) }
     }
 }

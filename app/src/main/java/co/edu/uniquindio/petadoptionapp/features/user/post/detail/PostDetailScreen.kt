@@ -96,6 +96,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.map.MapArea
 import co.edu.uniquindio.petadoptionapp.core.util.APPROXIMATE_RADIUS_METERS
 import co.edu.uniquindio.petadoptionapp.core.util.approximatePoint
 import androidx.compose.ui.draw.clip
+import co.edu.uniquindio.petadoptionapp.features.moderator.AiReviewCard
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.util.agoText
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
@@ -135,6 +136,8 @@ fun PostDetailScreen(
     onOpenChat: (chatId: String) -> Unit,
     // Moderador: abre la pantalla para escribir el motivo del rechazo.
     onRejectPost: (postId: String) -> Unit = {},
+    // Abre otra publicación (ej. la posible duplicada que señala la IA).
+    onOpenPost: (postId: String) -> Unit = {},
     viewModel: PostDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -186,6 +189,8 @@ fun PostDetailScreen(
                 onFinish = viewModel::onFinishClick,
                 onFinishConfirm = viewModel::onFinishConfirm,
                 onFinishDismiss = viewModel::onFinishDismiss,
+                onAnalyze = viewModel::onAnalyzeClick,
+                onOpenPost = onOpenPost,
                 onOpenComments = { uiState.post?.let { onOpenComments(it.id, null) } },
                 onReply = { comment -> uiState.post?.let { onOpenComments(it.id, comment.id) } },
                 onAuthorClick = { uiState.author?.let { onAuthorClick(it.id) } },
@@ -223,6 +228,8 @@ private data class PostDetailActions(
     val onFinish: () -> Unit = {},
     val onFinishConfirm: () -> Unit = {},
     val onFinishDismiss: () -> Unit = {},
+    val onAnalyze: () -> Unit = {},
+    val onOpenPost: (String) -> Unit = {},
     val onOpenComments: () -> Unit = {},
     val onCommentLike: (String) -> Unit = {},
     val onReply: (CommentUi) -> Unit = {},
@@ -310,6 +317,15 @@ private fun PostDetailContent(
                 PostTitleCard(post)
                 uiState.author?.let { AuthorCard(author = it, isOwner = uiState.isOwner, onViewProfile = actions.onAuthorClick) }
                 PostInfoCard(post)
+                // Moderador: el análisis de la IA (resumen, alertas, duplicado y acciones recomendadas).
+                if (uiState.isModerator) {
+                    AiReviewCard(
+                        review = uiState.aiReview,
+                        isAnalyzing = uiState.isAnalyzing,
+                        onAnalyze = actions.onAnalyze,
+                        onOpenPost = actions.onOpenPost,
+                    )
+                }
 
                 // Los moderadores solo revisan: sin "Me interesa adoptar", chat ni "Es importante".
                 if (!uiState.isOwner && !uiState.isModerator && post.isPublic) {
@@ -994,6 +1010,9 @@ private fun detailMessageText(message: DetailMessage): String = stringResource(
         DetailMessage.REVIEW_TAKEN_BY_OTHER -> R.string.mod_msg_review_taken_by_other
         DetailMessage.APPROVED -> R.string.mod_msg_approved
         DetailMessage.FINISHED -> R.string.mod_msg_finished
+        DetailMessage.AI_DONE -> R.string.ai_done
+        DetailMessage.AI_NOT_CONFIGURED -> R.string.ai_not_configured
+        DetailMessage.AI_FAILED -> R.string.ai_failed
         DetailMessage.COMMENT_ERROR -> R.string.post_detail_msg_comment_error
     }
 )

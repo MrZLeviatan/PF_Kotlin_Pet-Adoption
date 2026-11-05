@@ -2,6 +2,10 @@ package co.edu.uniquindio.petadoptionapp.di
 
 import co.edu.uniquindio.petadoptionapp.data.repository.memory.AuthRepositoryImpl
 import co.edu.uniquindio.petadoptionapp.data.repository.remote.CloudinaryImageRepository
+import co.edu.uniquindio.petadoptionapp.data.repository.remote.OpenRouterAiRepository
+import co.edu.uniquindio.petadoptionapp.data.repository.remote.BackgroundPostAnalysisScheduler
+import co.edu.uniquindio.petadoptionapp.domain.repository.AiAnalysisRepository
+import co.edu.uniquindio.petadoptionapp.domain.repository.PostAnalysisScheduler
 import co.edu.uniquindio.petadoptionapp.data.repository.device.AndroidGeocodingRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.GeocodingRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.ImageStorageRepository
@@ -42,6 +46,9 @@ abstract class RepositoryModule {
     @Binds @Singleton abstract fun bindImageStorage(impl: CloudinaryImageRepository): ImageStorageRepository
     // Enlaza el geocodificador del teléfono (direcciones <-> puntos del mapa).
     @Binds @Singleton abstract fun bindGeocoding(impl: AndroidGeocodingRepository): GeocodingRepository
+    // Enlaza OpenRouter como IA para analizar publicaciones, y quien lo lanza en segundo plano.
+    @Binds @Singleton abstract fun bindAiAnalysis(impl: OpenRouterAiRepository): AiAnalysisRepository
+    @Binds @Singleton abstract fun bindPostAnalysisScheduler(impl: BackgroundPostAnalysisScheduler): PostAnalysisScheduler
     // Enlaza la implementación del repositorio de usuarios con la interfaz UserRepository.
     @Binds @Singleton abstract fun bindUser(impl: UserRepositoryImpl): UserRepository
     // Enlaza la implementación del repositorio de catálogos con la interfaz CatalogRepository.

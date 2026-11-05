@@ -2,6 +2,7 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.post
 
 import co.edu.uniquindio.petadoptionapp.domain.usecase.image.UploadImagesUseCase
 import co.edu.uniquindio.petadoptionapp.domain.repository.ImageFolder
+import co.edu.uniquindio.petadoptionapp.domain.repository.PostAnalysisScheduler
 
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
@@ -20,7 +21,9 @@ class CreatePostUseCase(
     // Inyecta el caso de uso que revisa las categorías y tipos de animal.
     private val checkPostCatalog: CheckPostCatalogUseCase,
     // Inyecta el caso de uso que sube las fotos a Cloudinary.
-    private val uploadImages: UploadImagesUseCase
+    private val uploadImages: UploadImagesUseCase,
+    // Pide el análisis con IA (prioridad, resumen, riesgos) en segundo plano.
+    private val analysisScheduler: PostAnalysisScheduler
 ) {
     // Define la función asíncrona que recibe el autor y el borrador, y devuelve la publicación guardada.
     suspend operator fun invoke(authorId: String, draft: Post): Result<Post> {
@@ -42,7 +45,7 @@ class CreatePostUseCase(
             authorId = authorId,
             status = PostStatus.IN_PROGRESS,
             verification = Verification(),
-            aiSummary = null,
+            aiReview = null,
             importantCount = 0,
             commentCount = 0,
             createdAt = now,
@@ -50,7 +53,7 @@ class CreatePostUseCase(
             finishedAt = null
         )
 
-        // Guarda la publicación.
-        return postRepository.create(post)
+        // Guarda la publicación y pide su análisis con IA (no hace esperar a quien publica).
+        return postRepository.create(post).onSuccess { saved -> analysisScheduler.schedule(saved.id) }
     }
 }

@@ -662,4 +662,40 @@
     <string name="settings_language">Idioma</string>
     <string name="settings_language_current">Idioma de la app: %1$s</string>
     <string name="explore_legend_you">Tú</string>
+    <string name="ai_review_title">Análisis de IA</string>
+    <string name="ai_review_subtitle">Sugerencias para revisar rápido; la decisión es del moderador.</string>
+    <string name="ai_not_analyzed">Sin análisis de IA</string>
+    <string name="ai_not_analyzed_long">Esta publicación aún no tiene análisis de IA.</string>
+    <string name="ai_next_action">Siguiente paso: %1$s</string>
+    <string name="ai_key_points">Puntos clave</string>
+    <string name="ai_inconsistencies">Inconsistencias</string>
+    <string name="ai_images_ok">Las fotos corresponden a la publicación</string>
+    <string name="ai_images_not_relevant">Las fotos no parecen corresponder</string>
+    <string name="ai_inappropriate">Posible contenido inapropiado</string>
+    <string name="ai_duplicate">Posible publicación duplicada</string>
+    <string name="ai_open_duplicate">Ver la publicación parecida</string>
+    <string name="ai_recommended_actions">Acciones recomendadas</string>
+    <string name="ai_analyzed_with">Analizado con %1$s</string>
+    <string name="ai_analyzing">Analizando con IA…</string>
+    <string name="ai_analyze">Analizar con IA</string>
+    <string name="ai_reanalyze">Volver a analizar</string>
+    <string name="ai_chip_inappropriate">Inapropiado</string>
+    <string name="ai_chip_duplicate">Posible duplicado</string>
+    <string name="ai_chip_images">Fotos no relevantes</string>
+    <string name="ai_relevance_high">Relevancia alta · %1$d</string>
+    <string name="ai_relevance_medium">Relevancia media · %1$d</string>
+    <string name="ai_relevance_low">Relevancia baja · %1$d</string>
+    <string name="ai_batch_progress">Analizando %1$d de %2$d…</string>
+    <string name="ai_batch_done">Análisis terminado.</string>
+    <string name="ai_not_configured">La IA no está configurada: agrega OPENROUTER_API_KEY en local.properties.</string>
+    <string name="ai_failed">No se pudo completar el análisis con IA. Intenta de nuevo.</string>
+    <string name="ai_done">Análisis de IA actualizado.</string>
+    <plurals name="ai_chip_inconsistencies">
+        <item quantity="one">%1$d inconsistencia</item>
+        <item quantity="other">%1$d inconsistencias</item>
+    </plurals>
+    <plurals name="ai_batch_button">
+        <item quantity="one">Analizar con IA (%1$d sin analizar)</item>
+        <item quantity="other">Analizar con IA (%1$d sin analizar)</item>
+    </plurals>
 </resources>

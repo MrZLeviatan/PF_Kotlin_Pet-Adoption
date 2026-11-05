@@ -246,7 +246,8 @@ fun AppNavigation() {
                 onEditPost = { postId -> navController.navigate(MainRoutes.EditPost(postId)) },
                 onAuthorClick = { userId -> navController.navigate(MainRoutes.UserProfile(userId)) },
                 onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) },
-                onRejectPost = { postId -> navController.navigate(MainRoutes.RejectPost(postId)) }
+                onRejectPost = { postId -> navController.navigate(MainRoutes.RejectPost(postId)) },
+                onOpenPost = { postId -> navController.navigate(MainRoutes.PostDetail(postId)) }
             )
         }
 
