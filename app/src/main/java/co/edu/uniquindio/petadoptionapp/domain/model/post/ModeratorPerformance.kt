@@ -1,15 +1,21 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
 /**
- Desempeño del moderador con sesión, para su dashboard: lo que aprobó, rechazó y tiene en revisión,
- y cómo se reparte en el tiempo, por categoría y por prioridad.
- */
+Modelo de dominio: desempeño del moderador con sesión, para su dashboard: lo que aprobó, rechazó y tiene en revisión,
+y cómo se reparte en el tiempo, por categoría y por prioridad.
+Lo calcula GetModeratorPerformanceUseCase y lo muestra el dashboard del moderador.
+**/
+// Declara el desempeño como clase de datos inmutable.
 data class ModeratorPerformance(
+    // Publicaciones aprobadas por el moderador.
     val approved: Int = 0,
+    // Publicaciones rechazadas por el moderador.
     val rejected: Int = 0,
     // Tomadas y aún sin decidir.
     val inReview: Int = 0,
+    // Decisiones tomadas hoy.
     val reviewedToday: Int = 0,
+    // Decisiones tomadas en los últimos 7 días.
     val reviewedLast7Days: Int = 0,
     // Decisiones por día de los últimos 7 días, del más antiguo (índice 0) a hoy (índice 6).
     val dailyReviews: List<Int> = List(7) { 0 },

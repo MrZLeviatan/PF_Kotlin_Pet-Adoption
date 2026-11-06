@@ -75,7 +75,7 @@ Los casos de uso pueden utilizar modelos, validadores y otros casos de uso. Cuan
 ## Relación con otras capas
 
 - **`features/`**: presenta la interfaz y sus ViewModels. Estos llaman a los casos de uso.
-- **`data/`**: implementa los repositorios y proporciona los datos.
+- **`data/`**: implementa los repositorios con Firebase (Auth y Firestore), Cloudinary, OpenRouter, EmailJS y el geocodificador del teléfono.
 - **`di/`**: conecta cada interfaz de repositorio con su implementación mediante Hilt.
 - **`core/`**: reúne elementos compartidos de la interfaz, como tema y componentes; no forma parte de las reglas del dominio.
 

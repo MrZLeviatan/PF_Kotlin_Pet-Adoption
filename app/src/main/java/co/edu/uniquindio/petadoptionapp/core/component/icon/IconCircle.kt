@@ -21,34 +21,53 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 /**
 Círculo con un icono cualquiera. Es la versión genérica de [PawCircle]:
 recibe el icono, así sirve para escudo, candado, correo, etc.
+Se usa como ilustración en cabeceras (IconHeader en recuperar y cambiar
+contraseña), en ajustes, filas de información e insignias del perfil, y toma
+sus colores del tema (AppTheme).
 El icono es decorativo: el texto que lo acompaña ya describe la pantalla.
- */
+**/
 @Composable
 fun IconCircle(
+    // Icono vectorial que se dibuja en el centro del círculo.
     icon: ImageVector,
+    // Diámetro del círculo; el icono se escala en proporción a este valor.
     size: Dp,
+    // Color de fondo del círculo, para adaptarlo a la superficie sobre la que se ubica.
     containerColor: Color,
+    // Modificador externo para posicionar el componente desde quien lo usa.
     modifier: Modifier = Modifier,
 ) {
+    // Caja contenedora que actúa como el círculo de fondo.
     Box(
         modifier = modifier
+            // Fija el ancho y el alto al diámetro recibido.
             .size(size)
+            // Pinta el fondo con forma circular.
             .background(containerColor, CircleShape),
+        // Centra el icono dentro del círculo.
         contentAlignment = Alignment.Center,
     ) {
+        // Dibuja el icono recibido.
         Icon(
+            // Vector del icono a mostrar.
             imageVector = icon,
+            // Sin descripción porque es decorativo y TalkBack debe ignorarlo.
             contentDescription = null,
+            // Usa el color de texto principal del tema para mantener contraste.
             tint = AppTheme.colors.textPrimary,
+            // El icono ocupa la mitad del círculo para dejar margen visual.
             modifier = Modifier.size(size * 0.5f),
         )
     }
 }
 
+// Vista previa en Android Studio del círculo con el icono de escudo.
 @Preview(showBackground = true)
 @Composable
 private fun IconCirclePreview() {
+    // Envuelve el componente en el tema de la app para que use sus colores.
     PetAdoptionAppTheme {
+        // Ejemplo con icono de seguridad, 72 dp y fondo de etiqueta.
         IconCircle(
             icon = Icons.Outlined.Security,
             size = 72.dp,

@@ -7,9 +7,10 @@ import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointTransaction
 import kotlinx.coroutines.flow.StateFlow
 
 /**
-Contrato de reputación: puntos, historial e insignias guardados en Firestore.
+Contrato (puerto) del dominio para la reputación: puntos, historial e insignias guardados en Firestore.
 Las reglas de cuándo premiar y qué insignias se cumplen viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/reputation.
+**/
 interface ReputationRepository {
 
     // Catálogo de insignias
@@ -17,7 +18,7 @@ interface ReputationRepository {
     /**
     Flujo reactivo del catálogo de insignias.
 
-    - Qué emite: Un [StateFlow] con las insignias cargadas en memoria.
+    - Qué emite: Un [StateFlow] con las insignias leídas de Firestore y guardadas en caché.
     El catálogo es pequeño y casi no cambia: se lee una vez y se reutiliza para ahorrar lecturas de la cuota gratuita.
      */
     val badges: StateFlow<List<Badge>>

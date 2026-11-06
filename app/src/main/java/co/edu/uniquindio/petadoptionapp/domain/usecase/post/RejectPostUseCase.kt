@@ -11,10 +11,12 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseC
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 
 /**
-Documenta el caso de uso con el que un moderador rechaza una publicación.
+Caso de uso con el que un moderador rechaza una publicación.
 El motivo es obligatorio y la publicación rechazada no aparece en el feed público.
 El moderador se toma de la sesión actual, nunca de un parámetro.
- */
+Notifica al autor con el motivo. Lo usa el ViewModel de la pantalla de revisión del moderador.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class RejectPostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
@@ -34,10 +36,12 @@ class RejectPostUseCase(
 
         // Sin motivo válido no se rechaza (evita el `require` del modelo, que lanza excepciones).
         if (!PostValidator.isRejectionReasonValid(reason))
+            // Falla con RejectionReasonRequired si el motivo no es válido.
             return Result.failure(PostException.RejectionReasonRequired)
 
         // Busca la publicación y retorna un fallo si no existe.
         val post = postRepository.findById(postId)
+            // Si no existe, falla con PostNotFound.
             ?: return Result.failure(PostException.PostNotFound)
 
         // Solo se rechaza mientras la publicación siga en proceso.
@@ -45,16 +49,22 @@ class RejectPostUseCase(
 
         // Si ya fue verificada o rechazada, no se vuelve a revisar.
         val current = post.verification.status
+        // Comprueba si ya tiene una decisión final.
         if (current == VerificationStatus.VERIFIED || current == VerificationStatus.REJECTED)
+            // Falla con AlreadyReviewed.
             return Result.failure(PostException.AlreadyReviewed)
 
         // Si otro moderador la tiene en revisión, solo ese moderador puede rechazarla.
+        // Comprueba si está en revisión por otro moderador.
         if (current == VerificationStatus.IN_PROCESS && post.verification.reviewedBy != moderator.id)
+            // Falla con ReviewedByAnotherModerator.
             return Result.failure(PostException.ReviewedByAnotherModerator)
 
         // Rechaza solo si el estado sigue siendo el que se leyó (la transacción evita pisar a otro moderador).
         return postRepository.updateVerification(postId, current, post.verification.reject(moderator.id, reason))
+            // Si se guardó, avisa al autor (mejor esfuerzo).
             .onSuccess {
+                // Notifica el rechazo enviando el motivo limpio en `extra`.
                 notify(post.authorId, NotificationType.POST_REJECTED, moderator.id, moderator.userName, postId, extra = reason.trim())
                 // Pendiente aparte: sumar 1 a rejectedCount del moderador.
             }

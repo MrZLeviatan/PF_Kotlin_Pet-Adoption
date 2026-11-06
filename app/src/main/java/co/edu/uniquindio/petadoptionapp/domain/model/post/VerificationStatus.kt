@@ -2,13 +2,15 @@ package co.edu.uniquindio.petadoptionapp.domain.model.post
 
 
 /**
- Estado del proceso de verificación hecho por un moderador.
- */
+Modelo de dominio: estado del proceso de verificación hecho por un moderador ([Verification.status]).
+Lo consultan el feed (solo muestra VERIFIED), la cola de moderación y los dashboards.
+**/
+// Enumera los estados de la verificación.
 enum class VerificationStatus {
     // Recién creada; nadie la ha revisado.
     UNVERIFIED,
 
-    //Un moderador la está revisando.
+    // Un moderador la está revisando.
     IN_PROCESS,
 
     // Aprobada: aparece en el feed público.

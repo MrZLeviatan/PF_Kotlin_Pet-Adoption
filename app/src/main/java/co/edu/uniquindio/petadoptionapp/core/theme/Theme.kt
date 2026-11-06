@@ -15,33 +15,48 @@ Capa 3: punto de entrada del sistema de diseño.
 Es el único lugar que conoce a la vez los tokens de la app y Material 3.
 Selecciona la paleta según el tema, la publica en el árbol de composición y
 deriva el `ColorScheme`, de modo que los componentes de Material heredan la marca
-sin recibir colores manualmente.
-*/
+sin recibir colores manualmente. Envuelve toda la UI desde MainActivity y desde
+los previews, y expone `AppTheme.colors` como acceso único a los tokens.
+**/
+
+/**
+Puente hacia Material 3. Solo se mapean los roles que la app define; el resto
+conserva los valores por defecto del esquema base, que siguen siendo válidos.
+**/
 private fun AppColors.toMaterialColorScheme() =
     // Si la paleta actual es oscura usa darkColorScheme(), de lo contrario usa lightColorScheme(), y luego crea una copia
     (if (isDark) darkColorScheme() else lightColorScheme()).copy(
+        // Botones y elementos principales de Material toman la acción primaria de la marca.
         primary = actionPrimary,
         onPrimary = onActionPrimary,
+        // Elementos secundarios de Material toman la acción secundaria.
         secondary = actionSecondary,
         onSecondary = onActionSecondary,
+        // Fondo de pantalla y su contenido.
         background = background,
         onBackground = textPrimary,
+        // Superficies (tarjetas, diálogos, menús) y su contenido.
         surface = surface,
         onSurface = textPrimary,
+        // Variante de superficie usada por Material en campos y contenedores secundarios.
         surfaceVariant = surfaceNotice,
+        // Bordes de OutlinedTextField y otros componentes delineados.
         outline = border,
+        // Colores de error para validaciones y mensajes.
         error = stateError,
         onError = onStateError,
     )
 
 
 /**
-Puente hacia Material 3. Solo se mapean los roles que la app define; el resto
-conserva los valores por defecto del esquema base, que siguen siendo válidos.
- */
+Tema raíz de la aplicación. Recibe si se debe usar el modo oscuro, publica la
+paleta correspondiente en LocalAppColors y configura MaterialTheme con el
+ColorScheme derivado y la tipografía de marca, de modo que todo el contenido
+hijo comparta la misma identidad visual.
+**/
 @Composable
 fun PetAdoptionAppTheme(
-    // Detecta por defecto si el móvil está en modo oscuro.
+    // Indica si se usa el tema oscuro; por defecto es claro y quien lo invoca decide (por ejemplo, según la preferencia del usuario).
     darkTheme: Boolean = false,
     // Pasa las pantallas o vistas hijas que irán dentro del tema
     content: @Composable () -> Unit,
@@ -68,7 +83,7 @@ fun PetAdoptionAppTheme(
  Acceso único a los tokens: `AppTheme.colors.actionPrimary`. Centralizarlo permite
  que el autocompletado muestre solo roles semánticos y que sea posible cambiar
  la implementación interna sin tocar las pantallas.
- */
+**/
 object AppTheme {
     // Variable de lectura que devuelve los colores activos de la app
     val colors: AppColors

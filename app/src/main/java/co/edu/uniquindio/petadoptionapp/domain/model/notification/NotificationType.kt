@@ -2,11 +2,14 @@ package co.edu.uniquindio.petadoptionapp.domain.model.notification
 
 
 /**
- Evento que originó una notificación.
+Modelo de dominio: evento que originó una notificación ([Notification.type]).
 
- La interfaz usa este valor para elegir el ícono y el texto
- (desde `strings.xml`), así el modelo no guarda mensajes ya escritos.
- */
+La interfaz usa este valor para elegir el ícono y el texto
+(desde `strings.xml`), así el modelo no guarda mensajes ya escritos.
+Lo asignan los casos de uso que llaman a NotifyUseCase (comentarios, moderación,
+votos, adopción, reputación y chat).
+**/
+// Enumera los eventos que generan notificaciones.
 enum class NotificationType {
     // Alguien comentó una publicación del usuario.
     NEW_COMMENT,

@@ -3,14 +3,18 @@ package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 import kotlinx.serialization.Serializable
 
 /**
-Conversación entre dos personas, normalmente originada por una
+Modelo de dominio: conversación entre dos personas, normalmente originada por una
 publicación (por ejemplo, alguien interesado en adoptar una mascota).
 
 Solo guarda un resumen del último mensaje para poder dibujar la lista de
 chats sin descargar los mensajes. Los mensajes completos viven en la
-subcolección `messages`.
- */
+subcolección `messages` de Firestore.
+Lo usan ChatRepository y los casos de uso de usecase/chat (lista de chats, envío,
+lectura y borrado de conversaciones).
+**/
+// Permite convertir el chat a/desde el formato de almacenamiento.
 @Serializable
+// Declara el chat como clase de datos inmutable.
 data class Chat(
 
     // Identificador del chat. Conviene generarlo con [buildId] para que dos personas no abran conversaciones duplicadas por la misma publicación.
@@ -40,6 +44,7 @@ data class Chat(
 
     // Dado mi id, devuelve el id de la otra persona del chat (o `null`).
     fun otherParticipantId(myId: String): String? =
+        // Toma el primer participante cuyo id sea distinto al mío.
         participantIds.firstOrNull { it != myId }
 
     // Desde cuándo ve mensajes la persona indicada (0 si nunca eliminó el chat para sí).
@@ -53,8 +58,10 @@ data class Chat(
 
     // ¿La persona indicada ya vio este mensaje? Sirve para mostrar "visto".
     fun isMessageSeenBy(userId: String, message: Message): Boolean =
+        // Está visto si se envió antes (o en el mismo instante) de la última lectura de esa persona.
         message.sentAt <= (lastReadAt[userId] ?: 0L)
 
+    // Utilidades compartidas sin necesidad de instanciar la clase.
     companion object {
         /**
         Genera un id determinista a partir de los dos participantes y la
@@ -62,7 +69,9 @@ data class Chat(
         mismo resultado, evitando chats duplicados.
          */
         fun buildId(userA: String, userB: String, postId: String? = null): String {
+            // Ordena los dos ids alfabéticamente y los desestructura.
             val (first, second) = listOf(userA, userB).sorted()
+            // Une los ids con la publicación (o "direct" si es un chat sin publicación).
             return "${first}_${second}_${postId ?: "direct"}"
         }
     }

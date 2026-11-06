@@ -7,15 +7,16 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
-Documenta el resultado de comprobar la pertenencia a un chat: la cuenta de la sesión y el chat.
- */
+Caso de uso auxiliar que confirma que la persona con sesión participa en el chat indicado.
+Si el chat no existe o la persona no participa, devuelve el mismo error para no revelar chats ajenos.
+Define también [ChatMembership], el resultado con la cuenta de la sesión y el chat.
+Lo reutilizan los demás casos de uso de chat (enviar, observar, marcar leído, borrar...).
+**/
+// Resultado de comprobar la pertenencia a un chat: la cuenta de la sesión y el chat.
 data class ChatMembership(val account: Account, val chat: Chat)
 
 
-/**
-Documenta el caso de uso que confirma que la persona con sesión participa en el chat indicado.
-Si el chat no existe o la persona no participa, devuelve el mismo error para no revelar chats ajenos.
- */
+// Declara el caso de uso que exige ser participante del chat.
 class RequireChatMemberUseCase(
     // Inyecta el repositorio de chats.
     private val chatRepository: ChatRepository,
@@ -30,9 +31,12 @@ class RequireChatMemberUseCase(
 
         // El chat debe existir y la persona debe ser participante.
         val chat = chatRepository.findChatById(chatId)
+            // Conserva el chat solo si la persona está entre sus participantes.
             ?.takeIf { session.id in it.participantIds }
+            // Si no existe o no participa, falla con ChatNotFound.
             ?: return Result.failure(ChatException.ChatNotFound)
 
+        // Devuelve la cuenta y el chat validados.
         return Result.success(ChatMembership(session, chat))
     }
 }

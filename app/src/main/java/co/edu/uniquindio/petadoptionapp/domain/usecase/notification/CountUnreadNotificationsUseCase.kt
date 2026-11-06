@@ -5,8 +5,10 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.NotificationRepository
 
 /**
-Documenta el caso de uso que cuenta las notificaciones sin leer para el ícono de la app.
- */
+Caso de uso que cuenta las notificaciones sin leer para el ícono de la app.
+Alimenta el globito de la campana; lo usa el ViewModel principal.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class CountUnreadNotificationsUseCase(
     // Inyecta el repositorio de notificaciones.
     private val notificationRepository: NotificationRepository,
@@ -17,6 +19,7 @@ class CountUnreadNotificationsUseCase(
     suspend operator fun invoke(): Result<Int> {
         // Obtiene la cuenta actual de la sesión y retorna un fallo si el usuario no está autenticado.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
         // Solicita al repositorio el conteo de notificaciones no leídas utilizando el ID del usuario y retorna el resultado.
         return notificationRepository.countUnread(session.id)

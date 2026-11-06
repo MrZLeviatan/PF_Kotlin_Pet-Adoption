@@ -5,6 +5,11 @@ import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequestSta
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso con el que el solicitante cancela su solicitud de adopción mientras siga pendiente.
+Al cancelarla, el botón "Me interesa adoptar" vuelve a estar disponible para esa publicación.
+Lo usa el ViewModel del detalle de publicación / chat de adopción.
+**/
 // Define la clase del caso de uso para que el solicitante cancele su solicitud de adopción inyectando el repositorio de chats y el caso de uso de requerir usuario.
 class CancelAdoptionRequestUseCase(
     // Inyecta el repositorio de chats.
@@ -20,7 +25,9 @@ class CancelAdoptionRequestUseCase(
         // Debe existir y ser de quien la cancela.
         // Busca la solicitud de adopción por su ID y asegura que pertenezca al usuario solicitante en sesión, retornando un fallo si no se encuentra o no le pertenece.
         val request = chatRepository.findAdoptionRequestById(requestId)
+            // Solo la conserva si quien cancela es el solicitante.
             ?.takeIf { it.requesterId == session.id }
+            // Si no existe o no es suya, falla con RequestNotFound.
             ?: return Result.failure(AdoptionException.RequestNotFound)
 
         // Comprueba que la solicitud aún esté pendiente de respuesta y retorna un fallo si ya ha sido respondida previamente.

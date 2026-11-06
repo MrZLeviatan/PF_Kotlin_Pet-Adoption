@@ -12,9 +12,12 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.CheckPostCatalogU
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 
 /**
-Documenta el caso de uso que crea una publicación nueva.
+Caso de uso que crea una publicación nueva.
 Toda publicación nace sin verificar, en proceso y con los contadores en cero, sin importar lo que envíe la pantalla.
- */
+Valida el borrador, revisa el catálogo, sube las fotos a Cloudinary, guarda en Firestore y programa el análisis con IA.
+Lo usa el ViewModel de la pantalla de crear publicación.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class CreatePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
@@ -39,17 +42,29 @@ class CreatePostUseCase(
 
         // Fuerza los valores iniciales para que nadie se salte la moderación ni infle contadores.
         val now = System.currentTimeMillis()
+        // Copia el borrador sobrescribiendo los campos que controla el sistema.
         val post = draft.copy(
+            // URLs públicas de las fotos ya subidas.
             photoUrls = photoUrls,
+            // Id vacío: lo genera Firestore al guardar.
             id = "",
+            // Autor tomado del parámetro, no del borrador.
             authorId = authorId,
+            // Nace en proceso.
             status = PostStatus.IN_PROGRESS,
+            // Nace sin verificar.
             verification = Verification(),
+            // Sin análisis de IA todavía.
             aiReview = null,
+            // Contador de "Es importante" en cero.
             importantCount = 0,
+            // Contador de comentarios en cero.
             commentCount = 0,
+            // Fecha de creación.
             createdAt = now,
+            // Fecha de última edición.
             updatedAt = now,
+            // Aún no se ha finalizado.
             finishedAt = null
         )
 

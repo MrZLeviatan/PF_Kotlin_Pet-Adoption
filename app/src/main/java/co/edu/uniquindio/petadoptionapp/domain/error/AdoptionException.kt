@@ -2,8 +2,11 @@ package co.edu.uniquindio.petadoptionapp.domain.error
 
 /**
 Errores del dominio de solicitudes de adopción.
+Los lanzan los casos de uso de chat/adoption (enviar, responder y cancelar solicitudes)
+y viajan dentro de un Result.failure hasta la capa de presentación.
 La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+**/
+// Jerarquía sellada: el compilador conoce todos los errores posibles de adopción.
 sealed class AdoptionException : Exception() {
 
     // Ocurre cuando alguien intenta adoptar su propia publicación.

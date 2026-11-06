@@ -5,8 +5,10 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.NotificationRepository
 
 /**
-Documenta el caso de uso que marca como leídas todas las notificaciones de la persona con sesión.
- */
+Caso de uso que marca como leídas todas las notificaciones de la persona con sesión.
+Lo usa el ViewModel de la pantalla de notificaciones (opción "Marcar todas como leídas").
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class MarkAllNotificationsReadUseCase(
     // Inyecta el repositorio de notificaciones.
     private val notificationRepository: NotificationRepository,
@@ -17,6 +19,7 @@ class MarkAllNotificationsReadUseCase(
     suspend operator fun invoke(): Result<Unit> {
         // Obtiene la cuenta actual de la sesión y retorna un fallo si el usuario no está autenticado.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
         // Marca todas las notificaciones del usuario como leídas en el repositorio utilizando su ID y retorna el resultado.
         return notificationRepository.markAllAsRead(session.id)

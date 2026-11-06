@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.StateFlow
 /**
 Expone el perfil de quien está dentro de la app.
 Lo usan Inicio, Perfil y Dashboard sin consultar Firestore cada vez.
- */
+Devuelve el flujo en caché de UserRepository.currentUser.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class ObserveCurrentUserUseCase(
     // Inyecta el repositorio de usuarios.
     private val userRepository: UserRepository

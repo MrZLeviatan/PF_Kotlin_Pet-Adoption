@@ -4,6 +4,11 @@ import co.edu.uniquindio.petadoptionapp.domain.model.reputation.PointTransaction
 import co.edu.uniquindio.petadoptionapp.domain.repository.ReputationRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso que entrega, por páginas, el historial de puntos de la persona con sesión
+(del más reciente al más antiguo), leído de la colección `pointTransactions` de Firestore.
+Lo usa el ViewModel de la pantalla de reputación / historial de puntos.
+**/
 // Define la clase del caso de uso para obtener el historial de puntos del usuario inyectando el repositorio de reputación y el caso de uso de requerir usuario.
 class GetMyPointHistoryUseCase(
     // Inyecta el repositorio de reputación.

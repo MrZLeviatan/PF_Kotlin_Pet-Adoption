@@ -3,9 +3,11 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.chat
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 
 /**
-Documenta el caso de uso que marca un chat como leído al abrirlo.
-Si no hay mensajes sin leer, no gasta una escritura.
- */
+Caso de uso que marca un chat como leído al abrirlo (pone en 0 los no leídos y guarda `lastReadAt`).
+Si no hay mensajes sin leer, no gasta una escritura en Firestore.
+Lo usa el ViewModel de la pantalla de conversación.
+**/
+// Declara el caso de uso que marca un chat como leído.
 class MarkChatReadUseCase(
     // Inyecta el repositorio de chats.
     private val chatRepository: ChatRepository,

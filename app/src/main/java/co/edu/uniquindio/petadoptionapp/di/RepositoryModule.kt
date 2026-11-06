@@ -36,9 +36,17 @@ import jakarta.inject.Singleton
 Une cada interfaz del dominio con su implementación: Firebase (Auth y Firestore) para los datos,
 Cloudinary para las imágenes, OpenRouter para la IA y el geocodificador del teléfono para direcciones.
 Anota la clase abstracta como un módulo de Dagger e indica a Hilt que se instale en el componente Singleton.
-*/
+Es el puente entre capas: los casos de uso (UseCaseModule) y los ViewModels solo conocen las
+interfaces de domain/repository, y aquí se decide qué clase concreta de data/ las cumple.
+Cambiar de proveedor (por ejemplo, otra base de datos) solo requiere cambiar estas líneas.
+Se usa @Binds (y no @Provides) porque solo se asocia una interfaz con una clase que Hilt ya
+sabe construir gracias a su constructor anotado con @Inject; así no se escribe código de creación.
+**/
+// Declara la clase como módulo de Dagger, fuente de enlaces entre interfaces e implementaciones.
 @Module
+// Instala el módulo en el componente Singleton para que los repositorios vivan lo mismo que la app.
 @InstallIn(SingletonComponent::class)
+// Clase abstracta porque los métodos @Binds solo se declaran; Dagger genera su implementación.
 abstract class RepositoryModule {
 
     // Enlaza Firebase Auth (con la A2F por correo) como repositorio de autenticación.
@@ -47,8 +55,9 @@ abstract class RepositoryModule {
     @Binds @Singleton abstract fun bindImageStorage(impl: CloudinaryImageRepository): ImageStorageRepository
     // Enlaza el geocodificador del teléfono (direcciones <-> puntos del mapa).
     @Binds @Singleton abstract fun bindGeocoding(impl: AndroidGeocodingRepository): GeocodingRepository
-    // Enlaza OpenRouter como IA para analizar publicaciones, y quien lo lanza en segundo plano.
+    // Enlaza OpenRouter como IA para analizar publicaciones (prioridad, resumen, contenido inapropiado y posibles duplicados).
     @Binds @Singleton abstract fun bindAiAnalysis(impl: OpenRouterAiRepository): AiAnalysisRepository
+    // Enlaza el planificador que lanza ese análisis de IA en segundo plano tras publicar, sin bloquear la interfaz.
     @Binds @Singleton abstract fun bindPostAnalysisScheduler(impl: BackgroundPostAnalysisScheduler): PostAnalysisScheduler
     // Enlaza la implementación del repositorio de usuarios con la interfaz UserRepository.
     @Binds @Singleton abstract fun bindUser(impl: FirestoreUserRepository): UserRepository

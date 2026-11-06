@@ -20,7 +20,11 @@ import co.edu.uniquindio.petadoptionapp.R
 
  Cada Font declara su peso: Compose elige el archivo exacto en lugar de
  simular negritas, que se ven deformadas.
- */
+
+ PetTypography se entrega a MaterialTheme en Theme.kt, por lo que cualquier
+ `MaterialTheme.typography.<rol>` usado en pantallas y componentes ya sale con
+ la fuente y el peso de la marca.
+**/
 
 // Define la familia tipográfica privada para los títulos, utilizando archivos físicos para negrita y negrita extra
 private val TitleFontFamily = FontFamily(
@@ -50,15 +54,23 @@ private val Base = Typography()
 val PetTypography = Typography(
 
     // Títulos generales: Gabarito ExtraBold
+    // Display grande: textos de máximo impacto (portadas, números destacados).
     displayLarge = Base.displayLarge.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
+    // Display mediano: variante intermedia de los textos de impacto.
     displayMedium = Base.displayMedium.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
+    // Display pequeño: el menor de los textos de impacto.
     displaySmall = Base.displaySmall.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
 
+    // Encabezado grande: títulos principales de pantalla.
     headlineLarge = Base.headlineLarge.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
+    // Encabezado mediano: títulos de secciones importantes.
     headlineMedium = Base.headlineMedium.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
 
+    // Título grande: barras superiores y títulos de tarjetas destacadas.
     titleLarge = Base.titleLarge.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
+    // Título mediano: títulos de tarjetas y bloques de contenido.
     titleMedium = Base.titleMedium.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
+    // Título pequeño: subtítulos y encabezados de listas.
     titleSmall = Base.titleSmall.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.ExtraBold),
 
     // Título de diálogos (A2F, confirmaciones): Gabarito Bold
@@ -66,7 +78,9 @@ val PetTypography = Typography(
     headlineSmall = Base.headlineSmall.copy(fontFamily = TitleFontFamily, fontWeight = FontWeight.Bold),
 
     // Información (publicaciones, descripciones, campos): Rubik Regular
+    // Cuerpo grande: texto de lectura principal y contenido de los campos.
     bodyLarge = Base.bodyLarge.copy(fontFamily = BodyFontFamily, fontWeight = FontWeight.Normal),
+    // Cuerpo pequeño: textos de apoyo, ayudas y metadatos.
     bodySmall = Base.bodySmall.copy(fontFamily = BodyFontFamily, fontWeight = FontWeight.Normal),
 
     // Mensaje de diálogos y snackbars: Rubik Medium
@@ -75,7 +89,9 @@ val PetTypography = Typography(
 
     // Botones y chips: Rubik Medium
     // Button usa labelLarge; los campos de texto, labelSmall en su etiqueta flotante.
+    // Etiqueta grande: texto de botones y chips.
     labelLarge = Base.labelLarge.copy(fontFamily = BodyFontFamily, fontWeight = FontWeight.Medium),
+    // Etiqueta pequeña: etiquetas flotantes de los campos y textos auxiliares cortos.
     labelSmall = Base.labelSmall.copy(fontFamily = BodyFontFamily, fontWeight = FontWeight.Medium),
 
     // Links: Rubik SemiBold
@@ -83,9 +99,13 @@ val PetTypography = Typography(
     // de Material asociados. Se sube a 14 sp porque los 12 sp por defecto son
     // pequeños para un elemento tocable.
     labelMedium = Base.labelMedium.copy(
+        // Usa Rubik, la familia de lectura e interacción.
         fontFamily = BodyFontFamily,
+        // Peso SemiBold para que el enlace se distinga del texto que lo rodea.
         fontWeight = FontWeight.SemiBold,
+        // Tamaño aumentado a 14 sp para que sea cómodo de tocar y leer.
         fontSize = 14.sp,
+        // Interlineado acorde al nuevo tamaño para no recortar el texto.
         lineHeight = 20.sp,
     ),
 )

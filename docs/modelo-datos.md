@@ -1,6 +1,6 @@
 # Diagrama de datos del dominio
 
-Diagrama lógico basado en los modelos de `domain/model`. Representa las entidades y sus relaciones; no implica que la aplicación ya use una base de datos relacional. Actualmente, los repositorios enlazados por Hilt son implementaciones en memoria.
+Diagrama lógico basado en los modelos de `domain/model`. Representa las entidades y sus relaciones de forma lógica. La persistencia real es **Cloud Firestore** (documentos y subcolecciones, no tablas); la correspondencia entre estas entidades y las colecciones de Firestore está descrita en [data/README.md](../app/src/main/java/co/edu/uniquindio/petadoptionapp/data/README.md).
 
 ```mermaid
 erDiagram

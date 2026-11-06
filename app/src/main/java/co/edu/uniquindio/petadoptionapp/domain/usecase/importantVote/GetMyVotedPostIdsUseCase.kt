@@ -4,8 +4,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.ImportantVoteRepositor
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
- Documenta el caso de uso que indica a cuáles publicaciones de la pantalla ya votó la persona.
- */
+Caso de uso que indica a cuáles publicaciones de la pantalla ya votó la persona.
+Sirve para pintar el estado del botón "Es importante" de toda una página del feed con una sola consulta.
+Lo usan los ViewModels del feed y del detalle de publicación.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetMyVotedPostIdsUseCase(
     // Inyecta el repositorio de votos importantes.
     private val voteRepository: ImportantVoteRepository,

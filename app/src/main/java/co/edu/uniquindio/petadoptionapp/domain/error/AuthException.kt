@@ -1,9 +1,12 @@
 package co.edu.uniquindio.petadoptionapp.domain.error
 
 /**
- Errores del dominio de autenticación: credenciales, contraseña, sesión y A2F.
- La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+Errores del dominio de autenticación: credenciales, contraseña, sesión y A2F.
+Los generan los casos de uso de usecase/auth y la implementación de AuthRepository
+(Firebase Auth); viajan dentro de un Result.failure hasta los ViewModels.
+La UI traduce cada uno a un texto amigable usando strings.xml.
+**/
+// Jerarquía sellada con todos los errores posibles de autenticación.
 sealed class AuthException : Exception() {
 
     // Errores de formato

@@ -8,9 +8,12 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
 /**
-Documenta el caso de uso que gestiona el segundo paso del login mediante la verificación del código de 6 dígitos.
-Define la clase del caso de uso para verificar el código de doble factor.
- */
+Caso de uso que gestiona el segundo paso del login mediante la verificación del código de 6 dígitos (A2F).
+Valida el formato del código, lo verifica con AuthRepository (contra el TwoFactorChallenge guardado)
+y comprueba que la cuenta tenga un perfil válido; si no, limpia la sesión.
+Lo usa el ViewModel de la pantalla de verificación en dos pasos.
+**/
+// Define la clase del caso de uso para verificar el código de doble factor.
 class VerifyTwoFactorCodeUseCase(
     // Inyecta el repositorio de autenticación.
     private val authRepository: AuthRepository,
@@ -20,7 +23,7 @@ class VerifyTwoFactorCodeUseCase(
     // Define la función asíncrona principal que recibe el ID de cuenta y el código, devolviendo un resultado con la cuenta.
     suspend operator fun invoke(accountId: String, code: String): Result<Account> {
 
-        // Válida si el código ingresado cumple con el formato correcto.
+        // Valida si el código ingresado cumple con el formato correcto.
         if (!AuthValidator.isCodeValid(code)) {
             // Retorna un fallo si el formato del código no es válido.
             return Result.failure(AuthException.InvalidCode)
@@ -39,8 +42,10 @@ class VerifyTwoFactorCodeUseCase(
             onFailure = { error ->
                 // Si la cuenta ya estaba eliminada, termina de borrar su identidad; si no, solo cierra sesión.
                 if (error === UserException.AccountDeleted) {
+                    // Borra la identidad de Auth; si no se puede, al menos cierra la sesión.
                     authRepository.deleteAccount().onFailure { authRepository.logout() }
                 } else {
+                    // En cualquier otro error, solo cierra la sesión.
                     authRepository.logout()
                 }
                 // Retorna el error encontrado como un fallo.

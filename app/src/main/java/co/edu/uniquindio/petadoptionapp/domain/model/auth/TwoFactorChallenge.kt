@@ -3,24 +3,29 @@ package co.edu.uniquindio.petadoptionapp.domain.model.auth
 import kotlinx.serialization.Serializable
 
 /**
- Verificación en dos pasos (A2F) de una cuenta.
+Modelo de dominio: verificación en dos pasos (A2F) de una cuenta.
 
- Representa UN código temporal enviado al correo de la persona después de
- que su email y contraseña fueron validados. Guarda lo mínimo para decidir
- si el código que escribe la persona es válido.
+Representa UN código temporal enviado al correo de la persona después de
+que su email y contraseña fueron validados. Guarda lo mínimo para decidir
+si el código que escribe la persona es válido.
 
- Reglas de seguridad que este modelo hace posibles:
- - Se guarda el HASH del código, nunca el código en claro.
- - Expira a los [TTL_MILLIS] (5 minutos).
- - Permite máximo [MAX_ATTEMPTS] intentos fallidos.
- - Es de un solo uso ([consumed]).
+Reglas de seguridad que este modelo hace posibles:
+- Se guarda el HASH del código, nunca el código en claro.
+- Expira a los [TTL_MILLIS] (5 minutos).
+- Permite máximo [MAX_ATTEMPTS] intentos fallidos.
+- Es de un solo uso ([consumed]).
 
- Se guarda en su propia colección (`twoFactorChallenges`), con un documento
- por usuario cuyo id es el mismo `Account.id`. NO va dentro de [User]
- porque es un dato temporal y sensible que el cliente nunca debe leer.
- */
+Se guarda en su propia colección (`twoFactorChallenges`), con un documento
+por usuario cuyo id es el mismo `Account.id`. NO va dentro de [User]
+porque es un dato temporal y sensible que el cliente nunca debe leer.
+Lo usan la implementación de AuthRepository y los casos de uso
+VerifyTwoFactorCode y ResendTwoFactorCode.
+**/
+// Permite convertir el reto a/desde el formato de almacenamiento.
 @Serializable
+// Declara el reto de A2F como clase de datos inmutable.
 data class TwoFactorChallenge(
+    // Id de la cuenta a la que pertenece el reto.
     val userId: String = "",
     // Hash del código de 6 dígitos. Nunca el código real.
     val codeHash: String = "",
@@ -30,7 +35,7 @@ data class TwoFactorChallenge(
     val attempts: Int = 0,
     // Cantidad máxima de intentos permitidos.
     val maxAttempts: Int = MAX_ATTEMPTS,
-    //`true` cuando el código ya se usó con éxito (un solo uso).
+    // `true` cuando el código ya se usó con éxito (un solo uso).
     val consumed: Boolean = false,
     // Momento en que se generó el código, en milisegundos (epoch).
     val createdAt: Long = System.currentTimeMillis()
@@ -38,10 +43,12 @@ data class TwoFactorChallenge(
 
     // ¿Ya pasó el tiempo de vida del código?
     fun hasExpired(now: Long = System.currentTimeMillis()): Boolean =
+        // Compara el instante actual con el de expiración.
         now >= expiresAt
 
     // ¿Se agotaron los intentos? Si es así, el reto queda bloqueado.
     fun hasReachedMaxAttempts(): Boolean =
+        // Compara los intentos fallidos con el máximo permitido.
         attempts >= maxAttempts
 
     /**
@@ -49,6 +56,7 @@ data class TwoFactorChallenge(
      no debe estar vencido, bloqueado ni usado.
      */
     fun canBeUsed(now: Long = System.currentTimeMillis()): Boolean =
+        // Combina las tres condiciones: vigente, con intentos disponibles y sin usar.
         !hasExpired(now) && !hasReachedMaxAttempts() && !consumed
 
     /**

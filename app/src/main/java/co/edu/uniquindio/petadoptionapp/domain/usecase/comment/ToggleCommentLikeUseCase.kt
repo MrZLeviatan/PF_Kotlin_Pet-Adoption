@@ -6,11 +6,13 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.CommentRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
-Documenta el caso de uso que da o quita el "me gusta" a un comentario.
+Caso de uso que da o quita el "me gusta" a un comentario.
 Un solo "me gusta" por persona y comentario: el id del registro es "comentarioId_usuarioId",
 así que tocar de nuevo lo quita en lugar de sumar otro. Como en Facebook, también se puede
 dar "me gusta" al comentario propio (los "me gusta" no dan puntos de reputación).
- */
+Lo usa el ViewModel del detalle de publicación (botón de corazón de cada comentario).
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class ToggleCommentLikeUseCase(
     // Inyecta el repositorio de comentarios.
     private val commentRepository: CommentRepository,
@@ -27,7 +29,9 @@ class ToggleCommentLikeUseCase(
         // El comentario debe existir y seguir activo.
         // Busca el comentario activo por su ID y retorna un fallo si no existe o no está activo.
         commentRepository.findById(postId, commentId)
+            // Solo lo conserva si sigue activo.
             ?.takeIf { it.status == CommentStatus.ACTIVE }
+            // Si no existe o fue eliminado, falla con CommentNotFound.
             ?: return Result.failure(CommentException.CommentNotFound)
 
         // Pendiente: puntos al autor (PointRules) solo cuando el resultado sea `true`.

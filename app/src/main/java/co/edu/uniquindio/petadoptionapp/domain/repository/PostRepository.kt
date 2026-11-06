@@ -9,9 +9,11 @@ import co.edu.uniquindio.petadoptionapp.domain.model.post.Verification
 import co.edu.uniquindio.petadoptionapp.domain.model.post.VerificationStatus
 
 /**
-Contrato de publicaciones guardadas en Firestore.
+Contrato (puerto) del dominio para las publicaciones guardadas en Firestore (colección `posts`).
+Cubre creación, consultas del feed y del autor, conteos para dashboards, moderación y el guardado del análisis de IA.
 Las validaciones de formato y las reglas de permisos viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/post, usecase/ai y otros que leen publicaciones.
+**/
 interface PostRepository {
 
     // Crear y consultar

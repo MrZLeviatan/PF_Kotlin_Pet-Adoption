@@ -4,8 +4,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.CommentRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
-Documenta el caso de uso que devuelve los comentarios de una publicación a los que la persona dio like.
- */
+Caso de uso que devuelve los comentarios de una publicación a los que la persona dio like.
+Sirve para pintar los corazones llenos en la lista de comentarios con una sola consulta.
+Lo usa el ViewModel del detalle de publicación.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetLikedCommentsUseCase(
     // Inyecta el repositorio de comentarios.
     private val commentRepository: CommentRepository,

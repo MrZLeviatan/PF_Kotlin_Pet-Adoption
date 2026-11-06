@@ -5,9 +5,12 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.Account
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- Contrato de identidad y sesión. Define las operaciones de autenticación.
- Las validaciones de formato y reglas de flujo viven en los casos de uso, aquí solo se ejecuta.
- */
+Contrato (puerto) del dominio para la identidad y la sesión. Define las operaciones de autenticación
+(login, A2F, registro, recuperación y cambio de contraseña, borrado de cuenta) y el resultado [LoginResult].
+Las validaciones de formato y reglas de flujo viven en los casos de uso, aquí solo se ejecuta.
+Lo implementa la capa de datos con Firebase Auth (y Firestore para el reto A2F) y lo consumen
+los casos de uso de usecase/auth y usecase/user.
+**/
 interface AuthRepository {
 
     // Sesión

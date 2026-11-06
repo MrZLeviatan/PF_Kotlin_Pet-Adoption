@@ -8,9 +8,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.CommentRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseCase
 
 /**
-Documenta el caso de uso que elimina un comentario (borrado lógico).
+Caso de uso que elimina un comentario (borrado lógico).
 Puede hacerlo su autor o cualquier moderador activo.
- */
+Lo usan el ViewModel del detalle de publicación y las herramientas del moderador.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class DeleteCommentUseCase(
     // Inyecta el repositorio de comentarios.
     private val commentRepository: CommentRepository,
@@ -25,12 +27,15 @@ class DeleteCommentUseCase(
         // Sin sesión abierta no se puede hacer nada.
         // Obtiene la cuenta actual de la sesión y retorna un fallo si el usuario no está autenticado.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
 
         // Busca el comentario; uno ya eliminado se trata como inexistente.
         // Busca el comentario activo por su ID y retorna un fallo si no existe o no está activo.
         val comment = commentRepository.findById(postId, commentId)
+            // Solo lo conserva si sigue activo.
             ?.takeIf { it.status == CommentStatus.ACTIVE }
+            // Si no existe o ya fue eliminado, falla con CommentNotFound.
             ?: return Result.failure(CommentException.CommentNotFound)
 
         // Permiso: el autor, o un moderador activo (se confirma contra su perfil).

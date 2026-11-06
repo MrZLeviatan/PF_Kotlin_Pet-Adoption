@@ -7,9 +7,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
 
 /**
-Documenta el caso de uso que confirma que quien pide la acción es un moderador activo.
+Caso de uso que confirma que quien pide la acción es un moderador activo.
 Lee la sesión actual y consulta su perfil de moderador; nunca confía en un Account recibido por parámetro.
- */
+Caso de uso auxiliar: lo reutilizan los casos de uso de moderación, catálogos y borrado de comentarios.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class RequireModeratorUseCase(
     // Inyecta el repositorio de autenticación para leer la sesión actual.
     private val authRepository: AuthRepository,
@@ -21,6 +23,7 @@ class RequireModeratorUseCase(
 
         // Sin sesión abierta no se puede hacer nada.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
 
         // La sesión debe ser de rol moderador.
@@ -28,8 +31,10 @@ class RequireModeratorUseCase(
 
         // Su perfil debe existir y estar activo.
         val moderator = userRepository.findModeratorById(session.id)
+        // Falla si no existe o está inactivo.
         if (moderator == null || !moderator.canModerate()) return Result.failure(AuthException.NotModerator)
 
+        // Devuelve la cuenta del moderador validado.
         return Result.success(session)
     }
 }

@@ -3,6 +3,10 @@ package co.edu.uniquindio.petadoptionapp.domain.usecase.chat
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso que cuenta los chats con mensajes sin leer de la persona con sesión.
+Alimenta el globito (badge) del ícono de chats en la barra de navegación; lo usa el ViewModel principal.
+**/
 // Define la clase del caso de uso para contar los chats con mensajes sin leer (para el indicador o globito del ícono) inyectando el repositorio de chats y el caso de uso de requerir usuario.
 class CountUnreadChatsUseCase(
     // Inyecta el repositorio de chats.

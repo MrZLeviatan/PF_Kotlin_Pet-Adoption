@@ -43,6 +43,15 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.text.PawTitle
 
+/**
+Pantalla de carga inicial (Splash) de la aplicación.
+Muestra el logo, el lema, una imagen principal y una tarjeta sobre adopción responsable
+mientras, en paralelo, se recupera la sesión guardada en el teléfono.
+No tiene estado de UI propio: usa SplashViewModel.hasSession(), que internamente llama al caso
+de uso RestoreSessionUseCase.
+Cuando terminan la espera mínima y la recuperación de la sesión, emite el evento onFinished(hasSession)
+y AppNavigation decide el destino: el dashboard si hay sesión o el login si no la hay.
+**/
 
 // Tiempo que se muestra la marca antes de navegar (Posteriormente se configura con la demora de conexión a los sistemas)
 private const val SPLASH_DURATION_MS = 2_500L
@@ -60,11 +69,13 @@ private val CardCornerRadius = 24.dp
 Pantalla de carga inicial.
 Mientras se muestra la marca, recupera la sesión guardada; el dibujo vive en [SplashContent].
 No decide a dónde navegar: avisa si hay sesión y AppNavigation resuelve el destino.
- */
+**/
+// Marca la función como un composable que dibuja interfaz.
 @Composable
 fun SplashScreen(
     // Sin valor por defecto: si se olvida pasarlo, el compilador lo señala.
     onFinished: (hasSession: Boolean) -> Unit,
+    // ViewModel inyectado por Hilt que sabe consultar la sesión guardada.
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     // Siempre apunta al callback más reciente sin reiniciar la espera.
@@ -74,8 +85,9 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         // La sesión se recupera mientras corre la espera; se avanza cuando terminan las dos.
         val session = async { viewModel.hasSession() }
-        delay(SPLASH_DURATION_MS)   // Espera 2.5 s
-        // Ejecuta la acción para cambiar de pantalla
+        // Espera 2.5 s para que la marca sea visible antes de navegar.
+        delay(SPLASH_DURATION_MS)
+        // Espera el resultado de la sesión y ejecuta la acción para cambiar de pantalla.
         currentOnFinished(session.await())
     }
     // Dibuja la interfaz de la pantalla
@@ -88,14 +100,21 @@ fun SplashScreen(
 private fun SplashContent() {
     // Coloca todos los elementos de la pantalla ordenados uno debajo del otro en columna
     Column(
+        // Modificadores de la columna principal, aplicados en orden.
         modifier = Modifier
-            .fillMaxSize()              // Ocupa toda la pantalla del teléfono
-            .background(AppTheme.colors.background)     // Pinta el fondo del color principal del tema (oscuro/claro)
-            .systemBarsPadding()        // Evita que el contenido se tape por la barra superior del teléfono
-            .verticalScroll(rememberScrollState())      // Permite hacer scroll vertical si la pantalla es muy pequeña
-            .padding(horizontal = ScreenHorizontalPadding),    // Añade espacio a ambos lados
-        // Centra los elementos horizontal y verticalmente
+            // Ocupa toda la pantalla del teléfono
+            .fillMaxSize()
+            // Pinta el fondo del color principal del tema (oscuro/claro)
+            .background(AppTheme.colors.background)
+            // Evita que el contenido se tape por la barra superior del teléfono
+            .systemBarsPadding()
+            // Permite hacer scroll vertical si la pantalla es muy pequeña
+            .verticalScroll(rememberScrollState())
+            // Añade espacio a ambos lados
+            .padding(horizontal = ScreenHorizontalPadding),
+        // Centra los elementos horizontalmente.
         horizontalAlignment = Alignment.CenterHorizontally,
+        // Centra los elementos verticalmente.
         verticalArrangement = Arrangement.Center,
     ) {
         // Muestra el logo y lemas de la app
@@ -111,15 +130,19 @@ private fun SplashContent() {
             contentDescription = stringResource(R.string.splash_hero_description),
             // Ajusta la imagen recortándola para que llene su espacio sin deformarse
             contentScale = ContentScale.Crop,
+            // Modificadores de tamaño y forma de la imagen.
             modifier = Modifier
-                .fillMaxWidth()     // Ocupa todo el ancho disponible
-                .aspectRatio(HERO_ASPECT_RATIO)     // Mantiene la proporción 16:9 fija
-                .clip(RoundedCornerShape(CardCornerRadius)),    // Redondea la imagen
+                // Ocupa todo el ancho disponible
+                .fillMaxWidth()
+                // Mantiene fija la proporción 13:9 (la altura se calcula a partir del ancho)
+                .aspectRatio(HERO_ASPECT_RATIO)
+                // Redondea las esquinas de la imagen
+                .clip(RoundedCornerShape(CardCornerRadius)),
         )
 
         // Espacio de separación vertical
         Spacer(Modifier.height(40.dp))
-        // Muestra la información mientras la carga se lleva
+        // Muestra la tarjeta informativa mientras se completa la carga
         ResponsibleAdoptionCard()
     }
 }
@@ -131,18 +154,22 @@ private fun BrandHeader() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // Huella al lado del nombre de la app
         PawTitle(
+            // Nombre de la aplicación tomado de strings.xml.
             text = stringResource(R.string.app_name_pantallas),
+            // Tipografía grande para el título de la marca.
             style = MaterialTheme.typography.headlineLarge,
         )
         // Espacio vertical de 12 dp entre el título y el lema
         Spacer(Modifier.height(12.dp))
 
+        // Texto con el lema de la aplicación.
         Text(
             // Muestra el lema o frase de la app
             text = stringResource(R.string.splash_tagline),
-            // Rubik Medium, 14 sp.
-            style = MaterialTheme.typography.bodyMedium,        // Aplica el estilo tipográfico de cuerpo mediano
-            color = AppTheme.colors.textPrimary,                // Pinta el texto con el color principal del tema
+            // Aplica el estilo tipográfico de cuerpo mediano (Rubik Medium, 14 sp).
+            style = MaterialTheme.typography.bodyMedium,
+            // Pinta el texto con el color principal del tema
+            color = AppTheme.colors.textPrimary,
         )
     }
 }
@@ -152,27 +179,40 @@ private fun BrandHeader() {
 private fun ResponsibleAdoptionCard() {
     // Tarjeta sin borde, con el fondo de las etiquetas
     AppCard(
+        // Centra horizontalmente el contenido de la tarjeta.
         horizontalAlignment = Alignment.CenterHorizontally,
+        // Usa el color de fondo de las etiquetas del tema.
         containerColor = AppTheme.colors.surfaceTag,
+        // null: la tarjeta se dibuja sin borde.
         borderColor = null,
     ) {
         // Título de la tarjeta: huella pequeña sobre `surface` (blanco) + texto.
         // El string se guarda normal y se pasa a mayúsculas aquí, para que TalkBack lo lea como una frase.
         PawTitle(
+            // Título del aviso convertido a mayúsculas.
             text = stringResource(R.string.splash_notice_title).uppercase(),
+            // Tipografía pequeña de título.
             style = MaterialTheme.typography.titleSmall,
+            // Tamaño del círculo de la huella.
             pawSize = 28.dp,
+            // Color de fondo del círculo de la huella.
             pawContainerColor = AppTheme.colors.surface,
+            // Separación entre la huella y el texto.
             spacing = 8.dp,
         )
 
+        // Espacio vertical de 10 dp entre el título y el mensaje.
         Spacer(Modifier.height(10.dp))
 
         // Muestra el mensaje de adopción responsable
         Text(
+            // Texto del aviso tomado de strings.xml.
             text = stringResource(R.string.splash_notice_message),
+            // Estilo de cuerpo mediano.
             style = MaterialTheme.typography.bodyMedium,
+            // Centra el texto dentro de la tarjeta.
             textAlign = TextAlign.Center,
+            // Color principal del texto según el tema.
             color = AppTheme.colors.textPrimary,
         )
     }
@@ -184,7 +224,9 @@ private fun ResponsibleAdoptionCard() {
 @Preview(name = "Claro", showBackground = true)
 @Composable
 private fun SplashContentPreview() {
+    // Aplica el tema de la app para que la vista previa use sus colores y tipografías.
     PetAdoptionAppTheme {
+        // Dibuja solo el contenido, sin ViewModel ni temporizador.
         SplashContent()
     }
 }

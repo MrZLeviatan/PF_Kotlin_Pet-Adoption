@@ -8,6 +8,12 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.LoginResult
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.CheckProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
+/**
+Caso de uso que gestiona el inicio de sesión con correo y contraseña.
+Valida el formato del correo, autentica con AuthRepository (Firebase Auth) y, según el resultado,
+pide el código de verificación en dos pasos (A2F) o comprueba que la cuenta tenga un perfil válido.
+Si algo falla, limpia la sesión para no dejarla a medias. Lo usa el ViewModel de la pantalla de login.
+**/
 // Define la clase del caso de uso para gestionar el inicio de sesión.
 class LoginUseCase(
 
@@ -53,8 +59,10 @@ class LoginUseCase(
                     onFailure = { error ->
                         // Si la cuenta ya estaba eliminada, termina de borrar su identidad; si no, solo cierra sesión.
                         if (error === UserException.AccountDeleted) {
+                            // Borra la identidad de Auth; si no se puede, al menos cierra la sesión.
                             authRepository.deleteAccount().onFailure { authRepository.logout() }
                         } else {
+                            // En cualquier otro error, solo cierra la sesión.
                             authRepository.logout()
                         }
                         // Retorna el error encontrado como un fallo.

@@ -6,11 +6,12 @@ import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
 /**
- Dice quién está dentro de la app ahora mismo.
+Caso de uso que dice quién está dentro de la app ahora mismo (cuenta de la sesión de Firebase Auth).
 
- La pantalla de arranque lo usa para decidir qué mostrar:
- null -> Login, USER -> inicio de usuario, MODERATOR -> panel de moderación.
- */
+La pantalla de arranque y la navegación lo usan para decidir qué mostrar:
+null -> Login, USER -> inicio de usuario, MODERATOR -> panel de moderación.
+**/
+// Declara el caso de uso que observa la sesión.
 class ObserveSessionUseCase(
 
     // Recibe por inyección el repositorio de auth para poder consultar los datos de sesión.
@@ -22,5 +23,6 @@ class ObserveSessionUseCase(
      - Qué emite: Un [StateFlow] que contiene la [Account?] activa (o `null` si no hay sesión).
      Encapsula la regla de negocio para que la UI o el ViewModel solo pidan "observar la sesión" de forma limpia y directa, sin tocar el repositorio completo.
      */
+    // Devuelve directamente el flujo de la cuenta actual que expone el repositorio.
     operator fun invoke(): StateFlow<Account?> = authRepository.currentAccount
 }

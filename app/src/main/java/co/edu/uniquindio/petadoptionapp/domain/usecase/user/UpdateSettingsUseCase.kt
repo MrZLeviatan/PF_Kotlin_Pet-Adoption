@@ -7,7 +7,9 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
 /**
 Guarda las preferencias de privacidad (perfil público o privado) y seguridad (A2F).
 Es corto, pero mantiene la regla: el ViewModel solo habla con casos de uso.
- */
+Lo usa el ViewModel de la pantalla de ajustes del usuario.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class UpdateSettingsUseCase(
     // Inyecta el repositorio de usuarios.
     private val userRepository: UserRepository,
@@ -23,8 +25,10 @@ class UpdateSettingsUseCase(
 
         // El perfil debe existir y estar activo.
         val user = userRepository.findById(userId)
+        // Falla si no existe o fue eliminado.
         if (user == null || user.deleted) return Result.failure(UserException.ProfileNotFound)
 
+        // Guarda los nuevos ajustes en Firestore.
         return userRepository.updateSettings(userId, settings)
 
     }

@@ -4,6 +4,10 @@ import co.edu.uniquindio.petadoptionapp.domain.model.adoption.AdoptionRequest
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso que obtiene la solicitud de adopción que la persona con sesión hizo para una publicación (o null).
+Sirve para pintar el estado del botón "Me interesa adoptar" en el detalle de la publicación.
+**/
 // Define la clase del caso de uso para obtener la solicitud de adopción del usuario (para pintar el estado del botón) inyectando el repositorio de chats y el caso de uso de requerir usuario.
 class GetMyAdoptionRequestUseCase(
     // Inyecta el repositorio de chats.

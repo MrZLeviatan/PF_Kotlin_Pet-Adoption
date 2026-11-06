@@ -4,18 +4,22 @@ import kotlinx.serialization.Serializable
 
 
 /**
- Notificación interna de la aplicación, dirigida a una persona.
+Modelo de dominio: notificación interna de la aplicación, dirigida a una persona.
 
- Se guarda en la colección `notifications` y se consulta al abrir la app
- o al entrar al apartado de notificaciones (no usa Firebase Cloud
- Messaging). No almacena el mensaje ya redactado: guarda el [type] y los
- datos necesarios, y la interfaz compone el texto con `strings.xml`.
+Se guarda en la colección `notifications` de Firestore y se consulta al abrir la app
+o al entrar al apartado de notificaciones (no usa Firebase Cloud
+Messaging). No almacena el mensaje ya redactado: guarda el [type] y los
+datos necesarios, y la interfaz compone el texto con `strings.xml`.
 
- Para navegar, la UI usa [chatId] si existe (mensajes y solicitudes de adopción abren el chat);
- si no, [postId] (y [commentId] si existe) y abre el detalle de la publicación relacionada.
- */
+Para navegar, la UI usa [chatId] si existe (mensajes y solicitudes de adopción abren el chat);
+si no, [postId] (y [commentId] si existe) y abre el detalle de la publicación relacionada.
+La crean NotifyUseCase y la leen los casos de uso de usecase/notification.
+**/
+// Permite convertir la notificación a/desde el formato de almacenamiento.
 @Serializable
+// Declara la notificación como clase de datos inmutable.
 data class Notification(
+    // Identificador único de la notificación.
     val id: String = "",
     // Id de la cuenta que recibe la notificación.
     val recipientId: String = "",
@@ -39,12 +43,12 @@ data class Notification(
     val createdAt: Long = System.currentTimeMillis()
 ) {
 
-    // ¿Se puede navegar a una publicación desde esta notificación?
+    // ¿Se puede navegar a un chat o a una publicación desde esta notificación?
     fun hasDestination(): Boolean = !chatId.isNullOrBlank() || !postId.isNullOrBlank()
 
     // Devuelve una copia marcada como leída.
     fun markAsRead(): Notification = copy(read = true)
 
-    //  Devuelve una copia marcada como no leída.
+    // Devuelve una copia marcada como no leída.
     fun markAsUnread(): Notification = copy(read = false)
 }

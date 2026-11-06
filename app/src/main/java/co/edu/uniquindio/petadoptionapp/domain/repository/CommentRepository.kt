@@ -3,9 +3,11 @@ package co.edu.uniquindio.petadoptionapp.domain.repository
 import co.edu.uniquindio.petadoptionapp.domain.model.comment.Comment
 
 /**
-Contrato de comentarios guardados en la subcolección `posts/{postId}/comments` de Firestore.
+Contrato (puerto) del dominio para los comentarios guardados en la subcolección `posts/{postId}/comments` de Firestore
+y sus "me gusta" (colección `commentLikes`).
 Las validaciones, los permisos y la visibilidad de la publicación viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/comment.
+**/
 interface CommentRepository {
 
     // Crear y consultar

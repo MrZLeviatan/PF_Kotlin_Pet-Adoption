@@ -6,9 +6,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
 
 /**
-Documenta el caso de uso que entrega, en vivo, los últimos mensajes de un chat.
-Primero confirma la pertenencia y luego devuelve el flujo.
- */
+Caso de uso que entrega, en vivo, los últimos mensajes de un chat (escucha de Firestore).
+Primero confirma la pertenencia y luego devuelve el flujo, filtrado según el borrado "solo para mí".
+Lo usa el ViewModel de la pantalla de conversación.
+**/
+// Declara el caso de uso que observa los mensajes de un chat.
 class ObserveMessagesUseCase(
     // Inyecta el repositorio de chats.
     private val chatRepository: ChatRepository,
@@ -24,7 +26,9 @@ class ObserveMessagesUseCase(
         val membership = requireChatMember(chatId).getOrElse { return Result.failure(it) }
         // Si eliminó el chat para sí, solo ve los mensajes que llegaron después (en Firestore: where sentAt > desde).
         val since = membership.chat.visibleSince(membership.account.id)
+        // Devuelve con éxito el flujo de mensajes.
         return Result.success(
+            // Observa los últimos mensajes y en cada emisión descarta los anteriores a [since].
             chatRepository.observeMessages(chatId, LIVE_SIZE).map { list -> list.filter { it.sentAt > since } }
         )
     }

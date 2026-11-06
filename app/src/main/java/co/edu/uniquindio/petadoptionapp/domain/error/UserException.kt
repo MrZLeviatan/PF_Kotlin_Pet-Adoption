@@ -1,10 +1,13 @@
 package co.edu.uniquindio.petadoptionapp.domain.error
 
 /**
- Errores del dominio de perfil de usuario: datos personales,
- duplicados y existencia del perfil.
- La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+Errores del dominio de perfil de usuario: datos personales,
+duplicados y existencia del perfil.
+La UI traduce cada uno a un texto amigable usando strings.xml.
+Los lanzan UserValidator y los casos de uso de usecase/user y usecase/auth
+(registro, edición de perfil, borrado de cuenta y verificación del perfil).
+**/
+// Jerarquía sellada con todos los errores posibles del perfil de usuario.
 sealed class UserException : Exception() {
 
     // Errores de formato

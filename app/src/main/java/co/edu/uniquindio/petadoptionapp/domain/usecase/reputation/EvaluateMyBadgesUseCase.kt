@@ -14,12 +14,14 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.notification.NotifyUseCas
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
-Documenta el caso de uso que revisa si la persona con sesión cumple los requisitos de alguna insignia que aún no tiene.
+Caso de uso que revisa si la persona con sesión cumple los requisitos de alguna insignia que aún no tiene.
 Se llama al abrir la app y después de sus propias acciones (publicar, comentar).
 Solo consulta las estadísticas de los tipos de requisito que le faltan, para gastar pocas lecturas.
 Cada persona evalúa su propio perfil, así solo escribe su propio documento.
 Al desbloquear una insignia avisa a la propia persona (mejor esfuerzo: un fallo ahí no deshace el desbloqueo).
- */
+Lo usan el ViewModel principal (al abrir la app) y los flujos de publicar y comentar.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class EvaluateMyBadgesUseCase(
     // Inyecta el repositorio de reputación.
     private val reputationRepository: ReputationRepository,
@@ -40,38 +42,50 @@ class EvaluateMyBadgesUseCase(
 
         // 2. El perfil debe existir y estar activo (de él salen los puntos y las insignias ganadas).
         val user = userRepository.findById(session.id)?.takeIf { !it.deleted }
+            // Si no hay perfil válido, falla con ProfileNotFound.
             ?: return Result.failure(UserException.ProfileNotFound)
 
         // 3. Carga el catálogo una sola vez por sesión.
         if (reputationRepository.badges.value.isEmpty())
+            // Si aún no está cargado, lo lee de Firestore; si falla, devuelve el error.
             reputationRepository.refreshBadges().getOrElse { return Result.failure(it) }
 
         // 4. Solo se revisan las insignias que aún no tiene.
         val locked = reputationRepository.badges.value.filter { !user.reputation.hasBadge(it.id) }
+        // Si ya tiene todas, no hay nada que evaluar.
         if (locked.isEmpty()) return Result.success(emptyList())
 
         // 5. Calcula cada estadística una sola vez, aunque varias insignias la usen.
         val stats = mutableMapOf<BadgeRequirementType, Int>()
+        // Acumula las insignias desbloqueadas en esta evaluación.
         val unlocked = mutableListOf<Badge>()
 
+        // Recorre cada insignia pendiente.
         for (badge in locked) {
             // Obtiene la estadística cacheada o la calcula y la guarda.
             val progress = stats[badge.requirementType]
+                // Si no estaba en caché, la calcula.
                 ?: progressOf(badge.requirementType, session.id, user.reputation.points)
+                    // Guarda el valor calculado para reutilizarlo con otras insignias.
                     ?.also { stats[badge.requirementType] = it }
-                ?: continue   // si no se pudo medir, se salta esta insignia
+                // Si no se pudo medir, se salta esta insignia.
+                ?: continue
 
             // 6. Si cumple el requisito, la desbloquea (el repositorio evita duplicados).
             if (progress >= badge.requirementValue) {
+                // Pide desbloquear la insignia en una transacción.
                 reputationRepository.unlockBadge(session.id, badge.id)
+                    // Si la operación salió bien, revisa si fue un desbloqueo nuevo.
                     .onSuccess { newlyUnlocked ->
+                        // Solo actúa si no la tenía antes.
                         if (newlyUnlocked) {
+                            // La agrega a la lista de resultados.
                             unlocked += badge
                             // El id de la insignia va en `extra` para que la UI muestre su nombre.
                             notify(session.id, NotificationType.BADGE_UNLOCKED, extra = badge.id)
                         }
                     }
-            } // <- esta llave faltaba
+            }
         }
 
         // Retorna las insignias desbloqueadas en esta evaluación.
@@ -83,23 +97,29 @@ class EvaluateMyBadgesUseCase(
 
         // Creadas: en proceso más finalizadas (las eliminadas no cuentan).
         BadgeRequirementType.POSTS_CREATED ->
+            // Suma los conteos de ambos estados.
             postRepository.countByAuthor(userId, PostStatus.IN_PROGRESS) +
                     postRepository.countByAuthor(userId, PostStatus.FINISHED)
 
         // Verificadas: se cuentan sobre las publicaciones, no sobre el registro de puntos (que es de mejor esfuerzo).
         BadgeRequirementType.POSTS_VERIFIED ->
+            // Suma las verificadas en proceso y las verificadas finalizadas.
             postRepository.countByAuthor(userId, PostStatus.IN_PROGRESS, VerificationStatus.VERIFIED) +
                     postRepository.countByAuthor(userId, PostStatus.FINISHED, VerificationStatus.VERIFIED)
 
         // Resueltas: las publicaciones finalizadas.
         BadgeRequirementType.POSTS_RESOLVED ->
+            // Cuenta las finalizadas del autor.
             postRepository.countByAuthor(userId, PostStatus.FINISHED)
 
         // Comentarios y votos: salen del registro de puntos (los comentarios cuentan hasta el tope diario).
         BadgeRequirementType.COMMENTS_WRITTEN ->
+            // Cuenta las transacciones por comentario (null si la consulta falla).
             reputationRepository.countByReason(userId, PointReason.COMMENT_CREATED).getOrNull()
 
+        // Votos "Es importante" recibidos en publicaciones propias.
         BadgeRequirementType.VOTES_RECEIVED ->
+            // Cuenta las transacciones por voto recibido (null si la consulta falla).
             reputationRepository.countByReason(userId, PointReason.IMPORTANT_RECEIVED).getOrNull()
 
         // Total de puntos acumulados del usuario.

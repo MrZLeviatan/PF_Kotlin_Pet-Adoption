@@ -4,17 +4,21 @@ import co.edu.uniquindio.petadoptionapp.domain.error.PostException
 import co.edu.uniquindio.petadoptionapp.domain.model.post.Post
 
 /**
-Documenta el objeto que contiene las reglas de formato de las publicaciones, sin red ni dependencias de Android.
+Validador del dominio que contiene las reglas de formato de las publicaciones, sin red ni dependencias de Android.
 Define un objeto singleton que agrupa las validaciones de título, descripción, fotos, edad y motivo de rechazo.
- */
+Lo usan CreatePostUseCase, UpdatePostUseCase y RejectPostUseCase.
+**/
+// Objeto único (singleton) con las reglas de formato de las publicaciones.
 object PostValidator {
 
     // Define el tamaño mínimo y máximo del título.
     const val MIN_TITLE_LENGTH = 5
+    // Tamaño máximo del título.
     const val MAX_TITLE_LENGTH = 80
 
     // Define el tamaño mínimo y máximo de la descripción.
     const val MIN_DESCRIPTION_LENGTH = 20
+    // Tamaño máximo de la descripción.
     const val MAX_DESCRIPTION_LENGTH = 1000
 
     // Define la cantidad máxima de fotos (cuida la cuota gratuita de Cloudinary).
@@ -31,14 +35,17 @@ object PostValidator {
 
     // Define una función pública que verifica que el título esté dentro del rango de tamaño.
     fun isTitleValid(title: String): Boolean =
+        // Quita espacios y comprueba el rango.
         title.trim().length in MIN_TITLE_LENGTH..MAX_TITLE_LENGTH
 
     // Define una función pública que verifica que la descripción esté dentro del rango de tamaño.
     fun isDescriptionValid(description: String): Boolean =
+        // Quita espacios y comprueba el rango.
         description.trim().length in MIN_DESCRIPTION_LENGTH..MAX_DESCRIPTION_LENGTH
 
     // Define una función pública que verifica el motivo escrito por el moderador al rechazar.
     fun isRejectionReasonValid(reason: String): Boolean =
+        // Quita espacios y exige el mínimo de caracteres.
         reason.trim().length >= MIN_REJECTION_REASON_LENGTH
 
     // Define una función pública que revisa todas las reglas de una publicación y devuelve el primer error, o `null` si todo está bien.

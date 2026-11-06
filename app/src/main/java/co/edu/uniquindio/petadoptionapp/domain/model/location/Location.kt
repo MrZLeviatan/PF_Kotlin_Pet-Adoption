@@ -3,22 +3,30 @@ package co.edu.uniquindio.petadoptionapp.domain.model.location
 import kotlinx.serialization.Serializable
 
 /**
- Ubicación geográfica reutilizable.
+Modelo de dominio: ubicación geográfica reutilizable.
 
- Se usa tanto en el perfil de [User] (su dirección) como en las
- publicaciones y reportes (dónde está o se perdió la mascota). Las
- coordenadas se obtienen desde el mapa (MapLibre) y se
- guardan junto con los datos legibles (ciudad, país, dirección).
+Se usa tanto en el perfil de [User] (su dirección) como en las
+publicaciones y reportes (dónde está o se perdió la mascota). Las
+coordenadas se obtienen desde el mapa (MapLibre) y se
+guardan junto con los datos legibles (ciudad, país, dirección).
 
- Latitud y longitud son nulas mientras no se haya elegido un punto en el
- mapa. Para saber si la ubicación ya es utilizable, use [hasCoordinates].
- */
+Latitud y longitud son nulas mientras no se haya elegido un punto en el
+mapa. Para saber si la ubicación ya es utilizable, use [hasCoordinates].
+La usan los validadores, los casos de uso de location y post, y los filtros de cercanía.
+**/
+// Permite convertir la ubicación a/desde el formato de almacenamiento.
 @Serializable
+// Declara la ubicación como clase de datos inmutable.
 data class Location(
+    // Latitud en grados; nula si aún no se eligió un punto.
     val latitude: Double? = null,
+    // Longitud en grados; nula si aún no se eligió un punto.
     val longitude: Double? = null,
+    // Ciudad legible.
     val city: String = "",
+    // País legible.
     val country: String = "",
+    // Dirección legible (calle, barrio, etc.).
     val address: String = ""
 ) {
 
@@ -27,6 +35,7 @@ data class Location(
      Las publicaciones deben validar esto antes de guardarse.
      */
     fun hasCoordinates(): Boolean =
+        // Exige ambas coordenadas presentes y dentro de los rangos geográficos válidos.
         latitude != null && longitude != null &&
                 latitude in -90.0..90.0 &&
                 longitude in -180.0..180.0

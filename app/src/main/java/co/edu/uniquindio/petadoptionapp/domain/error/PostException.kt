@@ -3,7 +3,10 @@ package co.edu.uniquindio.petadoptionapp.domain.error
 /**
 Errores del dominio de publicaciones: formato, permisos y estado.
 La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+Los lanzan PostValidator y los casos de uso de usecase/post (crear, editar, moderar y finalizar
+publicaciones); viajan dentro de un Result.failure hasta los ViewModels.
+**/
+// Jerarquía sellada con todos los errores posibles de publicaciones.
 sealed class PostException : Exception() {
 
     // Errores de formato

@@ -5,17 +5,19 @@ import co.edu.uniquindio.petadoptionapp.domain.model.post.Category
 import kotlinx.coroutines.flow.StateFlow
 
 /**
-Contrato de los catálogos (categorías y tipos de animal) guardados en Firestore.
+Contrato (puerto) del dominio para los catálogos (categorías y tipos de animal) guardados en Firestore.
 Las validaciones y los permisos de moderador viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/catalog, la creación
+de publicaciones y la IA (para resolver nombres de catálogo).
+**/
 interface CatalogRepository {
 
-    // Catálogos en memoria
+    // Catálogos en caché (copia local de lo leído en Firestore)
 
     /**
     Flujo reactivo de todas las categorías (activas e inactivas).
 
-    - Qué emite: Un [StateFlow] con la lista cargada en memoria.
+    - Qué emite: Un [StateFlow] con la lista leída de Firestore y guardada en caché.
     Los catálogos son pequeños y casi no cambian: se leen una vez y se reutilizan para ahorrar lecturas de la cuota gratuita.
      */
     val categories: StateFlow<List<Category>>
@@ -23,7 +25,7 @@ interface CatalogRepository {
     /**
     Flujo reactivo de todos los tipos de animal (activos e inactivos).
 
-    - Qué emite: Un [StateFlow] con la lista cargada en memoria.
+    - Qué emite: Un [StateFlow] con la lista leída de Firestore y guardada en caché.
      */
     val animalTypes: StateFlow<List<AnimalType>>
 

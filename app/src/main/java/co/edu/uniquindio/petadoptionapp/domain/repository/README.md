@@ -132,6 +132,47 @@ Trabaja con `Badge`, `PointTransaction`, `PointReason` y `AwardResult`. Los caso
 
 <br>
 
+### `AiAnalysisRepository` y `PostAnalysisScheduler`
+
+- `AiAnalysisRepository.analyze(input)`: envía una publicación (con sus candidatas a duplicado) a un modelo de IA y devuelve un `AiPostAnalysis`: revisión (`AiReview`), prioridad sugerida y su motivo.
+- `PostAnalysisScheduler.schedule(postId)`: pide ese análisis en segundo plano, sin hacer esperar a quien publica.
+
+Errores: `AiException.NotConfigured` (falta la llave) y `AiException.AnalysisFailed`.
+
+<br>
+
+### `ImageStorageRepository`
+
+Sube una imagen local y devuelve su URL pública. Es la frontera entre la app y el almacenamiento de imágenes (Cloudinary); los modelos solo guardan URL.
+
+<br>
+
+### `GeocodingRepository`
+
+Convierte texto en direcciones con coordenadas y coordenadas en direcciones. No tiene estado y no requiere llaves.
+
+<br>
+
+## Implementaciones actuales
+
+| Contrato | Implementación (`data/repository/…`) | Tecnología |
+|---|---|---|
+| `AuthRepository` | `firebase/FirebaseAuthRepository` | Firebase Authentication + Firestore (`twoFactorChallenges`) + EmailJS |
+| `UserRepository` | `firebase/FirestoreUserRepository` | Firestore (`users`, `moderators`, índices `emails`/`userNames`/`phones`) |
+| `PostRepository` | `firebase/FirestorePostRepository` | Firestore (`posts`) |
+| `CatalogRepository` | `firebase/FirestoreCatalogRepository` | Firestore (`categories`, `animalTypes`) en vivo |
+| `CommentRepository` | `firebase/FirestoreCommentRepository` | Firestore (`posts/{id}/comments`, `commentLikes`) |
+| `ImportantVoteRepository` | `firebase/FirestoreImportantVoteRepository` | Firestore (`importantVotes`) |
+| `NotificationRepository` | `firebase/FirestoreNotificationRepository` | Firestore (`notifications`) |
+| `ChatRepository` | `firebase/FirestoreChatRepository` | Firestore (`chats`, `chats/{id}/messages`, `adoptionRequests`) |
+| `ReputationRepository` | `firebase/FirestoreReputationRepository` | Firestore (`pointTransactions`, `badges`, `users.reputation`) |
+| `ImageStorageRepository` | `remote/CloudinaryImageRepository` | Cloudinary (subida sin firma) |
+| `AiAnalysisRepository` | `remote/OpenRouterAiRepository` | OpenRouter (API compatible con OpenAI) |
+| `PostAnalysisScheduler` | `remote/BackgroundPostAnalysisScheduler` | Corrutinas en un alcance de la app |
+| `GeocodingRepository` | `device/AndroidGeocodingRepository` | `android.location.Geocoder` |
+
+<br>
+
 ## Conexión con las capas
 
 ```text

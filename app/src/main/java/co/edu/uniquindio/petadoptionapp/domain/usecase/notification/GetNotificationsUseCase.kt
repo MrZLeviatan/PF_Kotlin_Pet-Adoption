@@ -6,8 +6,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.NotificationRepository
 
 /**
-Documenta el caso de uso que entrega una página de las notificaciones de la persona con sesión.
- */
+Caso de uso que entrega una página de las notificaciones de la persona con sesión.
+Las lee de Firestore por páginas, de la más reciente a la más antigua.
+Lo usa el ViewModel de la pantalla de notificaciones.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetNotificationsUseCase(
     // Inyecta el repositorio de notificaciones.
     private val notificationRepository: NotificationRepository,
@@ -23,6 +26,7 @@ class GetNotificationsUseCase(
         // Las notificaciones son de quien tiene la sesión; nunca se recibe el id por parámetro.
         // Obtiene la cuenta actual de la sesión y retorna un fallo si el usuario no está autenticado.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
 
         // Solicita al repositorio las notificaciones destinadas al usuario utilizando su ID, el tamaño de página y el paginador, retornando el resultado.

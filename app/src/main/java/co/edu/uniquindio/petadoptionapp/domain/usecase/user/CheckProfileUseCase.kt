@@ -8,10 +8,12 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
 
 /**
 Verifica que una cuenta autenticada tenga un perfil válido en la base de datos.
-
 - Qué recibe ([account]): La cuenta que acaba de iniciar sesión.
 - Qué devuelve: Éxito si el perfil existe (y el moderador está activo), o el error correspondiente.
- */
+Caso de uso auxiliar: lo usan LoginUseCase, VerifyTwoFactorCodeUseCase y RestoreSessionUseCase
+antes de dar por buena una sesión.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class CheckProfileUseCase(
     // Inyecta el repositorio de usuarios.
     private val userRepository: UserRepository
@@ -29,6 +31,7 @@ class CheckProfileUseCase(
                 when {
                     // Retorna un fallo si no se encuentra el perfil del moderador.
                     moderator == null -> Result.failure(UserException.ProfileNotFound)
+                    // Retorna un fallo si el perfil no corresponde a la cuenta (id o rol distintos).
                     moderator.account.id != account.id ||
                             moderator.account.role != account.role -> Result.failure(UserException.ProfileMismatch)
                     // Retorna un fallo si el moderador no tiene permisos activos para moderar.
@@ -42,10 +45,11 @@ class CheckProfileUseCase(
             UserRole.USER -> {
                 // Busca el perfil del usuario por ID.
                 val user = userRepository.findById(account.id)
+                // Evalúa las condiciones de validez del usuario.
                 when {
-                    // Retorna un fallo si no existe o si la cuenta ya fue eliminada (anonimizada).
+                    // Retorna un fallo si no se encuentra el perfil del usuario.
                     user == null -> Result.failure(UserException.ProfileNotFound)
-                    // Retorna un fallo si la cuenta no coincide con la del perfil.
+                    // Retorna un fallo si la cuenta ya fue eliminada (anonimizada).
                     user.deleted -> Result.failure(UserException.AccountDeleted)
                     // Retorna un fallo si la cuenta no coincide con la del perfil.
                     user.account.id != account.id ||

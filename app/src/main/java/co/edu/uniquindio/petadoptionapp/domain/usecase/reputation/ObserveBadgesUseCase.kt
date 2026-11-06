@@ -4,6 +4,10 @@ import co.edu.uniquindio.petadoptionapp.domain.model.reputation.Badge
 import co.edu.uniquindio.petadoptionapp.domain.repository.ReputationRepository
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+Caso de uso que expone, como flujo reactivo, el catálogo de insignias en caché de ReputationRepository.
+Lo usa el ViewModel de la pantalla de insignias / reputación para mostrar todas las insignias disponibles.
+**/
 // Define la clase del caso de uso para observar el catálogo de insignias inyectando el repositorio de reputación.
 class ObserveBadgesUseCase(
     // Inyecta el repositorio de reputación.

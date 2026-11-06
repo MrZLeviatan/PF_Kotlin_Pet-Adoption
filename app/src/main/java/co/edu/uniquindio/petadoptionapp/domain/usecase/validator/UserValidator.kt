@@ -1,9 +1,11 @@
 package co.edu.uniquindio.petadoptionapp.domain.usecase.validator
 
 /**
-Documenta el objeto que contiene las reglas de formato de los datos de perfil, sin red ni dependencias de Android.
+Validador del dominio que contiene las reglas de formato de los datos de perfil, sin red ni dependencias de Android.
 Define un objeto singleton que agrupa las funciones de validación de nombre, alias y teléfono.
- */
+Lo usan RegisterUseCase y UpdateProfileUseCase.
+**/
+// Objeto único (singleton) con las reglas de formato del perfil.
 object UserValidator {
 
     // Define el tamaño mínimo que debe tener el nombre real.
@@ -26,5 +28,6 @@ object UserValidator {
 
     // Define una función pública que recibe un texto y verifica que contenga solo dígitos, dentro del rango de tamaño permitido.
     fun isPhoneValid(phone: String): Boolean =
+        // Quita espacios, comprueba el rango de longitud y que todos los caracteres sean dígitos.
         phone.trim().let { p -> p.length in MIN_PHONE_LENGTH..MAX_PHONE_LENGTH && p.all { it.isDigit() } }
 }

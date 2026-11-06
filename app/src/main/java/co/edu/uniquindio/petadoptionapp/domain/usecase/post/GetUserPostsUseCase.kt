@@ -17,33 +17,47 @@ si el perfil es privado devuelve una lista vacía, sin revelar cuántas publicac
 Quien consulta se toma de la sesión, nunca de un parámetro.
 Un moderador ve todas las que siguen en proceso, aunque el perfil sea privado: verificadas, en revisión
 y sin moderador (no las rechazadas, finalizadas ni eliminadas).
- */
+Lo usa el ViewModel de la pantalla de perfil ajeno.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetUserPostsUseCase(
+    // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
+    // Inyecta el repositorio de usuarios para leer la privacidad del perfil.
     private val userRepository: UserRepository,
+    // Inyecta el repositorio de autenticación para saber quién consulta.
     private val authRepository: AuthRepository,
 ) {
+    // Función principal: recibe el id del dueño del perfil y devuelve sus publicaciones visibles.
     suspend operator fun invoke(userId: String): Result<List<Post>> {
 
         // 1. Sin sesión abierta no se puede consultar.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
 
         // 2. El perfil debe existir y no estar eliminado.
         val user = userRepository.findById(userId)?.takeIf { !it.deleted }
+            // Si no existe o fue eliminado, falla con UserNotFound.
             ?: return Result.failure(UserException.UserNotFound)
 
         // 3. Privacidad: el dueño siempre ve las suyas; los demás, solo si el perfil lo permite.
+        // Un moderador ve todas las que siguen en proceso, sin importar la privacidad.
         if (session.role == UserRole.MODERATOR) {
+            // Consulta las publicaciones del autor y las filtra.
             return postRepository.getByAuthor(userId).map { posts ->
+                // Conserva las en proceso que no fueron rechazadas.
                 posts.filter { it.status == PostStatus.IN_PROGRESS && it.verification.status != VerificationStatus.REJECTED }
             }
         }
+        // Comprueba si quien consulta es el dueño del perfil.
         val isOwner = session.id == userId
+        // Si la privacidad no lo permite, devuelve una lista vacía (sin revelar cuántas hay).
         if (!user.settings.canViewPosts(isOwner)) return Result.success(emptyList())
 
         // 4. Los demás solo ven lo que también saldría en el feed (verificadas y en proceso).
         return postRepository.getByAuthor(userId)
+            // El dueño ve todas; los demás, solo las visibles en el feed público.
             .map { posts -> if (isOwner) posts else posts.filter { it.showsInPublicFeed() } }
     }
 }

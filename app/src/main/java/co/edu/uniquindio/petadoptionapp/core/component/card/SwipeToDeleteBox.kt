@@ -30,58 +30,89 @@ import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 /**
- Deslizar para borrar (como en Instagram): al arrastrar hacia la izquierda aparece un fondo rojo con la papelera,
- y al completar el deslizamiento se llama [onDelete]. Hacia la derecha no hace nada.
- Quien lo usa quita el elemento de su lista; si el borrado falla, lo vuelve a poner.
- Como deslizar no sirve con TalkBack, la misma acción queda como acción personalizada ([deleteDescription]).
- */
+Contenedor que envuelve una tarjeta de una lista (notificaciones, chats, publicaciones) para
+permitir borrarla con un gesto de deslizamiento. No dibuja la tarjeta: solo añade el gesto,
+el fondo rojo de borrado y la acción accesible equivalente.
+**/
+
+/**
+Deslizar para borrar (como en Instagram): al arrastrar hacia la izquierda aparece un fondo rojo con la papelera,
+y al completar el deslizamiento se llama [onDelete]. Hacia la derecha no hace nada.
+Quien lo usa quita el elemento de su lista; si el borrado falla, lo vuelve a poner.
+Como deslizar no sirve con TalkBack, la misma acción queda como acción personalizada ([deleteDescription]).
+**/
 @Composable
 fun SwipeToDeleteBox(
+    // Acción que se ejecuta al completar el deslizamiento (o desde la acción accesible).
     onDelete: () -> Unit,
+    // Texto de la acción de borrado ("Eliminar") para TalkBack y para el icono de la papelera.
     deleteDescription: String,
+    // Modificador opcional para personalizar el contenedor desde afuera.
     modifier: Modifier = Modifier,
     // Misma forma que la tarjeta que envuelve, para que el rojo no se salga de sus esquinas.
     shape: Shape = RoundedCornerShape(20.dp),
+    // Tarjeta o contenido que se podrá deslizar.
     content: @Composable RowScope.() -> Unit,
 ) {
+    // Estado del deslizamiento: guarda la posición y si el elemento fue descartado.
     val state = rememberSwipeToDismissBoxState()
+    // Mantiene siempre la versión más reciente de onDelete sin reiniciar el LaunchedEffect.
     val currentOnDelete by rememberUpdatedState(onDelete)
 
-    // Deslizamiento completo hacia la izquierda: se borra.
+    // Deslizamiento completo hacia la izquierda: se borra. Se relanza cada vez que cambia el valor del estado.
     LaunchedEffect(state.currentValue) {
+        // Solo borra cuando el elemento quedó descartado de derecha a izquierda.
         if (state.currentValue == SwipeToDismissBoxValue.EndToStart) currentOnDelete()
     }
 
+    // Componente de Material 3 que implementa el gesto de deslizar para descartar.
     SwipeToDismissBox(
+        // Conecta el estado del deslizamiento.
         state = state,
+        // Agrega la acción personalizada "Eliminar" para usuarios de TalkBack.
         modifier = modifier.semantics {
+            // La acción ejecuta el borrado y devuelve true para indicar que se manejó.
             customActions = listOf(CustomAccessibilityAction(deleteDescription) { currentOnDelete(); true })
         },
+        // Desactiva el deslizamiento hacia la derecha.
         enableDismissFromStartToEnd = false,
+        // Fondo que se revela detrás de la tarjeta al deslizar.
         backgroundContent = {
             // Solo se pinta mientras se arrastra hacia la izquierda.
             if (state.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                // Caja roja que ocupa todo el espacio detrás de la tarjeta.
                 Box(
                     modifier = Modifier
+                        // Llena todo el área del contenedor.
                         .fillMaxSize()
+                        // Recorta con la forma de la tarjeta para no sobresalir de sus esquinas.
                         .clip(shape)
+                        // Fondo con el color de error del tema.
                         .background(AppTheme.colors.stateError)
+                        // Separa la papelera del borde derecho.
                         .padding(end = 24.dp),
+                    // Alinea la papelera al centro del extremo derecho.
                     contentAlignment = Alignment.CenterEnd,
                 ) {
+                    // Icono de papelera con color de contraste sobre el rojo.
                     Icon(Icons.Outlined.Delete, contentDescription = deleteDescription, tint = AppTheme.colors.onStateError)
                 }
             }
         },
+        // Contenido deslizable proporcionado por quien usa el componente.
         content = content,
     )
 }
 
+// Vista previa en Android Studio del contenedor con una tarjeta de ejemplo.
 @Preview(showBackground = true)
 @Composable
 private fun SwipeToDeleteBoxPreview() {
+    // Envuelve el componente en el tema para que use los colores y tipografías reales.
     PetAdoptionAppTheme {
+        // Contenedor de ejemplo sin acción real de borrado.
         SwipeToDeleteBox(onDelete = {}, deleteDescription = "Eliminar") {
+            // Tarjeta de ejemplo con una instrucción para el usuario.
             AppCard { Text("Desliza hacia la izquierda") }
         }
     }

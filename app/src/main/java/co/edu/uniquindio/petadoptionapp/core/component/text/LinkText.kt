@@ -18,10 +18,12 @@ import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
 /**
- Enlace de texto reutilizable
- Centraliza la regla visual de los links: Rubik SemiBold, subrayado y color
- del tema. Las pantallas no deciden cómo se ve un link, solo qué dice y qué hace.
- */
+Enlace de texto reutilizable, usado en pantallas como Login o Registro ("¿Olvidaste tu contraseña?",
+"Inicia sesión", etc.).
+Centraliza la regla visual de los links: Rubik SemiBold, subrayado y color
+del tema. Las pantallas no deciden cómo se ve un link, solo qué dice y qué hace.
+El texto se envuelve en un área tocable de al menos 48 x 48 dp para cumplir las pautas de accesibilidad.
+**/
 @Composable
 fun LinkText(
     // Parámetro obligatorio: el texto que mostrará el enlace
@@ -32,15 +34,19 @@ fun LinkText(
     modifier: Modifier = Modifier,
 ) {
 
+    // Contenedor que define el área tocable del enlace.
     Box(
         modifier = modifier
             // 48 dp: mínimo recomendado de accesibilidad para elementos tocables.
             .heightIn(min = 48.dp)
+            // Ancho mínimo de 48 dp por la misma razón.
             .widthIn(min = 48.dp)
             // Role.Button: TalkBack lo anuncia como acción tocable.
             .clickable(role = Role.Button, onClick = onClick),
+        // Centra el texto dentro del área tocable.
         contentAlignment = Alignment.Center,
     ) {
+        // Texto visible del enlace.
         Text(
             // Asigna el texto que se recibió por parámetro
             text = text,
@@ -50,15 +56,19 @@ fun LinkText(
                 // El color solo no basta para identificar un link (daltonismo).
                 textDecoration = TextDecoration.Underline,
             ),
+            // Color de enlace definido por el tema.
             color = AppTheme.colors.textLink,
         )
     }
 }
 
+// Vista previa en Android Studio de un enlace típico de la pantalla de Login.
 @Preview(showBackground = true)
 @Composable
 private fun LinkTextPreview() {
+    // Aplica el tema de la app.
     PetAdoptionAppTheme {
+        // Enlace de ejemplo.
         LinkText(text = "¿Olvidaste tu contraseña?", onClick = {})
     }
 }

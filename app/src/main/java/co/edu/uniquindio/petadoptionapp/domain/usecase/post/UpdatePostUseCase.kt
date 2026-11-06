@@ -14,11 +14,13 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.CheckPostCatalogU
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.PostValidator
 
 /**
-Documenta el caso de uso que edita una publicación propia.
+Caso de uso que edita una publicación propia.
 Solo se edita mientras está en revisión (sin verificar); al editar, el resumen de IA se reinicia.
 Una verificada no se edita (así nadie publica algo aprobado y lo cambia después): solo se finaliza o se elimina.
 Una rechazada tampoco: el moderador ya dio su motivo y el autor solo puede eliminarla.
- */
+Lo usa el ViewModel de la pantalla de editar publicación.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class UpdatePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository,
@@ -34,6 +36,7 @@ class UpdatePostUseCase(
 
         // Busca la publicación original; si no existe, avisa.
         val current = postRepository.findById(edited.id)
+            // Si no existe, falla con PostNotFound.
             ?: return Result.failure(PostException.PostNotFound)
 
         // Solo el autor puede editarla.
@@ -56,12 +59,18 @@ class UpdatePostUseCase(
 
         // Reinicia la verificación (y el resumen de IA) y guarda solo el contenido.
         return postRepository.updateContent(
+            // Copia lo editado con los campos que controla el sistema.
             edited.copy(
+                // URLs públicas de las fotos.
                 photoUrls = photoUrls,
+                // Verificación reiniciada.
                 verification = Verification(),
+                // Resumen de IA borrado hasta el nuevo análisis.
                 aiReview = null,
+                // Fecha de última edición.
                 updatedAt = System.currentTimeMillis()
             )
+        // Si se guardó, programa de nuevo el análisis con IA.
         ).onSuccess { analysisScheduler.schedule(edited.id) }
     }
 }

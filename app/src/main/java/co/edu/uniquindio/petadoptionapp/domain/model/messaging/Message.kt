@@ -3,13 +3,16 @@ package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 import kotlinx.serialization.Serializable
 
 /**
-Mensaje individual dentro de un [Chat].
+Modelo de dominio: mensaje individual dentro de un [Chat].
 
-Se guarda en la subcolección `chats/{chatId}/messages`, por eso no
+Se guarda en la subcolección `chats/{chatId}/messages` de Firestore, por eso no
 necesita un campo `chatId`: la ruta del documento ya lo indica.
 Si el mensaje fue leído se deduce de [Chat.lastReadAt], no se guarda aquí.
- */
+Lo usan ChatRepository, SendMessageUseCase, ObserveMessagesUseCase y la pantalla de chat.
+**/
+// Permite convertir el mensaje a/desde el formato de almacenamiento.
 @Serializable
+// Declara el mensaje como clase de datos inmutable.
 data class Message(
     // Identificador del mensaje; lo genera Firestore al guardar.
     val id: String = "",

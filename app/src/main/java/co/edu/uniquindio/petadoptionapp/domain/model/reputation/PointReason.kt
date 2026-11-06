@@ -1,9 +1,11 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
 /**
-Motivo por el que se otorgan puntos. Cada motivo toma su valor de [PointRules].
+Modelo de dominio: motivo por el que se otorgan puntos. Cada motivo toma su valor de [PointRules].
 Se usa un enum (y no texto suelto) para evitar errores de escritura y para poder contar por motivo.
- */
+Lo usan AwardPointsUseCase, [PointTransaction] y el historial de puntos.
+**/
+// Enumera los motivos; cada uno guarda la cantidad de puntos que otorga.
 enum class PointReason(val points: Int) {
     // Una publicación del usuario fue verificada.
     POST_VERIFIED(PointRules.POST_VERIFIED),

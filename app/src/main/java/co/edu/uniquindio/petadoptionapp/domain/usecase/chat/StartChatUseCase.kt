@@ -8,6 +8,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 
+/**
+Caso de uso que abre (o recupera) el chat entre la persona con sesión y el autor de una publicación.
+Usa un id determinista para no duplicar conversaciones. Lo usa el ViewModel del detalle de
+publicación (botón "Empezar a chatear").
+**/
 // Define la clase del caso de uso para iniciar o abrir un chat inyectando los repositorios de chat, publicaciones y el caso de uso de requerir usuario.
 class StartChatUseCase(
     // Inyecta el repositorio de chats.
@@ -40,11 +45,17 @@ class StartChatUseCase(
         val now = System.currentTimeMillis()
         // Construye una instancia del modelo Chat con ID determinista, participantes, referencia a la publicación, contadores de no leídos y tiempos inicializados.
         val chat = Chat(
+            // Id determinista a partir del autor, la persona y la publicación.
             id = Chat.buildId(post.authorId, session.id, postId),
+            // Participantes: autor y persona con sesión.
             participantIds = listOf(post.authorId, session.id),
+            // Publicación que origina el chat.
             postId = postId,
+            // Usa el momento actual para ordenar la lista.
             lastMessageAt = now,
+            // Ambos empiezan sin mensajes sin leer.
             unreadCounts = mapOf(post.authorId to 0, session.id to 0),
+            // Momento de creación.
             createdAt = now
         )
         // Solicita al repositorio abrir o recuperar el chat existente y retorna el resultado.

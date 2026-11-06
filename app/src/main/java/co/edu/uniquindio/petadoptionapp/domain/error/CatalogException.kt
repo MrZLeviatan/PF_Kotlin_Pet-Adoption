@@ -2,8 +2,10 @@ package co.edu.uniquindio.petadoptionapp.domain.error
 
 /**
 Errores del dominio de catálogos: categorías y tipos de animal.
-La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+Los lanzan CatalogValidator y los casos de uso de usecase/catalog (crear, editar
+y verificar catálogos al publicar). La UI traduce cada uno a un texto amigable usando strings.xml.
+**/
+// Jerarquía sellada con los errores posibles de los catálogos.
 sealed class CatalogException : Exception() {
 
     // Ocurre cuando el nombre está vacío, es muy corto o muy largo.

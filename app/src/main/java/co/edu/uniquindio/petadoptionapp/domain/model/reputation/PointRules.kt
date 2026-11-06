@@ -1,8 +1,10 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
 /**
-Reglas de puntos. Es el único lugar donde se definen: para ajustar el sistema de reputación se cambia solo este archivo.
- */
+Modelo de dominio: reglas de puntos. Es el único lugar donde se definen: para ajustar el sistema de reputación se cambia solo este archivo.
+Lo leen [PointReason] (valor de cada motivo) y AwardPointsUseCase (tope diario de comentarios premiados).
+**/
+// Objeto único con las constantes del sistema de puntos.
 object PointRules {
     // Puntos para el autor cuando un moderador verifica su publicación.
     const val POST_VERIFIED = 20

@@ -6,6 +6,10 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso que lista las solicitudes de adopción recibidas por una publicación.
+Solo el autor de la publicación puede verlas. Lo usa el ViewModel de la pantalla de solicitudes del autor.
+**/
 // Define la clase del caso de uso para listar las solicitudes de adopción recibidas por una publicación inyectando los repositorios de chats, publicaciones y el caso de uso de requerir usuario.
 class GetPostAdoptionRequestsUseCase(
     // Inyecta el repositorio de chats.
@@ -25,6 +29,7 @@ class GetPostAdoptionRequestsUseCase(
 
         // Busca la publicación por su ID y retorna un fallo si no existe.
         val post = postRepository.findById(postId)
+            // Si no existe, falla con PostNotFound.
             ?: return Result.failure(PostException.PostNotFound)
         // Valida que el autor de la publicación coincida con el usuario en sesión y retorna un fallo si no está autorizado para ver las solicitudes.
         if (post.authorId != session.id) return Result.failure(PostException.NotAllowed)

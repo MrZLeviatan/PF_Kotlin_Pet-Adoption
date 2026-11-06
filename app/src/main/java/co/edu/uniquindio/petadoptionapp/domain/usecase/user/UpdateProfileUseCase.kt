@@ -9,9 +9,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.UserRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.UserValidator
 
 /**
-Válida y guarda nombre, teléfono, foto y ubicación del perfil.
+Valida y guarda nombre, teléfono, foto y ubicación del perfil.
 El alias no se edita aquí: es parte de la identidad (`Account`).
- */
+Caso de uso de edición de perfil: lo usa el ViewModel de la pantalla de editar perfil.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class UpdateProfileUseCase(
     // Inyecta el repositorio de usuarios.
     private val userRepository: UserRepository,
@@ -39,20 +41,23 @@ class UpdateProfileUseCase(
 
         // 2. Formato de los campos, sin internet.
         val cleanName = name.trim()
+        // Limpia los espacios del teléfono.
         val cleanPhone = phone.trim()
         // Valida si el formato del nombre es correcto y retorna un fallo si no lo es.
         if (!UserValidator.isNameValid(cleanName)) return Result.failure(UserException.InvalidName)
         // Valida si el formato del teléfono es correcto y retorna un fallo si no lo es.
         if (!UserValidator.isPhoneValid(cleanPhone)) return Result.failure(UserException.InvalidPhone)
-        // Válida si la ubicación contiene coordenadas válidas y retorna un fallo si no las tiene.
+        // Valida si la ubicación contiene coordenadas válidas y retorna un fallo si no las tiene.
         if (!location.hasCoordinates()) return Result.failure(UserException.InvalidLocation)
 
         // 3. El perfil debe existir y estar activo.
         val user = userRepository.findById(userId)
+        // Falla si no existe o fue eliminado.
         if (user == null || user.deleted) return Result.failure(UserException.ProfileNotFound)
 
         // 4. El teléfono no puede ser de otra persona (se ignora el propio).
         if (userRepository.existsByPhone(cleanPhone, excludeId = userId))
+            // Falla con PhoneTaken si otro perfil ya lo usa.
             return Result.failure(UserException.PhoneTaken)
 
         // 5. Si la foto es nueva (está en el teléfono), se sube primero.

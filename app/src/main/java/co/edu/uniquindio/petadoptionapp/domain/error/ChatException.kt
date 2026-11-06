@@ -2,8 +2,10 @@ package co.edu.uniquindio.petadoptionapp.domain.error
 
 /**
 Errores del dominio de chats y mensajes.
-La UI traduce cada uno a un texto amigable usando strings.xml.
- */
+Los lanzan ChatValidator y los casos de uso de usecase/chat (abrir chats, enviar
+mensajes, borrar conversaciones). La UI traduce cada uno a un texto amigable usando strings.xml.
+**/
+// Jerarquía sellada con los errores posibles de la mensajería.
 sealed class ChatException : Exception() {
 
     // Ocurre cuando el mensaje está vacío o supera el máximo de caracteres.

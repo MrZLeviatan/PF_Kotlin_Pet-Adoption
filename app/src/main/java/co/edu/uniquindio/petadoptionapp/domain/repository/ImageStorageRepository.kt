@@ -1,6 +1,12 @@
 package co.edu.uniquindio.petadoptionapp.domain.repository
 
-/** Carpeta (dentro del folder de la app en el almacenamiento) según para qué es la imagen. */
+/**
+Contrato (puerto) del dominio para el almacenamiento de imágenes (Cloudinary).
+Define [ImageFolder], la carpeta destino según el uso de la imagen, y la interfaz
+[ImageStorageRepository], que implementa la capa de datos. La consume UploadImagesUseCase
+al publicar, editar el perfil o enviar fotos por chat.
+**/
+// Carpeta (dentro del folder de la app en el almacenamiento) según para qué es la imagen: publicaciones, perfiles o chats.
 enum class ImageFolder(val path: String) { POSTS("posts"), PROFILES("profiles"), CHATS("chats") }
 
 /**

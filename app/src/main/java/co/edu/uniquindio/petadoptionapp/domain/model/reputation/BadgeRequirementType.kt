@@ -1,12 +1,14 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
 /**
- Tipo de logro que se mide para desbloquear una insignia.
+Modelo de dominio: tipo de logro que se mide para desbloquear una insignia ([Badge.requirementType]).
 
- Se usa un enum en lugar de texto suelto para evitar errores de
- escritura y para que la lógica de insignias pueda recorrer todos los
- casos de forma segura.
- */
+Se usa un enum en lugar de texto suelto para evitar errores de
+escritura y para que la lógica de insignias pueda recorrer todos los
+casos de forma segura.
+Lo evalúa EvaluateMyBadgesUseCase al comparar el progreso de la persona con cada insignia.
+**/
+// Enumera los logros medibles.
 enum class BadgeRequirementType {
     // Cantidad de publicaciones creadas.
     POSTS_CREATED,

@@ -7,9 +7,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.CommentRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.post.GetPostDetailUseCase
 
 /**
-Documenta el caso de uso que entrega una página de comentarios principales o de respuestas.
+Caso de uso que entrega una página de comentarios principales o de respuestas.
 Reutiliza GetPostDetailUseCase: quien no puede ver la publicación tampoco ve sus comentarios.
- */
+Lo usa el ViewModel del detalle de publicación para cargar comentarios y "Ver respuestas".
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetCommentsUseCase(
     // Inyecta el repositorio de comentarios.
     private val commentRepository: CommentRepository,
@@ -23,14 +25,18 @@ class GetCommentsUseCase(
 
     // Define la función asíncrona principal que recibe el ID de la publicación, el ID opcional del comentario padre y el paginador, devolviendo un resultado con la lista de comentarios.
     suspend operator fun invoke(
+        // Publicación cuyos comentarios se piden.
         postId: String,
+        // Comentario padre; null para pedir los principales.
         parentCommentId: String? = null,
+        // Último comentario ya mostrado, para paginar.
         afterCommentId: String? = null
     ): Result<List<Comment>> {
 
         // Sin sesión no se ve nada.
         // Obtiene la cuenta actual de la sesión y retorna un fallo si el usuario no está autenticado.
         val session = authRepository.currentAccount.value
+            // Si no hay sesión, falla con NotAuthenticated.
             ?: return Result.failure(AuthException.NotAuthenticated)
 
         // Si la persona no puede ver la publicación, no ve sus comentarios.

@@ -2,8 +2,11 @@ package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 
 
 /**
- Clase de mensaje dentro de un chat.
- */
+Modelo de dominio: clase de mensaje dentro de un chat ([Message.type]).
+Permite a la UI decidir cómo dibujar cada mensaje (texto, aviso automático o foto)
+y a [Chat] mostrar la vista previa correcta del último mensaje.
+**/
+// Enumera los tipos de mensaje admitidos.
 enum class MessageType {
 
     // Escrito por la persona.

@@ -6,9 +6,11 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
 /**
-Documenta el caso de uso que lista las publicaciones que la persona marcó como importantes.
+Caso de uso que lista las publicaciones que la persona marcó como importantes.
 Une dos consultas: los ids de los votos y las publicaciones. Solo muestra las que siguen visibles al público.
- */
+Lo usa el ViewModel de la pantalla "Mis importantes" del perfil.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class GetMyImportantPostsUseCase(
     // Inyecta el repositorio de votos importantes.
     private val voteRepository: ImportantVoteRepository,
@@ -29,6 +31,7 @@ class GetMyImportantPostsUseCase(
         // 1. Ids de las publicaciones votadas, de la más reciente a la más antigua.
         // Solicita al repositorio los identificadores de las publicaciones votadas y retorna un fallo si la operación no es exitosa.
         val ids = voteRepository.getVotedPostIds(session.id, PAGE_SIZE, afterPostId)
+            // Si la consulta falla, devuelve el error.
             .getOrElse { return Result.failure(it) }
         // Comprueba si la lista de IDs está vacía y retorna una lista vacía para evitar operaciones innecesarias.
         if (ids.isEmpty()) return Result.success(emptyList())

@@ -8,9 +8,11 @@ import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Message
 import kotlinx.coroutines.flow.Flow
 
 /**
-Contrato de chats (colección `chats`), mensajes (subcolección `messages`) y solicitudes de adopción (colección `adoptionRequests`).
+Contrato (puerto) del dominio para chats (colección `chats`), mensajes (subcolección `messages`)
+y solicitudes de adopción (colección `adoptionRequests`) de Firestore.
 Los permisos y las reglas de negocio viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/chat y usecase/chat/adoption.
+**/
 interface ChatRepository {
 
     // Chats

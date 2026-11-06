@@ -7,9 +7,12 @@ import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireModeratorUseC
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.CatalogValidator
 
 /**
-Documenta el caso de uso con el que un moderador agrega una categoría nueva.
+Caso de uso con el que un moderador agrega una categoría nueva al catálogo.
 El id se calcula desde el nombre, así dos nombres equivalentes ("Hogar de paso" y "hogar de Paso") no se duplican.
- */
+Guarda en Firestore mediante CatalogRepository y refresca la caché de catálogos.
+Lo usa el ViewModel de la pantalla de gestión de catálogos del moderador.
+**/
+// Declara el caso de uso de creación de categorías.
 class CreateCategoryUseCase(
     // Inyecta el repositorio de catálogos para crear la categoría.
     private val catalogRepository: CatalogRepository,
@@ -19,23 +22,30 @@ class CreateCategoryUseCase(
     // Define la función que recibe el nombre de la categoría y devuelve la categoría creada.
     suspend operator fun invoke(name: String): Result<Category> {
 
-        // 1. Solo un moderador activo puede crear categorías.
+        // 1. Solo un moderador activo puede crear categorías; si no lo es, devuelve el error.
         requireModerator().getOrElse { return Result.failure(it) }
 
-        // 2. Formato del nombre, sin internet.
+        // 2. Formato del nombre, sin internet: quita espacios sobrantes.
         val cleanName = name.trim()
+        // Falla si el nombre no cumple el formato.
         if (!CatalogValidator.isNameValid(cleanName)) return Result.failure(CatalogException.InvalidName)
 
         // 3. El id sale del nombre; si ya existe, es un duplicado.
         val id = CatalogValidator.buildId(cleanName)
+        // Falla si el nombre no produce un id utilizable.
         if (id.isEmpty()) return Result.failure(CatalogException.InvalidName)
+        // Comprueba si ya existe una categoría con ese id.
         if (catalogRepository.findCategoryById(id) != null)
+            // Falla con CategoryAlreadyExists si es un duplicado.
             return Result.failure(CatalogException.CategoryAlreadyExists)
 
-        // 4. Guarda, refresca la memoria y devuelve la categoría creada.
+        // 4. Guarda, refresca la caché y devuelve la categoría creada.
         val category = Category(id = id, name = cleanName, active = true)
+        // Guarda la nueva categoría en Firestore.
         return catalogRepository.createCategory(category)
+            // Si se guardó, vuelve a leer los catálogos para actualizar los flujos.
             .onSuccess { catalogRepository.refresh() }
+            // Devuelve la categoría creada.
             .map { category }
     }
 }

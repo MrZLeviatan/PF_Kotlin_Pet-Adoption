@@ -5,10 +5,12 @@ import co.edu.uniquindio.petadoptionapp.domain.model.post.PostStatus
 import co.edu.uniquindio.petadoptionapp.domain.repository.PostRepository
 
 /**
-Documenta el caso de uso que borra una publicación propia.
+Caso de uso que borra una publicación propia.
 Es un borrado lógico: el documento se conserva (para comentarios, chats y estadísticas) pero deja de mostrarse.
 Una publicación finalizada ya cerró su caso: queda como historial y no se puede eliminar.
- */
+Lo usa el ViewModel de "Mis publicaciones" / detalle de publicación del autor.
+**/
+// Declara la clase del caso de uso con sus dependencias inyectadas.
 class DeletePostUseCase(
     // Inyecta el repositorio de publicaciones.
     private val postRepository: PostRepository
@@ -18,6 +20,7 @@ class DeletePostUseCase(
 
         // Busca la publicación; si no existe, avisa.
         val post = postRepository.findById(postId)
+            // Si no existe, falla con PostNotFound.
             ?: return Result.failure(PostException.PostNotFound)
 
         // Solo el autor puede borrarla.

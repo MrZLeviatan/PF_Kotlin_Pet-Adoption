@@ -2,9 +2,10 @@ package co.edu.uniquindio.petadoptionapp.domain.repository
 
 
 /**
-Contrato de los votos "Es importante" guardados en la colección `importantVotes` de Firestore.
+Contrato (puerto) del dominio para los votos "Es importante" guardados en la colección `importantVotes` de Firestore.
 Los permisos y la visibilidad de la publicación viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/importantVote.
+**/
 interface ImportantVoteRepository {
 
     // Votar

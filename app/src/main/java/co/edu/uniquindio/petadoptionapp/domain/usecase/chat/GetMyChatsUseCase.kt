@@ -4,6 +4,10 @@ import co.edu.uniquindio.petadoptionapp.domain.model.messaging.Chat
 import co.edu.uniquindio.petadoptionapp.domain.repository.ChatRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.RequireUserUseCase
 
+/**
+Caso de uso que lista, por páginas, los chats de la persona con sesión (del más reciente al más antiguo).
+Oculta los chats abiertos en los que todavía nadie ha escrito. Lo usa el ViewModel de la lista de chats.
+**/
 // Define la clase del caso de uso para listar los chats del usuario inyectando el repositorio de chats y el caso de uso de requerir usuario.
 class GetMyChatsUseCase(
     // Inyecta el repositorio de chats.
@@ -22,6 +26,7 @@ class GetMyChatsUseCase(
         // Los chats abiertos con "Empezar a chatear" en los que nadie ha escrito aún no se listan:
         // aparecen con el primer mensaje, como en WhatsApp (en Firestore: where lastSenderId != "").
         return chatRepository.getChatsByParticipant(session.id, PAGE_SIZE, afterChatId)
+            // Descarta los chats sin ningún mensaje enviado.
             .map { chats -> chats.filter { it.lastSenderId.isNotBlank() } }
     }
 }

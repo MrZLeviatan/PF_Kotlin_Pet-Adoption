@@ -3,9 +3,10 @@ package co.edu.uniquindio.petadoptionapp.domain.repository
 import co.edu.uniquindio.petadoptionapp.domain.model.notification.Notification
 
 /**
-Contrato de notificaciones guardadas en la colección `notifications` de Firestore.
+Contrato (puerto) del dominio para las notificaciones guardadas en la colección `notifications` de Firestore.
 Los permisos y la decisión de cuándo notificar viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen NotifyUseCase y los casos de uso de usecase/notification.
+**/
 interface NotificationRepository {
 
     // Crear

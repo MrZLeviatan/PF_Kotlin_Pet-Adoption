@@ -58,13 +58,15 @@ Los casos de uso deciden cuándo generar una notificación y quién puede consul
 Contiene la entidad principal y los tipos asociados:
 
 - `Post`: publicación de adopción, pérdida, hallazgo, hogar temporal o jornada veterinaria. Reúne autor, categoría, animal, fotos, ubicación, estados y contadores.
-- `Category` y `AnimalType`: elementos de catálogo referenciados por sus identificadores.
+- `Category` y `AnimalType`: elementos de catálogo referenciados por sus identificadores. `Category` incluye además `icon`, `color` e `isPlace`, con los que el mapa de Explorar y los filtros dibujan su marcador.
 - `AnimalSize`: tamaños aproximados del animal.
 - `PostStatus`: ciclo de vida (activa, finalizada o eliminada).
 - `Verification` y `VerificationStatus`: información y estado de la revisión del moderador; incluye motivo de rechazo y datos de revisión.
 - `PriorityLevel`: prioridad sugerida para ordenar la revisión.
 - `ImportantVote`: voto “Es importante” de una cuenta sobre una publicación.
 - `PostStats`: resumen de métricas para el dashboard.
+- `AiReview` (y `AiPostAnalysis`): resultado del análisis con IA: resumen, puntos clave, relevancia, inconsistencias, revisión de fotos, contenido inapropiado, posible duplicado y acciones recomendadas.
+- `ModerationStats` y `ModeratorPerformance`: cifras de la cola y del desempeño de cada moderador.
 
 `Post` contiene funciones propias para determinar si puede mostrarse en el feed público. Los casos de uso validan las acciones (crear, editar, finalizar y moderar) y `PostRepository` implementa las consultas y cambios.
 
@@ -126,5 +128,5 @@ Modelo del dominio compartido
 
 Por ejemplo, al crear una publicación, `CreatePostUseCase` valida un `Post`, comprueba sus referencias al catálogo y lo entrega a `PostRepository`. El repositorio devuelve el modelo guardado para que el caso de uso y la presentación puedan utilizarlo.
 
-Los modelos no deben depender de Jetpack Compose, Android, Firebase ni de las implementaciones de `data`. Sus referencias a otras entidades normalmente se expresan mediante identificadores, por ejemplo `Post.authorId`, `Post.categoryId` o `Comment.postId`.
+Los modelos no deben depender de Jetpack Compose, Android, Firebase ni de las implementaciones de `data`. La única anotación que llevan es `@Serializable` (kotlinx.serialization, Kotlin puro): permite que `data/repository/firebase/FirestoreMapper` los convierta en documentos de Firestore sin que el modelo conozca Firebase. Sus referencias a otras entidades normalmente se expresan mediante identificadores, por ejemplo `Post.authorId`, `Post.categoryId` o `Comment.postId`.
 

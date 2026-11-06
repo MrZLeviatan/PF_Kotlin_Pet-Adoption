@@ -38,30 +38,50 @@ Contenido: 4 usuarios, 5 moderadores, 5 categorías (con ícono y color para el 
 4 insignias, 14 publicaciones (feed, cola de moderación, en revisión, rechazada y finalizada),
 comentarios, votos, chats, solicitudes de adopción, notificaciones e historial de puntos.
 Los contadores (votos, comentarios, puntos, revisiones de cada moderador) cuadran con los datos.
- */
+
+Vive en el código de pruebas (src/test) para no viajar dentro del APK. Usa directamente los modelos
+del dominio, así el compilador avisa si un modelo cambia y la semilla queda desactualizada.
+Los ids son fijos y legibles (u1..u4 usuarios, m1..m5 moderadores, p1..p14 publicaciones, c1..c4
+comentarios, msg1..msg13 mensajes, n1..n10 notificaciones) para que las relaciones sean fáciles de seguir.
+**/
+// Se usa un object: un único conjunto de datos de solo lectura que SeedExportTest recorre.
 object SeedData {
 
     // Fechas relativas a "ahora" (el script de carga las corre al día en que se cargan).
     // Va primero, porque un object se inicializa en orden.
+    // Momento de referencia para calcular todas las fechas.
     private val now = System.currentTimeMillis()
+    // Devuelve la fecha de hace N minutos en milisegundos.
     private fun minutesAgo(minutes: Long) = now - minutes * 60_000L
+    // Devuelve la fecha de hace N horas.
     private fun hoursAgo(hours: Long) = minutesAgo(hours * 60)
+    // Devuelve la fecha de hace N días.
     private fun daysAgo(days: Long) = hoursAgo(days * 24)
 
     // Fotos de las publicaciones. Para cambiarlas, reemplaza las URL (por ejemplo, por fotos subidas a Cloudinary).
+    // URL de la foto usada en todas las publicaciones.
     private const val PHOTO = "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+    // URL del avatar usado en los comentarios.
     private const val AVATAR = "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg"
 
     // Barrios de Armenia: las publicaciones quedan repartidas en el mapa de Explorar.
+    // Crea una ubicación en Armenia, Colombia, con coordenadas y nombre del lugar.
     private fun armenia(lat: Double, lng: Double, address: String) =
         Location(lat, lng, "Armenia", "Colombia", address)
 
+    // Punto en el centro de Armenia.
     private val CENTRO = armenia(4.5339, -75.6811, "Centro")
+    // Punto en el norte (Av. Bolívar).
     private val NORTE = armenia(4.5520, -75.6620, "Av. Bolívar, norte")
+    // Punto en La Castellana.
     private val CASTELLANA = armenia(4.5430, -75.6700, "La Castellana")
+    // Punto en el sur (La Patria).
     private val SUR = armenia(4.5180, -75.6890, "Barrio La Patria, sur")
+    // Punto cerca del Estadio Centenario.
     private val ESTADIO = armenia(4.5280, -75.6640, "Estadio Centenario")
+    // Punto en la Universidad del Quindío.
     private val UNIVERSIDAD = armenia(4.5560, -75.6590, "Universidad del Quindío")
+    // Punto en el Parque de la Vida.
     private val PARQUE_VIDA = armenia(4.5470, -75.6560, "Parque de la Vida")
 
 
@@ -71,33 +91,49 @@ object SeedData {
 
     // Cada categoría trae su ícono, color y forma para el mapa de Explorar y los filtros.
     val categories = listOf(
+        // Adopción: admite solicitudes de adopción.
         Category(id = "adoption", name = "Adopción", allowsAdoptionRequests = true,
             icon = "pets", color = "#A06931"),
+        // Mascotas perdidas.
         Category(id = "lost", name = "Perdidos",
             icon = "search", color = "#D32F2F"),
+        // Mascotas encontradas.
         Category(id = "found", name = "Encontrados",
             icon = "flag", color = "#2E7D32"),
+        // Hogar temporal: es un lugar y admite solicitudes.
         Category(id = "temporary", name = "Hogar temporal", allowsAdoptionRequests = true,
             icon = "home", color = "#E9C46A", isPlace = true),
+        // Veterinarias y jornadas: es un lugar.
         Category(id = "veterinary", name = "Veterinaria",
             icon = "hospital", color = "#2F7EA6", isPlace = true),
     )
 
+    // Catálogo de tipos de animal.
     val animalTypes = listOf(
+        // Perro.
         AnimalType(id = "dog", name = "Perro"),
+        // Gato.
         AnimalType(id = "cat", name = "Gato"),
+        // Ave.
         AnimalType(id = "bird", name = "Ave"),
+        // Roedor.
         AnimalType(id = "rodent", name = "Roedor"),
+        // Cualquier otro animal.
         AnimalType(id = "other", name = "Otro"),
     )
 
+    // Catálogo de insignias: id, nombre, descripción, ícono, tipo de requisito y cantidad necesaria.
     val badges = listOf(
+        // Se gana al crear la primera publicación.
         Badge("first_post", "Primera publicación", "Crea tu primera publicación", "",
             BadgeRequirementType.POSTS_CREATED, 1),
+        // Se gana al finalizar una publicación con final feliz.
         Badge("happy_ending", "Final feliz", "Finaliza una publicación porque la mascota encontró hogar o volvió a casa", "",
             BadgeRequirementType.POSTS_RESOLVED, 1),
+        // Se gana con 10 publicaciones verificadas.
         Badge("ten_verified", "10 verificadas", "Consigue 10 publicaciones verificadas", "",
             BadgeRequirementType.POSTS_VERIFIED, 10),
+        // Se gana al escribir 20 comentarios.
         Badge("commenter", "Conversador", "Escribe 20 comentarios", "",
             BadgeRequirementType.COMMENTS_WRITTEN, 20),
     )
@@ -105,14 +141,18 @@ object SeedData {
 
     // ---- Publicaciones ----
 
+    // Crea una verificación aprobada por un moderador hace N horas.
     private fun verifiedBy(moderatorId: String, hours: Long) =
         Verification(status = VerificationStatus.VERIFIED, reviewedBy = moderatorId, reviewedAt = hoursAgo(hours))
 
+    // Crea una verificación pendiente con la prioridad sugerida y su motivo.
     private fun pending(priority: PriorityLevel?, reason: String) =
         Verification(status = VerificationStatus.UNVERIFIED, priorityLevel = priority, priorityReason = reason)
 
+    // Publicaciones base, todavía sin contadores (se calculan más abajo).
     private val basePosts = listOf(
         // Verificadas y en proceso: salen en el feed y en el mapa (una o más por categoría).
+        // p1: adopción de un cachorro (Ana), verificada.
         Post(
             id = "p1", authorId = "u1", title = "Toby, cachorro criollo en adopción", categoryId = "adoption",
             description = "Cachorro de ocho meses, juguetón y sociable. Tiene sus vacunas y se lleva bien con niños.",
@@ -120,6 +160,7 @@ object SeedData {
             vaccinated = true, neutered = false, photoUrls = listOf(PHOTO), location = CENTRO,
             verification = verifiedBy("m1", 5 * 24), createdAt = daysAgo(6)
         ),
+        // p2: gato perdido (Luis), verificada.
         Post(
             id = "p2", authorId = "u2", title = "Gato gris perdido en el norte", categoryId = "lost",
             description = "Se llama Humo, tiene collar azul con cascabel. Se perdió cerca de la Av. Bolívar.",
@@ -127,24 +168,28 @@ object SeedData {
             vaccinated = true, neutered = true, photoUrls = listOf(PHOTO), location = NORTE,
             verification = verifiedBy("m2", 3 * 24), createdAt = daysAgo(4)
         ),
+        // p3: perrita encontrada (Camila), verificada.
         Post(
             id = "p3", authorId = "u3", title = "Perrita encontrada en La Castellana", categoryId = "found",
             description = "Perrita café, mediana, muy dócil. La tengo en casa mientras aparece su familia.",
             animalTypeId = "dog", size = AnimalSize.MEDIUM, photoUrls = listOf(PHOTO), location = CASTELLANA,
             verification = verifiedBy("m3", 2 * 24), createdAt = daysAgo(3)
         ),
+        // p4: hogar de paso para gatitos (Andrés), verificada.
         Post(
             id = "p4", authorId = "u4", title = "Hogar de paso para gatitos", categoryId = "temporary",
             description = "Ofrezco hogar temporal para hasta dos gatitos mientras consiguen adopción. Tengo experiencia.",
             animalTypeId = "cat", size = AnimalSize.SMALL, photoUrls = listOf(PHOTO), location = SUR,
             verification = verifiedBy("m1", 4 * 24), createdAt = daysAgo(5)
         ),
+        // p5: jornada de vacunación en una veterinaria (Camila), verificada.
         Post(
             id = "p5", authorId = "u3", title = "Jornada de vacunación gratuita", categoryId = "veterinary",
             description = "Este sábado de 8 a. m. a 12 m. en el Parque de la Vida. Vacuna antirrábica para perros y gatos.",
             photoUrls = listOf(PHOTO), location = PARQUE_VIDA,
             verification = verifiedBy("m4", 30), createdAt = daysAgo(2)
         ),
+        // p6: conejo en adopción (Ana), verificada.
         Post(
             id = "p6", authorId = "u1", title = "Conejo busca familia", categoryId = "adoption",
             description = "Conejo blanco de un año, muy tranquilo. Lo entrego con su jaula y comedero.",
@@ -152,6 +197,7 @@ object SeedData {
             photoUrls = listOf(PHOTO), location = UNIVERSIDAD,
             verification = verifiedBy("m5", 20), createdAt = daysAgo(2)
         ),
+        // p7: campaña de esterilización (Luis), verificada.
         Post(
             id = "p7", authorId = "u2", title = "Esterilización a bajo costo", categoryId = "veterinary",
             description = "Campaña de esterilización para gatos y perros pequeños. Cupos limitados, inscripción previa.",
@@ -160,24 +206,28 @@ object SeedData {
         ),
 
         // Pendientes de moderación, con prioridades distintas (una sin analizar por la IA).
+        // p8: urgente, perrita herida.
         Post(
             id = "p8", authorId = "u2", title = "Perrita herida necesita hogar urgente", categoryId = "adoption",
             description = "La encontré atropellada; ya la vio un veterinario, pero no puedo quedármela.",
             animalTypeId = "dog", breed = "Criolla", size = AnimalSize.MEDIUM, photoUrls = listOf(PHOTO), location = NORTE,
             verification = pending(PriorityLevel.URGENT, "Animal herido que necesita atención"), createdAt = hoursAgo(5)
         ),
+        // p9: prioridad media, labrador perdido.
         Post(
             id = "p9", authorId = "u4", title = "Labrador perdido cerca del estadio", categoryId = "lost",
             description = "Labrador café, responde al nombre de Max. Tiene una mancha blanca en el pecho.",
             animalTypeId = "dog", breed = "Labrador", size = AnimalSize.LARGE, photoUrls = listOf(PHOTO), location = ESTADIO,
             verification = pending(PriorityLevel.MEDIUM, "Mascota perdida recientemente"), createdAt = hoursAgo(8)
         ),
+        // p10: prioridad alta, cachorros rescatados.
         Post(
             id = "p10", authorId = "u3", title = "Hogar temporal para tres cachorros", categoryId = "temporary",
             description = "Busco hogar temporal para tres cachorros rescatados de la calle.",
             animalTypeId = "dog", size = AnimalSize.SMALL, photoUrls = listOf(PHOTO), location = CASTELLANA,
             verification = pending(PriorityLevel.HIGH, "Animales en riesgo"), createdAt = hoursAgo(12)
         ),
+        // p11: sin prioridad: aún no la analizó la IA.
         Post(
             id = "p11", authorId = "u1", title = "Loro encontrado en el centro", categoryId = "found",
             description = "Loro verde, dice algunas palabras. Estaba en el parque Sucre.",
@@ -186,6 +236,7 @@ object SeedData {
         ),
 
         // En revisión: ya la tomó un moderador (no sale en la cola del inicio).
+        // p12: en revisión por el moderador m1.
         Post(
             id = "p12", authorId = "u4", title = "Gatitos abandonados en una caja", categoryId = "found",
             description = "Cuatro gatitos de pocas semanas, los dejaron frente a mi casa.",
@@ -196,6 +247,7 @@ object SeedData {
         ),
 
         // Rechazada: no sale en el feed.
+        // p13: rechazada por venta de animales.
         Post(
             id = "p13", authorId = "u2", title = "Cachorros de raza a la venta", categoryId = "adoption",
             description = "Vendo cachorros de raza, precio negociable.",
@@ -206,6 +258,7 @@ object SeedData {
         ),
 
         // Finalizada: la mascota volvió a casa (ya no sale en el feed).
+        // p14: finalizada.
         Post(
             id = "p14", authorId = "u1", title = "Perro perdido en la universidad", categoryId = "lost",
             description = "Ya apareció, ¡gracias a todos por compartir!",
@@ -220,33 +273,48 @@ object SeedData {
 
     // Comentarios por publicación (subcolección posts/{id}/comments).
     val comments: List<Comment> = listOf(
+        // c1: comentario principal de Luis en p1, con una respuesta y un "me gusta".
         Comment(id = "c1", postId = "p1", authorId = "u2", authorName = "luis_9", authorPhotoUrl = AVATAR,
             text = "¿Todavía está disponible? Me interesa mucho.", replyCount = 1, likeCount = 1, createdAt = daysAgo(3)),
+        // c2: respuesta de Ana a c1 (profundidad 1), una hora después.
         Comment(id = "c2", postId = "p1", parentId = "c1", depth = 1, replyToUserName = "luis_9",
             authorId = "u1", authorName = "ana_77", authorPhotoUrl = AVATAR,
             text = "¡Sí! Escríbeme por el chat y coordinamos.", createdAt = daysAgo(3) + 3_600_000),
+        // c3: comentario de Andrés en p2, con un "me gusta".
         Comment(id = "c3", postId = "p2", authorId = "u4", authorName = "andres_m", authorPhotoUrl = AVATAR,
             text = "Creo que lo vi ayer cerca del parque del norte.", likeCount = 1, createdAt = daysAgo(2)),
+        // c4: comentario de Ana en p3.
         Comment(id = "c4", postId = "p3", authorId = "u1", authorName = "ana_77", authorPhotoUrl = AVATAR,
             text = "¡Qué bonita! Ojalá aparezca su familia pronto.", createdAt = daysAgo(1)),
     )
 
+    // "Me gusta" de comentarios (deben cuadrar con los likeCount de arriba).
     val commentLikes: List<CommentLike> = listOf(
+        // Ana le dio "me gusta" a c1.
         CommentLike(commentId = "c1", postId = "p1", userId = "u1", createdAt = daysAgo(3)),
+        // Luis le dio "me gusta" a c3.
         CommentLike(commentId = "c3", postId = "p2", userId = "u2", createdAt = daysAgo(2)),
     )
 
+    // Votos "Es importante" sobre publicaciones.
     val importantVotes: List<ImportantVote> = listOf(
+        // Luis votó p1.
         ImportantVote(postId = "p1", userId = "u2", createdAt = daysAgo(4)),
+        // Camila votó p1.
         ImportantVote(postId = "p1", userId = "u3", createdAt = daysAgo(3)),
+        // Ana votó p2.
         ImportantVote(postId = "p2", userId = "u1", createdAt = daysAgo(3)),
+        // Andrés votó p2.
         ImportantVote(postId = "p2", userId = "u4", createdAt = daysAgo(2)),
     )
 
     // Publicaciones con sus contadores calculados de los comentarios y votos de arriba.
     val posts: List<Post> = basePosts.map { post ->
+        // Copia cada publicación con sus contadores reales.
         post.copy(
+            // Número de comentarios de la publicación.
             commentCount = comments.count { it.postId == post.id },
+            // Número de votos "Es importante" de la publicación.
             importantCount = importantVotes.count { it.postId == post.id },
         )
     }
@@ -254,24 +322,38 @@ object SeedData {
 
     // ---- Moderadores (no se registran desde la app; van después de las publicaciones porque cuentan sus revisiones) ----
 
+    // Perfiles de moderador con sus contadores de revisiones.
     val moderators = listOf(
+        // m1: Laura, la cuenta de moderador principal.
         moderator("m1", "mod@petadoption.com", "mod_laura", "Laura Restrepo", "3109876543"),
+        // m2: Carlos.
         moderator("m2", "mod2@petadoption.com", "mod_carlos", "Carlos Mejía", "3109876544"),
+        // m3: Diana.
         moderator("m3", "mod3@petadoption.com", "mod_diana", "Diana Ospina", "3109876545"),
+        // m4: Jorge.
         moderator("m4", "mod4@petadoption.com", "mod_jorge", "Jorge Salazar", "3109876546"),
+        // m5: Sofía.
         moderator("m5", "mod5@petadoption.com", "mod_sofia", "Sofía Cardona", "3109876547"),
     ).map { mod ->
         // Aprobadas y rechazadas de cada moderador, contadas de las publicaciones.
+        // Publicaciones revisadas por este moderador.
         val reviewed = posts.filter { it.verification.reviewedBy == mod.account.id }
+        // Copia el moderador con sus contadores.
         mod.copy(
+            // Cantidad de publicaciones aprobadas.
             approvedCount = reviewed.count { it.verification.status == VerificationStatus.VERIFIED },
+            // Cantidad de publicaciones rechazadas.
             rejectedCount = reviewed.count { it.verification.status == VerificationStatus.REJECTED },
         )
     }
 
+    // Crea un moderador con su cuenta (rol MODERATOR, creada hace 60 días).
     private fun moderator(id: String, email: String, userName: String, name: String, phone: String) = Moderator(
+        // Cuenta de acceso del moderador.
         account = Account(id = id, email = email, userName = userName, role = UserRole.MODERATOR, createdAt = daysAgo(60)),
+        // Nombre completo.
         name = name,
+        // Teléfono.
         phone = phone,
     )
 
@@ -280,6 +362,7 @@ object SeedData {
 
     // Historial de puntos. Los puntos de cada perfil son la suma de su historial.
     val pointTransactions: List<PointTransaction> = listOf(
+        // Ana: puntos por p1, p6 y p14 verificadas, p14 finalizada, dos votos recibidos en p1 y dos comentarios.
         points("u1", PointReason.POST_VERIFIED, "p1", "m1", daysAgo(5)),
         points("u1", PointReason.POST_VERIFIED, "p6", "m5", hoursAgo(20)),
         points("u1", PointReason.POST_VERIFIED, "p14", "m4", daysAgo(4)),
@@ -288,50 +371,66 @@ object SeedData {
         points("u1", PointReason.IMPORTANT_RECEIVED, "p1_u3", "u3", daysAgo(3), postId = "p1"),
         points("u1", PointReason.COMMENT_CREATED, "c2", null, daysAgo(3), postId = "p1"),
         points("u1", PointReason.COMMENT_CREATED, "c4", null, daysAgo(1), postId = "p3"),
+        // Luis: puntos por p2 y p7 verificadas, dos votos recibidos en p2 y un comentario.
         points("u2", PointReason.POST_VERIFIED, "p2", "m2", daysAgo(3)),
         points("u2", PointReason.POST_VERIFIED, "p7", "m2", hoursAgo(10)),
         points("u2", PointReason.IMPORTANT_RECEIVED, "p2_u1", "u1", daysAgo(3), postId = "p2"),
         points("u2", PointReason.IMPORTANT_RECEIVED, "p2_u4", "u4", daysAgo(2), postId = "p2"),
         points("u2", PointReason.COMMENT_CREATED, "c1", null, daysAgo(3), postId = "p1"),
+        // Camila: puntos por p3 y p5 verificadas.
         points("u3", PointReason.POST_VERIFIED, "p3", "m3", daysAgo(2)),
         points("u3", PointReason.POST_VERIFIED, "p5", "m4", hoursAgo(30)),
+        // Andrés: puntos por p4 verificada y un comentario.
         points("u4", PointReason.POST_VERIFIED, "p4", "m1", daysAgo(4)),
         points("u4", PointReason.COMMENT_CREATED, "c3", null, daysAgo(2), postId = "p2"),
     )
 
+    // Crea un movimiento de puntos con id determinista (usuario + motivo + origen).
     private fun points(
         userId: String, reason: PointReason, sourceId: String, actorId: String?, at: Long,
+        // Si no se indica, el postId es el origen cuando este es una publicación (empieza por "p" y no es un voto "p_u").
         postId: String? = sourceId.takeIf { it.startsWith("p") && !it.contains('_') }
     ) = PointTransaction(
+        // Id determinista: el mismo hecho nunca suma puntos dos veces.
         id = PointTransaction.buildId(userId, reason, sourceId),
+        // Usuario, motivo y puntos que da ese motivo según el dominio.
         userId = userId, reason = reason, points = reason.points,
+        // Publicación relacionada, quién provocó los puntos y fecha.
         postId = postId, actorId = actorId, createdAt = at
     )
 
+    // Calcula la reputación de un usuario a partir de su historial y las insignias indicadas.
     private fun reputationOf(userId: String, vararg badgeIds: String) = Reputation(
+        // Suma de todos los puntos del historial del usuario.
         points = pointTransactions.filter { it.userId == userId }.sumOf { it.points },
+        // Insignias desbloqueadas hace 4 días.
         unlockedBadges = badgeIds.map { UnlockedBadge(it, daysAgo(4)) }
     )
 
 
     // ---- Usuarios ----
 
+    // Perfiles de usuarios comunes.
     val users = listOf(
+        // u1: Ana, en el centro, con dos insignias.
         User(
             account = Account(id = "u1", email = "n@gmail.com", userName = "ana_77", role = UserRole.USER, createdAt = daysAgo(30)),
             name = "Ana Gómez", phone = "3001234567", location = CENTRO,
             reputation = reputationOf("u1", "first_post", "happy_ending"),
         ),
+        // u2: Luis, en el norte.
         User(
             account = Account(id = "u2", email = "luis@correo.com", userName = "luis_9", role = UserRole.USER, createdAt = daysAgo(25)),
             name = "Luis Pérez", phone = "3007654321", location = NORTE,
             reputation = reputationOf("u2", "first_post"),
         ),
+        // u3: Camila, en La Castellana.
         User(
             account = Account(id = "u3", email = "camila@correo.com", userName = "camila_r", role = UserRole.USER, createdAt = daysAgo(20)),
             name = "Camila Rojas", phone = "3015551234", location = CASTELLANA,
             reputation = reputationOf("u3", "first_post"),
         ),
+        // u4: Andrés, en el sur.
         User(
             account = Account(id = "u4", email = "andres@correo.com", userName = "andres_m", role = UserRole.USER, createdAt = daysAgo(15)),
             name = "Andrés Muñoz", phone = "3024449876", location = SUR,
@@ -343,12 +442,18 @@ object SeedData {
 
     // ---- Chats y solicitudes de adopción ----
 
-    private val CHAT_P1 = Chat.buildId("u1", "u2", "p1")   // Luis quiere adoptar a Toby (de Ana).
-    private val CHAT_P6 = Chat.buildId("u1", "u3", "p6")   // Camila quiere adoptar el conejo (de Ana).
-    private val CHAT_P4 = Chat.buildId("u1", "u4", "p4")   // Ana pidió el hogar de paso de Andrés.
-    private val CHAT_P2 = Chat.buildId("u4", "u2", "p2")   // Andrés vio el gato perdido de Luis.
+    // Luis quiere adoptar a Toby (de Ana).
+    private val CHAT_P1 = Chat.buildId("u1", "u2", "p1")
+    // Camila quiere adoptar el conejo (de Ana).
+    private val CHAT_P6 = Chat.buildId("u1", "u3", "p6")
+    // Ana pidió el hogar de paso de Andrés.
+    private val CHAT_P4 = Chat.buildId("u1", "u4", "p4")
+    // Andrés vio el gato perdido de Luis.
+    private val CHAT_P2 = Chat.buildId("u4", "u2", "p2")
 
+    // Mensajes de cada chat (subcolección chats/{id}/messages), en orden cronológico.
     val chatMessages: Map<String, List<Message>> = mapOf(
+        // Conversación de adopción de Toby: empieza con el mensaje automático de interés.
         CHAT_P1 to listOf(
             Message(id = "msg1", senderId = "u2", type = MessageType.ADOPTION_INTEREST, sentAt = minutesAgo(2 * 24 * 60)),
             Message(id = "msg2", senderId = "u1", text = "¡Hola Luis! Gracias por escribir. Toby es muy juguetón.", sentAt = minutesAgo(2 * 24 * 60 - 30)),
@@ -356,15 +461,18 @@ object SeedData {
             Message(id = "msg4", senderId = "u1", text = "Muy tranquilo, convive con mis sobrinos sin problema.", sentAt = minutesAgo(25 * 60)),
             Message(id = "msg5", senderId = "u2", text = "¿Podemos vernos mañana para conocerlo?", sentAt = minutesAgo(20)),
         ),
+        // Conversación de adopción del conejo (solicitud aceptada).
         CHAT_P6 to listOf(
             Message(id = "msg6", senderId = "u3", type = MessageType.ADOPTION_INTEREST, sentAt = minutesAgo(18 * 60)),
             Message(id = "msg7", senderId = "u1", text = "¡Claro, Camila! Te lo entrego con su jaula.", sentAt = minutesAgo(17 * 60)),
             Message(id = "msg8", senderId = "u3", text = "¡Genial! Paso el domingo por él.", sentAt = minutesAgo(16 * 60)),
         ),
+        // Conversación del hogar de paso (solicitud rechazada).
         CHAT_P4 to listOf(
             Message(id = "msg9", senderId = "u1", type = MessageType.ADOPTION_INTEREST, sentAt = minutesAgo(3 * 24 * 60)),
             Message(id = "msg10", senderId = "u4", text = "Hola Ana, por ahora ya tengo los dos cupos ocupados. ¡Lo siento!", sentAt = minutesAgo(3 * 24 * 60 - 60)),
         ),
+        // Conversación sobre el gato perdido (sin solicitud de adopción).
         CHAT_P2 to listOf(
             Message(id = "msg11", senderId = "u4", text = "Hola, creo que vi a tu gato cerca del parque del norte.", sentAt = minutesAgo(2 * 24 * 60)),
             Message(id = "msg12", senderId = "u2", text = "¿En serio? ¿Recuerdas a qué hora fue?", sentAt = minutesAgo(2 * 24 * 60 - 15)),
@@ -374,36 +482,52 @@ object SeedData {
 
     // Resumen de cada chat, coherente con sus mensajes (último mensaje y no leídos).
     val chats: List<Chat> = listOf(
+        // Ana tiene un mensaje sin leer de Luis.
         chat(CHAT_P1, "u2", "u1", "p1", unread = mapOf("u1" to 1)),
+        // Chat de Camila y Ana, todo leído.
         chat(CHAT_P6, "u3", "u1", "p6"),
+        // Chat de Ana y Andrés, todo leído.
         chat(CHAT_P4, "u1", "u4", "p4"),
+        // Chat de Andrés y Luis, todo leído.
         chat(CHAT_P2, "u4", "u2", "p2"),
     )
 
+    // Arma el resumen de un chat a partir de sus mensajes, para que cuadre con ellos.
     private fun chat(id: String, starter: String, other: String, postId: String, unread: Map<String, Int> = emptyMap()): Chat {
+        // Mensajes del chat (falla si el id no existe en el mapa).
         val messages = chatMessages.getValue(id)
+        // Último mensaje de la conversación.
         val last = messages.last()
+        // Participantes: quien inició el chat y la otra persona.
         val participants = listOf(starter, other)
         return Chat(
+            // Id, participantes y publicación relacionada.
             id = id, participantIds = participants, postId = postId,
+            // Datos del último mensaje, que se muestran en la lista de chats.
             lastMessage = last.text, lastMessageType = last.type, lastMessageAt = last.sentAt, lastSenderId = last.senderId,
+            // No leídos por participante (0 si no se indicó).
             unreadCounts = participants.associateWith { unread[it] ?: 0 },
             // Quien no tiene pendientes leyó hasta el último mensaje; quien sí, hasta el anterior.
             lastReadAt = participants.associateWith { if ((unread[it] ?: 0) > 0) messages[messages.size - 2].sentAt else last.sentAt },
+            // El chat se creó con el primer mensaje.
             createdAt = messages.first().sentAt
         )
     }
 
+    // Solicitudes de adopción con id determinista postId_requesterId.
     val adoptionRequests: List<AdoptionRequest> = listOf(
+        // Luis pide a Toby: pendiente.
         AdoptionRequest(
             id = AdoptionRequest.buildId("p1", "u2"), postId = "p1", postAuthorId = "u1",
             requesterId = "u2", requesterName = "luis_9", chatId = CHAT_P1, createdAt = minutesAgo(2 * 24 * 60)
         ),
+        // Camila pide el conejo: aceptada.
         AdoptionRequest(
             id = AdoptionRequest.buildId("p6", "u3"), postId = "p6", postAuthorId = "u1",
             requesterId = "u3", requesterName = "camila_r", chatId = CHAT_P6,
             status = AdoptionRequestStatus.ACCEPTED, createdAt = minutesAgo(18 * 60), respondedAt = minutesAgo(17 * 60)
         ),
+        // Ana pide el hogar de paso: rechazada.
         AdoptionRequest(
             id = AdoptionRequest.buildId("p4", "u1"), postId = "p4", postAuthorId = "u4",
             requesterId = "u1", requesterName = "ana_77", chatId = CHAT_P4,
@@ -414,30 +538,41 @@ object SeedData {
 
     // ---- Notificaciones ----
 
+    // Notificaciones de ejemplo de todos los tipos.
     val notifications = listOf(
         // Para ana_77 (u1).
+        // Nuevo mensaje de Luis en el chat de Toby (sin leer).
         Notification(id = "n1", recipientId = "u1", type = NotificationType.NEW_MESSAGE,
             actorId = "u2", actorName = "luis_9", postId = "p1", chatId = CHAT_P1, read = false, createdAt = minutesAgo(20)),
+        // Nuevo comentario de Luis en p1 (sin leer).
         Notification(id = "n2", recipientId = "u1", type = NotificationType.NEW_COMMENT,
             actorId = "u2", actorName = "luis_9", postId = "p1", commentId = "c1", read = false, createdAt = daysAgo(3)),
+        // Camila marcó p1 como importante.
         Notification(id = "n3", recipientId = "u1", type = NotificationType.POST_IMPORTANT,
             actorId = "u3", actorName = "camila_r", postId = "p1", read = true, createdAt = daysAgo(3)),
+        // Sofía verificó p6 (sin leer).
         Notification(id = "n4", recipientId = "u1", type = NotificationType.POST_VERIFIED,
             actorId = "m5", actorName = "mod_sofia", postId = "p6", read = false, createdAt = hoursAgo(20)),
+        // Camila envió solicitud de adopción por p6.
         Notification(id = "n5", recipientId = "u1", type = NotificationType.ADOPTION_REQUEST,
             actorId = "u3", actorName = "camila_r", postId = "p6", chatId = CHAT_P6, read = true, createdAt = minutesAgo(18 * 60)),
+        // Ana desbloqueó la insignia "Final feliz".
         Notification(id = "n6", recipientId = "u1", type = NotificationType.BADGE_UNLOCKED,
             extra = "happy_ending", read = true, createdAt = hoursAgo(6)),
         // Para luis_9 (u2).
+        // Diana rechazó p13; el motivo va en extra (sin leer).
         Notification(id = "n7", recipientId = "u2", type = NotificationType.POST_REJECTED,
             actorId = "m3", actorName = "mod_diana", postId = "p13", extra = "No se permite la venta de animales",
             read = false, createdAt = hoursAgo(20)),
+        // Nuevo comentario de Andrés en p2 (sin leer).
         Notification(id = "n8", recipientId = "u2", type = NotificationType.NEW_COMMENT,
             actorId = "u4", actorName = "andres_m", postId = "p2", commentId = "c3", read = false, createdAt = daysAgo(2)),
         // Para camila_r (u3) y andres_m (u4).
+        // Ana aceptó la solicitud de Camila (sin leer).
         Notification(id = "n9", recipientId = "u3", type = NotificationType.ADOPTION_RESPONSE,
             actorId = "u1", actorName = "ana_77", postId = "p6", chatId = CHAT_P6, extra = "ACCEPTED",
             read = false, createdAt = minutesAgo(17 * 60)),
+        // Laura verificó p4.
         Notification(id = "n10", recipientId = "u4", type = NotificationType.POST_VERIFIED,
             actorId = "m1", actorName = "mod_laura", postId = "p4", read = true, createdAt = daysAgo(4)),
     )

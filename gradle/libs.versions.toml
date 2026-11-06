@@ -1,67 +1,140 @@
+# /**
+# Catálogo de versiones de Gradle (Version Catalog). Centraliza en un solo lugar las versiones,
+# librerías y plugins del proyecto. Los build.gradle.kts los usan con el accesor generado
+# `libs` (por ejemplo libs.hilt.android o libs.plugins.google.services); así una versión se
+# cambia una sola vez aquí y se evita que distintos módulos usen versiones incompatibles.
+# Secciones: [versions] números de versión, [libraries] dependencias, [plugins] plugins de Gradle.
+# **/
+
+# Números de versión reutilizables; las librerías y plugins los referencian con version.ref.
 [versions]
+# Android Gradle Plugin: herramienta que compila y empaqueta la app Android.
 agp = "9.4.1"
+# AndroidX Core KTX: extensiones de Kotlin para las APIs base de Android.
 coreKtx = "1.19.1"
+# JUnit 4: framework de pruebas unitarias locales (en la JVM).
 junit = "4.13.2"
+# Extensiones de JUnit para pruebas instrumentadas en dispositivo/emulador.
 junitVersion = "1.3.0"
+# Espresso: pruebas de interfaz instrumentadas.
 espressoCore = "3.7.0"
+# Lifecycle runtime: corrutinas ligadas al ciclo de vida (lifecycleScope).
 lifecycleRuntimeKtx = "2.11.0"
+# Integración de Activity con Compose (setContent, enableEdgeToEdge).
 activityCompose = "1.13.0"
+# Versión de Kotlin; también fija la del plugin de Compose y la de serialización.
 kotlin = "2.4.20"
+# BoM de Compose: fija versiones compatibles entre todas las librerías de Compose.
 composeBom = "2026.09.00"
+# ViewModel para Compose y runtime de Lifecycle para Compose (collectAsStateWithLifecycle).
 lifecycleViewmodelCompose = "2.11.0"
+# Paquete extendido de íconos de Material Design.
 material-icons-extended = "1.7.8"
+# Coil 3: carga de imágenes desde internet para Compose.
 coil = "3.6.3"
+# Navigation Compose: navegación entre pantallas.
 navigationCompose = "2.10.2"
+# Kotlinx Serialization: conversión de objetos a/desde JSON (rutas tipadas y APIs REST).
 kotlinxSerialization = "1.11.0"
+# Hilt (Dagger): inyección de dependencias; la usan la librería y su compilador.
 hiltAndroid = "2.60.1"
+# Integración de Hilt con Navigation Compose (hiltViewModel()).
 hiltNavigationCompose = "1.4.0"
+# KSP: procesador de símbolos de Kotlin que ejecuta el compilador de Hilt.
 ksp = "2.3.6"
+# DataStore Preferences: almacenamiento local clave-valor.
 dataStore = "1.2.1"
+# AppCompat: necesario para el idioma por aplicación en Android anteriores a 13.
 appcompat = "1.7.1"
+# OkHttp: cliente HTTP para Cloudinary, OpenRouter y EmailJS.
 okhttp = "4.12.0"
+# MapLibre: SDK de mapas de código abierto.
 maplibre = "11.13.5"
+# BoM de Firebase: fija versiones compatibles entre las librerías de Firebase.
 firebaseBom = "35.1.0"
+# Kotlinx Coroutines (play-services): await() sobre las Task de Firebase.
 coroutines = "1.10.2"
+# Plugin de Google Services: procesa google-services.json.
 googleServices = "4.5.0"
 
+# Librerías (dependencias) que los módulos pueden declarar como libs.<alias>.
 [libraries]
+# Extensiones de Kotlin para el núcleo de Android (Context, Bundle, etc.).
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+# JUnit para pruebas unitarias locales (por ejemplo, la exportación de datos semilla).
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+# Ejecutor de JUnit para pruebas instrumentadas de AndroidX.
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+# Espresso para automatizar interacciones de interfaz en pruebas instrumentadas.
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+# Lifecycle runtime con soporte de corrutinas para Activities y Fragments.
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+# Permite montar Compose dentro de una Activity con setContent.
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+# BoM de Compose: las librerías de Compose sin versión toman la que fija este BoM.
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+# Núcleo de la interfaz de Compose (Modifier, layouts, dibujo).
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+# Gráficos de Compose (colores, pinceles, formas).
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+# Herramientas de depuración de Compose (Layout Inspector, previsualizaciones interactivas).
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+# Anotación @Preview para previsualizar componentes en Android Studio.
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+# Manifiesto auxiliar necesario para lanzar pruebas de Compose en builds de depuración.
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+# Reglas de JUnit 4 para probar interfaces de Compose.
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+# Componentes de Material Design 3 para Compose (botones, tarjetas, barras, diálogos).
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+# Función viewModel() y estado ligado a ViewModels dentro de Compose.
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+# Conjunto completo de íconos de Material para Compose.
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
+# Coil para Compose: componente AsyncImage que muestra imágenes desde una URL.
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+# Módulo de red de Coil basado en OkHttp: descarga las imágenes (por ejemplo, de Cloudinary).
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+# Navegación entre pantallas Compose con NavHost y rutas.
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+# Serialización JSON de Kotlin (rutas @Serializable y cuerpos de peticiones REST).
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+# hiltViewModel(): obtiene ViewModels inyectados por Hilt desde las pantallas de Compose.
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+# Librería de Hilt para Android (anotaciones y componentes en tiempo de ejecución).
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+# Compilador de Hilt: genera el código de inyección en tiempo de compilación (se ejecuta con KSP).
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
+# DataStore Preferences para guardar preferencias locales de forma asíncrona.
 data-store = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
+# AppCompat: AppCompatActivity y el cambio de idioma por aplicación.
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+# Cliente HTTP OkHttp para llamar a las APIs REST externas.
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+# SDK de MapLibre para Android: muestra mapas sin necesidad de tokens.
 maplibre-android = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibre" }
+# BoM de Firebase: las librerías de Firebase sin versión toman la que fija este BoM.
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+# Firebase Authentication: registro, inicio de sesión y recuperación de contraseña.
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
+# Cloud Firestore: base de datos NoSQL en la nube con caché local.
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+# Integración de corrutinas con las Task de Google Play Services/Firebase (await()).
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
+# Runtime de Lifecycle para Compose: collectAsStateWithLifecycle() para observar flujos.
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleViewmodelCompose" }
 
+# Plugins de Gradle que los build.gradle.kts aplican como libs.plugins.<alias>.
 [plugins]
+# Plugin de aplicación Android (AGP).
 android-application = { id = "com.android.application", version.ref = "agp" }
+# Plugin del compilador de Compose para Kotlin.
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+# Plugin de serialización de Kotlin: genera los serializadores de las clases @Serializable.
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+# Plugin de Hilt para Android: transforma las clases anotadas para la inyección.
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
+# Plugin KSP: habilita la configuración ksp(...) para procesadores de anotaciones.
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+# Plugin de Google Services: conecta la app con el proyecto de Firebase.
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

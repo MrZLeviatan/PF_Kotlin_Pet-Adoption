@@ -9,9 +9,12 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSummary
 import kotlinx.coroutines.flow.StateFlow
 
 /**
-Contrato de perfiles ([User] y [Moderator]) guardados en Firestore.
+Contrato (puerto) del dominio para los perfiles ([User] y [Moderator]) guardados en Firestore.
+Cubre el perfil de la sesión actual, búsquedas, comprobación de duplicados, edición, ajustes y anonimización.
 Las validaciones de formato y reglas de flujo viven en los casos de uso, aquí solo se ejecuta.
- */
+Lo implementa la capa de datos y lo consumen los casos de uso de usecase/user, usecase/auth y muchos otros
+que necesitan el perfil de quien tiene la sesión.
+**/
 interface UserRepository {
 
     // Perfil actual

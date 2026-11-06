@@ -4,6 +4,12 @@ import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.repository.AuthRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 
+/**
+Caso de uso que cambia la contraseña de la persona con sesión abierta.
+Valida que la nueva sea segura y distinta de la actual antes de delegar en AuthRepository,
+que reautentica con la contraseña actual en Firebase Auth y luego la actualiza.
+Lo usa el ViewModel de la pantalla de ajustes / cambio de contraseña.
+**/
 // Define la clase del caso de uso para cambiar la contraseña inyectando el repositorio de autenticación.
 class ChangePasswordUseCase(
     // Inyecta el repositorio de autenticación.
@@ -11,7 +17,7 @@ class ChangePasswordUseCase(
 ) {
     // Define la función asíncrona principal que recibe la contraseña actual y la nueva, devolviendo un resultado vacío.
     suspend operator fun invoke(currentPassword: String, newPassword: String): Result<Unit> {
-        // Válida si la nueva contraseña cumple con los requisitos mínimos de seguridad.
+        // Valida si la nueva contraseña cumple con los requisitos mínimos de seguridad.
         if (!AuthValidator.isPasswordValid(newPassword))
         // Retorna un fallo si la nueva contraseña es débil.
             return Result.failure(AuthException.WeakPassword)

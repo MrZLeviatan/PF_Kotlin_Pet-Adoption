@@ -39,6 +39,8 @@ Campo de texto de la app (correo, contraseña, nombre...).
 Centraliza el estilo del formulario para que todas las pantallas se vean igual.
 Con `isPassword = true` gestiona solo el botón de mostrar/ocultar.
 El texto escrito usa `bodyLarge` (Rubik Regular) por defecto en Material.
+Se usa en login, registro, recuperar/cambiar contraseña, editar perfil, ajustes
+y diálogos de formulario; todos sus colores salen de AppTheme.
 
 La descripción del campo es una etiqueta flotante: se ve dentro del campo mientras
 está vacío y sin foco, y sube al borde superior al enfocarlo o escribir.
@@ -47,46 +49,73 @@ Opcionales:
 - `readOnly = true`: muestra el valor con un candado y no deja editarlo (ej. el correo).
 - `required = true`: añade un asterisco rojo a la etiqueta.
 - `textStyle`: cambia la letra del texto escrito y de la etiqueta (ej. más pequeña en un diálogo).
- */
+**/
 @Composable
 fun AppTextField(
-    value: String,                              // Texto actual ingresado en el campo
-    onValueChange: (String) -> Unit,            // Callback que se ejecuta cuando el usuario escribe o borra texto
-    label: String,                              // Descripción del campo: flota arriba al enfocar o escribir
-    leadingIcon: ImageVector,                   // Icono decorativo ubicado al inicio del campo de texto
-    modifier: Modifier = Modifier,              // Modificador externo para personalizar posición o márgenes
+    // Texto actual ingresado en el campo
+    value: String,
+    // Callback que se ejecuta cuando el usuario escribe o borra texto
+    onValueChange: (String) -> Unit,
+    // Descripción del campo: flota arriba al enfocar o escribir
+    label: String,
+    // Icono decorativo ubicado al inicio del campo de texto
+    leadingIcon: ImageVector,
+    // Modificador externo para personalizar posición o márgenes
+    modifier: Modifier = Modifier,
+    // Mensaje de error bajo el campo; null significa que el valor es válido.
     errorMessage: String? = null,
-    isPassword: Boolean = false,                // Bandera para indicar si el campo es de tipo contraseña
-    keyboardType: KeyboardType = KeyboardType.Text, // Tipo de teclado virtual que se mostrará (texto, número, email, etc.)
-    imeAction: ImeAction = ImeAction.Next,      // Acción del botón inferior del teclado (Siguiente, Hecho, Buscar, etc.)
-    keyboardActions: KeyboardActions = KeyboardActions.Default, // Acciones personalizadas al presionar los botones del teclado
+    // Bandera para indicar si el campo es de tipo contraseña
+    isPassword: Boolean = false,
+    // Tipo de teclado virtual que se mostrará (texto, número, email, etc.)
+    keyboardType: KeyboardType = KeyboardType.Text,
+    // Acción del botón inferior del teclado (Siguiente, Hecho, Buscar, etc.)
+    imeAction: ImeAction = ImeAction.Next,
+    // Acciones personalizadas al presionar los botones del teclado
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    // Si es true el valor se muestra pero no se puede editar.
     readOnly: Boolean = false,
+    // Si es true se agrega un asterisco rojo a la etiqueta para marcar el campo como obligatorio.
     required: Boolean = false,
-    textStyle: TextStyle? = null,               // null: la letra por defecto de Material (bodyLarge)
+    // null: la letra por defecto de Material (bodyLarge)
+    textStyle: TextStyle? = null,
 ) {
     // Visibilidad como estado interno: ninguna pantalla debe preocuparse por esto.
+    // rememberSaveable conserva el valor si la pantalla rota o el proceso se recrea.
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    // Se lee el color de error fuera del builder del texto, porque allí no se puede llamar a funciones @Composable.
     val errorColor = AppTheme.colors.stateError
 
     // Dibuja el campo de texto con borde oficial de Material Design 3
     OutlinedTextField(
+        // Valor mostrado y callback de cambio (estado elevado: lo controla quien usa el campo).
         value = value,
         onValueChange = onValueChange,
+        // El campo siempre ocupa todo el ancho disponible.
         modifier = modifier.fillMaxWidth(),
+        // Bloquea la edición cuando el campo es de solo lectura.
         readOnly = readOnly,
+        // Usa el estilo recibido o, si no hay, el estilo de texto actual de Material.
         textStyle = textStyle ?: LocalTextStyle.current,
-        singleLine = true,          // Limita el campo a una sola línea de texto
+        // Limita el campo a una sola línea de texto
+        singleLine = true,
+        // Activa el estado de error cuando existe un mensaje.
         isError = errorMessage != null,
+        // Muestra el mensaje de error bajo el campo; si no hay, no reserva espacio.
         supportingText = errorMessage?.let { { Text(text = it) } },
+        // Esquinas redondeadas medianas definidas por el tema de Material.
         shape = MaterialTheme.shapes.medium,
         // `label` en lugar de `placeholder`: Material anima la subida al borde superior
         // y además TalkBack sigue leyendo la descripción cuando el campo ya tiene texto.
         label = {
             Text(
+                // Texto enriquecido: la etiqueta y, si es obligatorio, un asterisco en rojo.
                 text = buildAnnotatedString {
+                    // Agrega el texto de la etiqueta.
                     append(label)
+                    // Si el campo es obligatorio añade "*" con el color de error.
                     if (required) withStyle(SpanStyle(color = errorColor)) { append("*") }
                 },
+                // Misma letra que el texto escrito para que la etiqueta y el valor se vean coherentes.
                 style = textStyle ?: MaterialTheme.typography.bodyLarge,
             )
         },
@@ -96,10 +125,13 @@ fun AppTextField(
         },
         // Contraseña: botón de mostrar/ocultar. Solo lectura: candado que avisa que no se edita.
         trailingIcon = when {
+            // Caso contraseña: botón que alterna la visibilidad del texto.
             isPassword -> {
                 {
+                    // Al pulsarlo invierte el estado de visibilidad.
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
+                            // Ojo tachado si se ve la contraseña, ojo normal si está oculta.
                             imageVector = if (passwordVisible) Icons.Outlined.VisibilityOff
                             else Icons.Outlined.Visibility,
                             // Este sí es interactivo: TalkBack debe anunciar su acción.
@@ -111,9 +143,11 @@ fun AppTextField(
                     }
                 }
             }
+            // Caso solo lectura: candado con descripción que explica que no es editable.
             readOnly -> {
                 { Icon(Icons.Outlined.Lock, contentDescription = stringResource(R.string.common_not_editable)) }
             }
+            // En cualquier otro caso no hay icono final.
             else -> null
         },
         // Oculta los caracteres con asteriscos/puntos si es contraseña y la visibilidad está desactivada
@@ -124,21 +158,31 @@ fun AppTextField(
         },
         // Configura el tipo de teclado y la acción del botón de envío según los parámetros
         keyboardOptions = KeyboardOptions(
+            // Las contraseñas fuerzan el teclado de contraseña (sin sugerencias ni autocorrección).
             keyboardType = if (isPassword) KeyboardType.Password else keyboardType,
+            // Acción del botón principal del teclado.
             imeAction = imeAction,
         ),
+        // Acciones a ejecutar al pulsar el botón del teclado (por ejemplo, enviar el formulario).
         keyboardActions = keyboardActions,
         // Todos los colores salen del tema: el campo responde a claro/oscuro solo.
         colors = OutlinedTextFieldDefaults.colors(
+            // Fondo de superficie con y sin foco.
             focusedContainerColor = AppTheme.colors.surface,
             unfocusedContainerColor = AppTheme.colors.surface,
-            focusedBorderColor = AppTheme.colors.textPrimary,   // el foco se nota
+            // el foco se nota
+            focusedBorderColor = AppTheme.colors.textPrimary,
+            // Borde normal cuando el campo no tiene foco.
             unfocusedBorderColor = AppTheme.colors.border,
+            // Color del texto escrito.
             focusedTextColor = AppTheme.colors.textPrimary,
             unfocusedTextColor = AppTheme.colors.textPrimary,
+            // Color del cursor.
             cursorColor = AppTheme.colors.textPrimary,
+            // Icono inicial oscuro con foco y atenuado sin foco.
             focusedLeadingIconColor = AppTheme.colors.textPrimary,
             unfocusedLeadingIconColor = AppTheme.colors.border,
+            // Icono final con el mismo criterio que el inicial.
             focusedTrailingIconColor = AppTheme.colors.textPrimary,
             unfocusedTrailingIconColor = AppTheme.colors.border,
             // Etiqueta: gris dentro del campo (hace de placeholder), oscura al enfocar

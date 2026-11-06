@@ -22,8 +22,11 @@ Acciones de autenticación y sesión:
 - `SendPasswordResetUseCase`: solicita el restablecimiento de contraseña.
 - `ChangePasswordUseCase`: valida la contraseña nueva y solicita el cambio.
 - `ObserveSessionUseCase`: expone el estado observable de la cuenta actual.
+- `RestoreSessionUseCase`: al abrir la app recupera la sesión guardada por Firebase Auth y valida el perfil; si quedó a mitad de la A2F, la cierra.
+- `CheckRegistrationAvailabilityUseCase`: antes del segundo paso del registro revisa si el correo o el teléfono ya los usa otra cuenta.
+- `LogoutUseCase`: cierra la sesión.
 
-Usan principalmente `AuthRepository` y, para los datos de perfil, `UserRepository` y `CheckProfileUseCase`. La interfaz y el repositorio determinan si el correo, el segundo factor y las contraseñas son simulados o reales.
+Usan principalmente `AuthRepository` y, para los datos de perfil, `UserRepository` y `CheckProfileUseCase`. La implementación real vive en `data/repository/firebase/FirebaseAuthRepository`: Firebase Auth valida correo y contraseña, y el código A2F (6 dígitos, 5 minutos, 5 intentos, un solo uso) se envía por correo con EmailJS.
 
 <Br>
 
@@ -143,6 +146,29 @@ Acciones de puntos e insignias:
 - `LoadBadgesUseCase` y `ObserveBadgesUseCase`: cargan u observan el catálogo de insignias.
 
 Usan `ReputationRepository` y, para calcular progreso o notificar, `UserRepository`, `PostRepository`, `NotifyUseCase` y `RequireUserUseCase`.
+
+<br>
+
+### `ai/`
+
+- `AnalyzePostUseCase`: arma la entrada para la IA (texto de la publicación, nombres de categoría y tipo de animal, y hasta 10 publicaciones parecidas como candidatas a duplicado), llama a `AiAnalysisRepository` y guarda el resultado (`AiReview`, prioridad y motivo) con `PostRepository.updateAiAnalysis`. Solo acepta un duplicado si está entre las candidatas enviadas. Nunca cambia el estado de verificación: la decisión es siempre de un moderador.
+
+Lo invocan el `PostAnalysisScheduler` (en segundo plano, al crear o editar una publicación) y los moderadores (botón "Analizar con IA").
+
+<br>
+
+### `image/`
+
+- `UploadImagesUseCase`: sube las fotos locales elegidas por la persona (cámara o galería) a `ImageStorageRepository` y devuelve sus URL públicas. Las URL que ya son remotas se conservan.
+
+<br>
+
+### `location/`
+
+- `SearchAddressUseCase`: busca direcciones escritas por la persona (para el registro y la creación de publicaciones).
+- `ReverseGeocodeUseCase`: convierte un punto tocado en el mapa en una dirección legible.
+
+Ambos usan `GeocodingRepository`, implementado con el geocodificador del teléfono (sin llaves).
 
 <br>
 

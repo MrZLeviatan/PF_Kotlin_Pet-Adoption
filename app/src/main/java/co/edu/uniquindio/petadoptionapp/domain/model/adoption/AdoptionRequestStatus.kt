@@ -2,8 +2,11 @@ package co.edu.uniquindio.petadoptionapp.domain.model.adoption
 
 
 /**
-Estado de una solicitud de adopción.
- */
+Modelo de dominio: estado de una solicitud de adopción ([AdoptionRequest]).
+Lo consultan los casos de uso de chat/adoption para saber si una solicitud
+todavía puede responderse o cancelarse, y la UI para mostrar su etiqueta.
+**/
+// Enumera los estados posibles de una solicitud.
 enum class AdoptionRequestStatus {
     // Enviada; el autor aún no responde.
     PENDING,
