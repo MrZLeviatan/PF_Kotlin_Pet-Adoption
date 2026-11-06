@@ -65,9 +65,6 @@ object SeedData {
     private val PARQUE_VIDA = armenia(4.5470, -75.6560, "Parque de la Vida")
 
 
-    // Contraseñas de prueba (el script crea con ellas las cuentas de Firebase Auth; mínimo 6 caracteres).
-    private const val USER_PASSWORD = "Usuario123"
-    private const val MODERATOR_PASSWORD = "Moderador123"
 
 
     // ---- Catálogos ----
@@ -342,10 +339,6 @@ object SeedData {
         ),
     )
 
-    // Correo → contraseña de cada cuenta de prueba.
-    val passwords: Map<String, String> =
-        users.associate { it.account.email to USER_PASSWORD } +
-            moderators.associate { it.account.email to MODERATOR_PASSWORD }
 
 
     // ---- Chats y solicitudes de adopción ----

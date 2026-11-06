@@ -43,8 +43,30 @@ if (process.argv.includes("--reset")) {
   console.log("Firestore vaciado.");
 }
 
+// Contraseñas de las cuentas de prueba: en firebase/seed/.env (ignorado por git), nunca en el repositorio.
+const envPath = new URL("./.env", import.meta.url);
+const env = existsSync(envPath)
+  ? Object.fromEntries(readFileSync(envPath, "utf8").split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#")).map(l => l.split("=").map(p => p.trim())))
+  : {};
+const PASSWORDS = { USER: env.SEED_USER_PASSWORD, MODERATOR: env.SEED_MODERATOR_PASSWORD };
+if (!PASSWORDS.USER || !PASSWORDS.MODERATOR || PASSWORDS.USER.length < 6 || PASSWORDS.MODERATOR.length < 6) {
+  console.error("Falta firebase/seed/.env con SEED_USER_PASSWORD y SEED_MODERATOR_PASSWORD (mínimo 6 caracteres). Mira .env.example.");
+  process.exit(1);
+}
+
 // 1. Cuentas de Firebase Auth con uid fijo (los datos las referencian por ese id).
-for (const { uid, email, password, displayName } of seed.auth) {
+for (const { uid, email, role, displayName } of seed.auth) {
+  const password = PASSWORDS[role];
+  // Si el correo ya lo tiene otra cuenta (por ejemplo, creada a mano en la consola), choca con el uid fijo.
+  const owner = await auth.getUserByEmail(email).catch(() => null);
+  if (owner && owner.uid !== uid) {
+    if (!process.argv.includes("--reset")) {
+      console.error(`El correo ${email} ya es de otra cuenta (uid ${owner.uid}). Bórrala en Authentication o corre con --reset.`);
+      process.exit(1);
+    }
+    await auth.deleteUser(owner.uid);
+    console.log(`Cuenta repetida eliminada: ${email} (uid ${owner.uid})`);
+  }
   try {
     await auth.updateUser(uid, { email, password, displayName });
     console.log(`Cuenta actualizada: ${email}`);

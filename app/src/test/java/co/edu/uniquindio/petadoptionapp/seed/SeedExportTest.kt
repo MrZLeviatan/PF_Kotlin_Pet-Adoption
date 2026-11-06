@@ -77,7 +77,8 @@ class SeedExportTest {
                 add(buildJsonObject {
                     put("uid", account.id)
                     put("email", account.email)
-                    put("password", SeedData.passwords.getValue(account.email))
+                    // La contraseña NO va aquí (el repositorio es público): el script la lee de seed/.env.
+                    put("role", account.role.name)
                     put("displayName", account.userName)
                 })
             }

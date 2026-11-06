@@ -261,11 +261,12 @@ class RegisterViewModel @Inject constructor(
         val base = copy(isLoading = false)
         return when (error) {
             AuthException.InvalidEmail -> base.copy(emailError = FieldError.INVALID, step = 1)
-            AuthException.EmailAlreadyInUse -> base.copy(emailError = FieldError.TAKEN, step = 1)
+            // Además del campo, el aviso general: al volver a la fase 1 el campo puede quedar fuera de la vista.
+            AuthException.EmailAlreadyInUse -> base.copy(emailError = FieldError.TAKEN, registerError = RegisterError.TAKEN, step = 1)
             AuthException.WeakPassword -> base.copy(passwordError = FieldError.WEAK, step = 1)
             UserException.InvalidName -> base.copy(nameError = FieldError.INVALID, step = 1)
             UserException.InvalidPhone -> base.copy(phoneError = FieldError.INVALID, step = 1)
-            UserException.PhoneTaken -> base.copy(phoneError = FieldError.TAKEN, step = 1)
+            UserException.PhoneTaken -> base.copy(phoneError = FieldError.TAKEN, registerError = RegisterError.TAKEN, step = 1)
             UserException.InvalidLocation -> base.copy(registerError = RegisterError.LOCATION)
             else -> base.copy(registerError = RegisterError.GENERIC)
         }

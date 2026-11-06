@@ -26,10 +26,12 @@ Publica `firebase/firestore.rules` y `firebase/firestore.indexes.json`. Los índ
 
 1. Consola → ⚙ Configuración del proyecto → *Cuentas de servicio* → **Generar nueva clave privada**.
    Guárdala como `firebase/seed/service-account.json` (está en `.gitignore`: nunca la subas).
-2. En `firebase/seed`: `npm install` y luego `npm run seed`.
+2. Copia `seed/.env` como `firebase/seed/.env` y elige las contraseñas de las cuentas de prueba
+   (el `.env` está en `.gitignore`; el repositorio es público, así que nunca van en el código).
+3. En `firebase/seed`: `npm install` y luego `npm run seed`.
    Para empezar de cero (borra **todo** Firestore, también lo creado desde la app): `npm run seed -- --reset`.
 
-Cuentas de prueba (contraseñas en `SeedData.kt`):
+Cuentas de prueba (contraseñas en tu `firebase/seed/.env`):
 - Usuarios: `n@gmail.com` (ana_77), `luis@correo.com`, `camila@correo.com`, `andres@correo.com`.
 - Moderadores: `mod@petadoption.com`, `mod2@petadoption.com` … `mod5@petadoption.com`.
 
