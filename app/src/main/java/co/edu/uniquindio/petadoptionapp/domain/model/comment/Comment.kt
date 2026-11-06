@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.comment
 
+import kotlinx.serialization.Serializable
+
 
 /**
  Comentario de una publicación, que puede tener respuestas en un solo nivel
@@ -13,6 +15,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.comment
  copian para dibujar la lista sin una lectura extra por comentario.
  Alias y foto son públicos incluso en perfiles privados.
  */
+@Serializable
 data class Comment(
     val id: String = "",
     // Publicación a la que pertenece.

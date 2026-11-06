@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.users.profile
 
+import kotlinx.serialization.Serializable
+
 /**
  Preferencias de seguridad y privacidad de un [User].
 
@@ -13,6 +15,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.users.profile
 
  Las funciones reciben `isOwner` porque el dueño siempre ve su propio perfil completo, sin importar su configuración.
  */
+@Serializable
 data class UserSettings(
 
     // Si al iniciar sesión se pide el código de verificación en dos pasos. El código vive en TwoFactorChallenge.

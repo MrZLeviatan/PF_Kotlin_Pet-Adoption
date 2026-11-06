@@ -1,0 +1,178 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para KogMaw Adoption.
+// Se publican con:  npx firebase-tools deploy --only firestore
+// Los permisos finos (quién puede finalizar, rechazar, etc.) viven en los casos de uso de la app;
+// aquí se protege lo esencial: cada quien escribe lo suyo y lo privado solo lo lee su dueño.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isModerator() {
+      return signedIn() && exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+
+    // El cambio solo toca estos campos.
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+
+    // Perfiles
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid);
+      // Los demás solo pueden sumar puntos o insignias (por votos, comentarios o verificaciones).
+      allow update: if isSelf(uid) || (signedIn() && onlyChanges(['reputation']));
+      allow delete: if false;
+    }
+
+    // Los moderadores se crean desde la consola o el script de datos, nunca desde la app.
+    match /moderators/{uid} {
+      allow read: if signedIn();
+      allow update: if isSelf(uid) && onlyChanges(['twoFactorEnabled', 'updatedAt']);
+      allow create, delete: if false;
+    }
+
+    // Índices de valores únicos: se puede preguntar por uno (aun sin sesión, para el registro),
+    // pero no listarlos. Solo se crean (nunca se sobrescriben), así no hay dos cuentas con el mismo valor.
+    match /emails/{email} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /userNames/{userName} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /phones/{phone} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Código A2F: solo su dueño (con la sesión de Firebase abierta) lo crea, lo lee y lo marca como usado.
+    match /twoFactorChallenges/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    // Opinión anónima al eliminar la cuenta: se escribe y nadie la lee desde la app.
+    match /deletionFeedback/{id} {
+      allow create: if signedIn();
+    }
+
+
+    // Catálogos (se leen sin sesión; los cambia un moderador)
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isModerator();
+    }
+    match /animalTypes/{id} {
+      allow read: if true;
+      allow write: if isModerator();
+    }
+    match /badges/{id} {
+      allow read: if true;
+      allow write: if isModerator();
+    }
+
+
+    // Publicaciones y comentarios
+
+    match /posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.verification.status == 'UNVERIFIED';
+      // El autor edita su contenido, pero no se puede auto-verificar; los demás solo mueven los contadores.
+      allow update: if signedIn() && (
+        isModerator()
+        || (resource.data.authorId == request.auth.uid
+            && (request.resource.data.verification.status == resource.data.verification.status
+                || request.resource.data.verification.status == 'UNVERIFIED'))
+        || onlyChanges(['importantCount', 'commentCount'])
+      );
+      allow delete: if false;
+
+      match /comments/{commentId} {
+        allow read: if signedIn();
+        allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
+        allow update: if signedIn() && (
+          resource.data.authorId == request.auth.uid
+          || isModerator()
+          || onlyChanges(['likeCount', 'replyCount'])
+        );
+        allow delete: if false;
+      }
+    }
+
+    match /commentLikes/{likeId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /importantVotes/{voteId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+
+    // Notificaciones: cualquiera con sesión puede avisarle a otra persona; solo la destinataria las ve.
+
+    match /notifications/{id} {
+      allow read: if signedIn() && resource.data.recipientId == request.auth.uid;
+      allow create: if signedIn();
+      allow update: if signedIn() && resource.data.recipientId == request.auth.uid && onlyChanges(['read']);
+      allow delete: if signedIn() && resource.data.recipientId == request.auth.uid;
+    }
+
+
+    // Chats, mensajes y solicitudes de adopción: solo sus participantes.
+
+    match /chats/{chatId} {
+      // `resource == null`: se puede preguntar si un chat existe antes de crearlo.
+      allow get: if signedIn() && (resource == null || request.auth.uid in resource.data.participantIds);
+      allow list: if signedIn() && request.auth.uid in resource.data.participantIds;
+      allow create: if signedIn() && request.auth.uid in request.resource.data.participantIds;
+      allow update, delete: if signedIn() && request.auth.uid in resource.data.participantIds;
+
+      match /messages/{messageId} {
+        allow read, delete: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
+        // getAfter: el chat puede estar creándose en la misma transacción que el mensaje.
+        allow create: if signedIn()
+          && request.resource.data.senderId == request.auth.uid
+          && request.auth.uid in getAfter(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
+      }
+    }
+
+    match /adoptionRequests/{requestId} {
+      allow get: if signedIn()
+        && (resource == null || request.auth.uid in [resource.data.requesterId, resource.data.postAuthorId]);
+      allow list: if signedIn() && resource.data.postAuthorId == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.requesterId == request.auth.uid;
+      allow update: if signedIn() && request.auth.uid in [resource.data.requesterId, resource.data.postAuthorId];
+    }
+
+
+    // Reputación: quien provoca el hecho registra los puntos; cada quien lista su propio historial.
+
+    match /pointTransactions/{transactionId} {
+      allow get: if signedIn();
+      allow list: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if signedIn();
+    }
+  }
+}

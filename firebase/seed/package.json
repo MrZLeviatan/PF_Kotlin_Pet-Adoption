@@ -1,0 +1,12 @@
+{
+  "name": "kogmaw-adoption-seed",
+  "private": true,
+  "type": "module",
+  "description": "Carga los datos de arranque (seed.json) en Firebase Auth y Firestore.",
+  "scripts": {
+    "seed": "node seed.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.0"
+  }
+}

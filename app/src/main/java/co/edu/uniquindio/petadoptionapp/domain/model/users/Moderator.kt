@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.users
 
+import kotlinx.serialization.Serializable
+
 /**
  Perfil de un moderador de la plataforma.
 
@@ -13,6 +15,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.users
 
  NO contiene la contraseña: la gestiona únicamente Firebase Auth.
  */
+@Serializable
 data class Moderator(
     val account: Account = Account(role = UserRole.MODERATOR),
     val name: String = "",

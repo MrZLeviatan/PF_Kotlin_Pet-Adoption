@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.location
 
+import kotlinx.serialization.Serializable
+
 /**
  Ubicación geográfica reutilizable.
 
@@ -11,6 +13,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.location
  Latitud y longitud son nulas mientras no se haya elegido un punto en el
  mapa. Para saber si la ubicación ya es utilizable, use [hasCoordinates].
  */
+@Serializable
 data class Location(
     val latitude: Double? = null,
     val longitude: Double? = null,

@@ -1,11 +1,14 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
+import kotlinx.serialization.Serializable
+
 /**
 Registro de puntos otorgados. Se guarda en la colección `pointTransactions`.
 El id se construye con [buildId] ("usuario_motivo_origen"): como Firestore no permite dos documentos con el mismo id,
 un mismo hecho solo puede dar puntos una vez, aunque la acción se repita.
 
  */
+@Serializable
 data class PointTransaction(
     val id: String = "",
     val userId: String = "",

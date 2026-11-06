@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.hilt.android)
     // Agrega KSP, el procesador que genera el código de Hilt.
     alias(libs.plugins.devtools.ksp)
+    // Lee app/google-services.json para conectar la app con el proyecto de Firebase.
+    alias(libs.plugins.google.services)
 }
 
 // Llaves en local.properties (nunca en git). Se leen aquí y pasan a BuildConfig.
@@ -42,6 +44,11 @@ android {
         // OpenRouter: IA para analizar publicaciones (OPENROUTER_MODEL es opcional).
         buildConfigField("String", "OPENROUTER_API_KEY", "\"${localKey("OPENROUTER_API_KEY")}\"")
         buildConfigField("String", "OPENROUTER_MODEL", "\"${localKey("OPENROUTER_MODEL")}\"")
+        // EmailJS: envía el código A2F al correo (la llave privada es opcional).
+        buildConfigField("String", "EMAILJS_SERVICE_ID", "\"${localKey("EMAILJS_SERVICE_ID")}\"")
+        buildConfigField("String", "EMAILJS_TEMPLATE_ID", "\"${localKey("EMAILJS_TEMPLATE_ID")}\"")
+        buildConfigField("String", "EMAILJS_PUBLIC_KEY", "\"${localKey("EMAILJS_PUBLIC_KEY")}\"")
+        buildConfigField("String", "EMAILJS_PRIVATE_KEY", "\"${localKey("EMAILJS_PRIVATE_KEY")}\"")
     }
 
     buildTypes {
@@ -103,6 +110,13 @@ dependencies {
     implementation(libs.okhttp)
     // Mapas: MapLibre (código abierto, sin tokens) con el estilo gratuito de OpenFreeMap.
     implementation(libs.maplibre.android)
+
+    // Firebase: Authentication (cuentas) y Firestore (base de datos). El BoM fija versiones compatibles.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    // `await()` para usar las tareas de Firebase desde corrutinas.
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Pruebas
     testImplementation(libs.junit)

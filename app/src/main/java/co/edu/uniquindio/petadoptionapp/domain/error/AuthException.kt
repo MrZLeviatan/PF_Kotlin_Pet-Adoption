@@ -50,6 +50,9 @@ sealed class AuthException : Exception() {
     // Se agotaron los intentos de verificación.
     object TooManyAttempts : AuthException()
 
+    // No se pudo enviar el código al correo (sin internet o el servicio de correo no está configurado).
+    object CodeNotSent : AuthException()
+
     // Ocurre cuando se intenta una acción que exige sesión y no hay ninguna abierta.
     object NotAuthenticated : AuthException()
 

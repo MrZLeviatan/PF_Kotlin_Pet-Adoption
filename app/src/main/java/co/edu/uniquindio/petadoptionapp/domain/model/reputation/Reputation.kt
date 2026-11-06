@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
+import kotlinx.serialization.Serializable
+
 
 /**
  Reputación de un usuario: puntos acumulados, nivel e insignias ganadas.
@@ -9,6 +11,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
  Es inmutable: [addPoints] y [unlockBadge] devuelven una copia nueva.
  */
+@Serializable
 data class Reputation(
     // Puntos acumulados por participar.
     val points: Int = 0,

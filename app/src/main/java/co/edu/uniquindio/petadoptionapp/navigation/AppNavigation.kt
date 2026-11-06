@@ -47,11 +47,12 @@ fun AppNavigation() {
         startDestination = MainRoutes.Splash
     ) {
 
-        // Pantalla de carga: al terminar, va al login.
+        // Pantalla de carga: con sesión guardada va directo al inicio; si no, al login.
         composable<MainRoutes.Splash> {
             SplashScreen(
-                onFinished = {
-                    navController.navigate(MainRoutes.Login) {
+                onFinished = { hasSession ->
+                    val destination: MainRoutes = if (hasSession) MainRoutes.Main else MainRoutes.Login
+                    navController.navigate(destination) {
                         // Saca el splash de la pila: "atrás" no debe volver a él.
                         popUpTo<MainRoutes.Splash> { inclusive = true }
                     }
@@ -70,8 +71,6 @@ fun AppNavigation() {
                         popUpTo<MainRoutes.Login> { inclusive = true }
                     }
                 },
-                // TODO: cuando exista la ruta de A2F → navController.navigate(MainRoutes.TwoFactor(accountId))
-                onTwoFactorRequired = { accountId -> },
                 onForgotPasswordClick = { navController.navigate(MainRoutes.RecoverPassword) },
                 onRegisterClick = { navController.navigate(MainRoutes.Register) },
             )

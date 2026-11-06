@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.adoption
 
+import kotlinx.serialization.Serializable
+
 
 /**
  Solicitud de una persona interesada en adoptar la mascota de una publicación.
@@ -10,6 +12,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.adoption
 
  Es inmutable: los cambios de estado devuelven una copia nueva.
  */
+@Serializable
 data class AdoptionRequest(
     val id: String = "",
     // Publicación a la que se solicita.

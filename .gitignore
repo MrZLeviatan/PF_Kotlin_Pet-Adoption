@@ -36,3 +36,9 @@ replay_pid*
 .cxx
 
 app/build/
+
+app/google-services.json
+
+# Llave de administrador de Firebase (solo para cargar los datos de arranque)
+firebase/seed/service-account.json
+firebase/seed/node_modules/

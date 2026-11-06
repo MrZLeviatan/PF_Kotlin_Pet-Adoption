@@ -85,6 +85,8 @@ internal fun ExploreFiltersDialog(state: ExploreUiState, viewModel: ExploreViewM
                             val id = state.categories[i].id
                             viewModel.onDraftChange { f -> f.copy(categoryId = id.takeIf { id != f.categoryId }) }
                         },
+                        // El mismo ícono y color que su marcador en el mapa.
+                        leading = { i -> CategoryMarkerIcon(state.categories[i]) },
                     )
                 }
                 FilterSection(stringResource(R.string.explore_filter_animal)) {

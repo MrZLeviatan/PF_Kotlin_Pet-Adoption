@@ -1,9 +1,12 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
+import kotlinx.serialization.Serializable
+
 /**
  Revisión automática (IA) de una publicación, para que el moderador decida rápido.
  La IA no aprueba ni rechaza: solo sugiere la prioridad (en Verification), resume y señala riesgos.
  */
+@Serializable
 data class AiReview(
     // Resumen breve para el moderador.
     val summary: String = "",

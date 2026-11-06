@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -58,6 +59,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import co.edu.uniquindio.petadoptionapp.domain.model.post.Category
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import co.edu.uniquindio.petadoptionapp.core.component.map.MarkerShape
@@ -98,7 +102,7 @@ fun ExploreScreen(
             center = state.center,
             zoom = 13.5,
             markers = state.posts.map { post ->
-                val style = categoryMarkerStyle(post.categoryId)
+                val style = categoryMarkerStyle(state.categories.firstOrNull { it.id == post.categoryId })
                 MapMarker(post.id, post.point, style.color, selected = post.id == state.selectedPostId, icon = style.icon, shape = style.shape)
             },
             userLocation = state.userLocation,
@@ -148,7 +152,7 @@ fun ExploreScreen(
                 MapChip(text = stringResource(R.string.explore_all), onClick = viewModel::onClearFiltersClick)
             }
             // Leyenda: qué significa cada marcador (categorías del catálogo y "Tú").
-            MapLegend(categories = state.categories.map { it.id to it.name })
+            MapLegend(categories = state.categories)
         }
 
         // Volver a mi ubicación.
@@ -324,30 +328,38 @@ internal fun sizeText(size: AnimalSize): String = stringResource(
 /** Cómo se ve el marcador de una categoría: color, ícono y forma (lugares en cuadrado, como en el diseño). */
 internal data class CategoryMarkerStyle(val color: Color, val icon: ImageVector, val shape: MarkerShape)
 
-// Adopción: café con huella. Perdidos: rojo con lupa. Encontrados: verde con bandera.
-// Hogar temporal: amarillo con casa. Veterinaria: amarillo con hospital (cuadrados: son lugares).
+// El ícono, el color y la forma vienen de la categoría (Firestore): una categoría nueva no requiere recompilar.
+// Sin categoría (o con un ícono desconocido) se usa la huella con el color de la marca.
 @Composable
-internal fun categoryMarkerStyle(categoryId: String): CategoryMarkerStyle = when (categoryId) {
-    "adoption" -> CategoryMarkerStyle(AppTheme.colors.actionSecondary, Icons.Filled.Pets, MarkerShape.CIRCLE)
-    "lost" -> CategoryMarkerStyle(AppTheme.colors.stateError, Icons.Filled.Search, MarkerShape.CIRCLE)
-    "found" -> CategoryMarkerStyle(AppTheme.colors.stateSuccess, Icons.Filled.Flag, MarkerShape.CIRCLE)
-    "temporary" -> CategoryMarkerStyle(AppTheme.colors.actionPrimary, Icons.Filled.Home, MarkerShape.ROUNDED_SQUARE)
-    "veterinary" -> CategoryMarkerStyle(AppTheme.colors.actionPrimary, Icons.Filled.LocalHospital, MarkerShape.ROUNDED_SQUARE)
-    else -> CategoryMarkerStyle(AppTheme.colors.brand, Icons.Filled.Pets, MarkerShape.CIRCLE)
+internal fun categoryMarkerStyle(category: Category?): CategoryMarkerStyle {
+    val icon = when (category?.icon) {
+        "search" -> Icons.Filled.Search
+        "flag" -> Icons.Filled.Flag
+        "home" -> Icons.Filled.Home
+        "hospital" -> Icons.Filled.LocalHospital
+        "heart" -> Icons.Filled.Favorite
+        "star" -> Icons.Filled.Star
+        else -> Icons.Filled.Pets
+    }
+    val color = category?.color
+        ?.let { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrNull() }
+        ?: AppTheme.colors.brand
+    val shape = if (category?.isPlace == true) MarkerShape.ROUNDED_SQUARE else MarkerShape.CIRCLE
+    return CategoryMarkerStyle(color, icon, shape)
 }
 
 // Leyenda desplazable: un mini marcador por categoría y el de la persona.
 @Composable
-private fun MapLegend(categories: List<Pair<String, String>>) {
+private fun MapLegend(categories: List<Category>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        categories.forEach { (id, name) ->
-            val style = categoryMarkerStyle(id)
-            LegendItem(name = name, color = style.color, icon = style.icon, shape = style.shape)
+        categories.forEach { category ->
+            val style = categoryMarkerStyle(category)
+            LegendItem(name = category.name, color = style.color, icon = style.icon, shape = style.shape)
         }
         LegendItem(name = stringResource(R.string.explore_legend_you), color = Color(0xFF2F80ED), icon = Icons.Filled.Person, shape = MarkerShape.CIRCLE)
     }
@@ -362,16 +374,29 @@ private fun LegendItem(name: String, color: Color, icon: ImageVector, shape: Mar
             .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .background(color, if (shape == MarkerShape.CIRCLE) CircleShape else RoundedCornerShape(6.dp)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
-        }
+        MarkerBadge(color = color, icon = icon, shape = shape)
         Spacer(Modifier.width(6.dp))
         Text(name, style = MaterialTheme.typography.labelSmall, color = AppTheme.colors.textPrimary, maxLines = 1)
     }
 }
 
+// Mini marcador de una categoría (leyenda y filtros): mismo color, ícono y forma que en el mapa.
+@Composable
+internal fun CategoryMarkerIcon(category: Category) {
+    val style = categoryMarkerStyle(category)
+    MarkerBadge(color = style.color, icon = style.icon, shape = style.shape)
+}
+
+@Composable
+private fun MarkerBadge(color: Color, icon: ImageVector, shape: MarkerShape) {
+    Box(
+        modifier = Modifier
+            .size(20.dp)
+            .background(color, if (shape == MarkerShape.CIRCLE) CircleShape else RoundedCornerShape(6.dp)),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Ícono oscuro sobre colores claros (amarillo), blanco sobre los demás, igual que en el mapa.
+        val tint = if (color.luminance() > 0.5f) Color(0xFF3A2E24) else Color.White
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(12.dp))
+    }
+}

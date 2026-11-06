@@ -1,0 +1,1656 @@
+{
+    "generatedAt": 1793949774788,
+    "auth": [
+        {
+            "uid": "u1",
+            "email": "n@gmail.com",
+            "password": "Usuario123",
+            "displayName": "ana_77"
+        },
+        {
+            "uid": "u2",
+            "email": "luis@correo.com",
+            "password": "Usuario123",
+            "displayName": "luis_9"
+        },
+        {
+            "uid": "u3",
+            "email": "camila@correo.com",
+            "password": "Usuario123",
+            "displayName": "camila_r"
+        },
+        {
+            "uid": "u4",
+            "email": "andres@correo.com",
+            "password": "Usuario123",
+            "displayName": "andres_m"
+        },
+        {
+            "uid": "m1",
+            "email": "mod@petadoption.com",
+            "password": "Moderador123",
+            "displayName": "mod_laura"
+        },
+        {
+            "uid": "m2",
+            "email": "mod2@petadoption.com",
+            "password": "Moderador123",
+            "displayName": "mod_carlos"
+        },
+        {
+            "uid": "m3",
+            "email": "mod3@petadoption.com",
+            "password": "Moderador123",
+            "displayName": "mod_diana"
+        },
+        {
+            "uid": "m4",
+            "email": "mod4@petadoption.com",
+            "password": "Moderador123",
+            "displayName": "mod_jorge"
+        },
+        {
+            "uid": "m5",
+            "email": "mod5@petadoption.com",
+            "password": "Moderador123",
+            "displayName": "mod_sofia"
+        }
+    ],
+    "collections": {
+        "users": {
+            "u1": {
+                "account": {
+                    "id": "u1",
+                    "email": "n@gmail.com",
+                    "userName": "ana_77",
+                    "role": "USER",
+                    "createdAt": 1791357774706
+                },
+                "name": "Ana Gómez",
+                "phone": "3001234567",
+                "photoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                "location": {
+                    "latitude": 4.5339,
+                    "longitude": -75.6811,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Centro"
+                },
+                "reputation": {
+                    "points": 104,
+                    "unlockedBadges": [
+                        {
+                            "badgeId": "first_post",
+                            "unlockedAt": 1793604174706
+                        },
+                        {
+                            "badgeId": "happy_ending",
+                            "unlockedAt": 1793604174706
+                        }
+                    ]
+                },
+                "chatIds": [],
+                "settings": {
+                    "twoFactorEnabled": false,
+                    "profileVisibility": "PUBLIC"
+                },
+                "updatedAt": 1793949774744,
+                "deleted": false,
+                "deletedAt": null,
+                "userNameLower": "ana_77"
+            },
+            "u2": {
+                "account": {
+                    "id": "u2",
+                    "email": "luis@correo.com",
+                    "userName": "luis_9",
+                    "role": "USER",
+                    "createdAt": 1791789774706
+                },
+                "name": "Luis Pérez",
+                "phone": "3007654321",
+                "photoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                "location": {
+                    "latitude": 4.552,
+                    "longitude": -75.662,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Av. Bolívar, norte"
+                },
+                "reputation": {
+                    "points": 52,
+                    "unlockedBadges": [
+                        {
+                            "badgeId": "first_post",
+                            "unlockedAt": 1793604174706
+                        }
+                    ]
+                },
+                "chatIds": [],
+                "settings": {
+                    "twoFactorEnabled": false,
+                    "profileVisibility": "PUBLIC"
+                },
+                "updatedAt": 1793949774744,
+                "deleted": false,
+                "deletedAt": null,
+                "userNameLower": "luis_9"
+            },
+            "u3": {
+                "account": {
+                    "id": "u3",
+                    "email": "camila@correo.com",
+                    "userName": "camila_r",
+                    "role": "USER",
+                    "createdAt": 1792221774706
+                },
+                "name": "Camila Rojas",
+                "phone": "3015551234",
+                "photoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                "location": {
+                    "latitude": 4.543,
+                    "longitude": -75.67,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "La Castellana"
+                },
+                "reputation": {
+                    "points": 40,
+                    "unlockedBadges": [
+                        {
+                            "badgeId": "first_post",
+                            "unlockedAt": 1793604174706
+                        }
+                    ]
+                },
+                "chatIds": [],
+                "settings": {
+                    "twoFactorEnabled": false,
+                    "profileVisibility": "PUBLIC"
+                },
+                "updatedAt": 1793949774744,
+                "deleted": false,
+                "deletedAt": null,
+                "userNameLower": "camila_r"
+            },
+            "u4": {
+                "account": {
+                    "id": "u4",
+                    "email": "andres@correo.com",
+                    "userName": "andres_m",
+                    "role": "USER",
+                    "createdAt": 1792653774706
+                },
+                "name": "Andrés Muñoz",
+                "phone": "3024449876",
+                "photoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                "location": {
+                    "latitude": 4.518,
+                    "longitude": -75.689,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Barrio La Patria, sur"
+                },
+                "reputation": {
+                    "points": 22,
+                    "unlockedBadges": [
+                        {
+                            "badgeId": "first_post",
+                            "unlockedAt": 1793604174706
+                        }
+                    ]
+                },
+                "chatIds": [],
+                "settings": {
+                    "twoFactorEnabled": false,
+                    "profileVisibility": "PUBLIC"
+                },
+                "updatedAt": 1793949774744,
+                "deleted": false,
+                "deletedAt": null,
+                "userNameLower": "andres_m"
+            }
+        },
+        "moderators": {
+            "m1": {
+                "account": {
+                    "id": "m1",
+                    "email": "mod@petadoption.com",
+                    "userName": "mod_laura",
+                    "role": "MODERATOR",
+                    "createdAt": 1788765774706
+                },
+                "name": "Laura Restrepo",
+                "phone": "3109876543",
+                "twoFactorEnabled": false,
+                "active": true,
+                "approvedCount": 2,
+                "rejectedCount": 0,
+                "updatedAt": 1793949774726
+            },
+            "m2": {
+                "account": {
+                    "id": "m2",
+                    "email": "mod2@petadoption.com",
+                    "userName": "mod_carlos",
+                    "role": "MODERATOR",
+                    "createdAt": 1788765774706
+                },
+                "name": "Carlos Mejía",
+                "phone": "3109876544",
+                "twoFactorEnabled": false,
+                "active": true,
+                "approvedCount": 2,
+                "rejectedCount": 0,
+                "updatedAt": 1793949774726
+            },
+            "m3": {
+                "account": {
+                    "id": "m3",
+                    "email": "mod3@petadoption.com",
+                    "userName": "mod_diana",
+                    "role": "MODERATOR",
+                    "createdAt": 1788765774706
+                },
+                "name": "Diana Ospina",
+                "phone": "3109876545",
+                "twoFactorEnabled": false,
+                "active": true,
+                "approvedCount": 1,
+                "rejectedCount": 1,
+                "updatedAt": 1793949774726
+            },
+            "m4": {
+                "account": {
+                    "id": "m4",
+                    "email": "mod4@petadoption.com",
+                    "userName": "mod_jorge",
+                    "role": "MODERATOR",
+                    "createdAt": 1788765774706
+                },
+                "name": "Jorge Salazar",
+                "phone": "3109876546",
+                "twoFactorEnabled": false,
+                "active": true,
+                "approvedCount": 2,
+                "rejectedCount": 0,
+                "updatedAt": 1793949774726
+            },
+            "m5": {
+                "account": {
+                    "id": "m5",
+                    "email": "mod5@petadoption.com",
+                    "userName": "mod_sofia",
+                    "role": "MODERATOR",
+                    "createdAt": 1788765774706
+                },
+                "name": "Sofía Cardona",
+                "phone": "3109876547",
+                "twoFactorEnabled": false,
+                "active": true,
+                "approvedCount": 1,
+                "rejectedCount": 0,
+                "updatedAt": 1793949774726
+            }
+        },
+        "emails": {
+            "n@gmail.com": {
+                "uid": "u1"
+            },
+            "luis@correo.com": {
+                "uid": "u2"
+            },
+            "camila@correo.com": {
+                "uid": "u3"
+            },
+            "andres@correo.com": {
+                "uid": "u4"
+            },
+            "mod@petadoption.com": {
+                "uid": "m1"
+            },
+            "mod2@petadoption.com": {
+                "uid": "m2"
+            },
+            "mod3@petadoption.com": {
+                "uid": "m3"
+            },
+            "mod4@petadoption.com": {
+                "uid": "m4"
+            },
+            "mod5@petadoption.com": {
+                "uid": "m5"
+            }
+        },
+        "userNames": {
+            "ana_77": {
+                "uid": "u1"
+            },
+            "luis_9": {
+                "uid": "u2"
+            },
+            "camila_r": {
+                "uid": "u3"
+            },
+            "andres_m": {
+                "uid": "u4"
+            }
+        },
+        "phones": {
+            "3001234567": {
+                "uid": "u1"
+            },
+            "3007654321": {
+                "uid": "u2"
+            },
+            "3015551234": {
+                "uid": "u3"
+            },
+            "3024449876": {
+                "uid": "u4"
+            }
+        },
+        "categories": {
+            "adoption": {
+                "id": "adoption",
+                "name": "Adopción",
+                "active": true,
+                "allowsAdoptionRequests": true,
+                "icon": "pets",
+                "color": "#A06931",
+                "isPlace": false
+            },
+            "lost": {
+                "id": "lost",
+                "name": "Perdidos",
+                "active": true,
+                "allowsAdoptionRequests": false,
+                "icon": "search",
+                "color": "#D32F2F",
+                "isPlace": false
+            },
+            "found": {
+                "id": "found",
+                "name": "Encontrados",
+                "active": true,
+                "allowsAdoptionRequests": false,
+                "icon": "flag",
+                "color": "#2E7D32",
+                "isPlace": false
+            },
+            "temporary": {
+                "id": "temporary",
+                "name": "Hogar temporal",
+                "active": true,
+                "allowsAdoptionRequests": true,
+                "icon": "home",
+                "color": "#E9C46A",
+                "isPlace": true
+            },
+            "veterinary": {
+                "id": "veterinary",
+                "name": "Veterinaria",
+                "active": true,
+                "allowsAdoptionRequests": false,
+                "icon": "hospital",
+                "color": "#2F7EA6",
+                "isPlace": true
+            }
+        },
+        "animalTypes": {
+            "dog": {
+                "id": "dog",
+                "name": "Perro",
+                "active": true
+            },
+            "cat": {
+                "id": "cat",
+                "name": "Gato",
+                "active": true
+            },
+            "bird": {
+                "id": "bird",
+                "name": "Ave",
+                "active": true
+            },
+            "rodent": {
+                "id": "rodent",
+                "name": "Roedor",
+                "active": true
+            },
+            "other": {
+                "id": "other",
+                "name": "Otro",
+                "active": true
+            }
+        },
+        "badges": {
+            "first_post": {
+                "id": "first_post",
+                "name": "Primera publicación",
+                "description": "Crea tu primera publicación",
+                "iconUrl": "",
+                "requirementType": "POSTS_CREATED",
+                "requirementValue": 1
+            },
+            "happy_ending": {
+                "id": "happy_ending",
+                "name": "Final feliz",
+                "description": "Finaliza una publicación porque la mascota encontró hogar o volvió a casa",
+                "iconUrl": "",
+                "requirementType": "POSTS_RESOLVED",
+                "requirementValue": 1
+            },
+            "ten_verified": {
+                "id": "ten_verified",
+                "name": "10 verificadas",
+                "description": "Consigue 10 publicaciones verificadas",
+                "iconUrl": "",
+                "requirementType": "POSTS_VERIFIED",
+                "requirementValue": 10
+            },
+            "commenter": {
+                "id": "commenter",
+                "name": "Conversador",
+                "description": "Escribe 20 comentarios",
+                "iconUrl": "",
+                "requirementType": "COMMENTS_WRITTEN",
+                "requirementValue": 20
+            }
+        },
+        "posts": {
+            "p1": {
+                "id": "p1",
+                "authorId": "u1",
+                "title": "Toby, cachorro criollo en adopción",
+                "categoryId": "adoption",
+                "description": "Cachorro de ocho meses, juguetón y sociable. Tiene sus vacunas y se lleva bien con niños.",
+                "animalTypeId": "dog",
+                "breed": "Criollo",
+                "size": "MEDIUM",
+                "ageInMonths": 8,
+                "vaccinated": true,
+                "neutered": false,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.5339,
+                    "longitude": -75.6811,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Centro"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m1",
+                    "reviewedAt": 1793517774706
+                },
+                "aiReview": null,
+                "importantCount": 2,
+                "commentCount": 2,
+                "createdAt": 1793431374706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p2": {
+                "id": "p2",
+                "authorId": "u2",
+                "title": "Gato gris perdido en el norte",
+                "categoryId": "lost",
+                "description": "Se llama Humo, tiene collar azul con cascabel. Se perdió cerca de la Av. Bolívar.",
+                "animalTypeId": "cat",
+                "breed": "Mestizo",
+                "size": "SMALL",
+                "ageInMonths": 24,
+                "vaccinated": true,
+                "neutered": true,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.552,
+                    "longitude": -75.662,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Av. Bolívar, norte"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m2",
+                    "reviewedAt": 1793690574706
+                },
+                "aiReview": null,
+                "importantCount": 2,
+                "commentCount": 1,
+                "createdAt": 1793604174706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p3": {
+                "id": "p3",
+                "authorId": "u3",
+                "title": "Perrita encontrada en La Castellana",
+                "categoryId": "found",
+                "description": "Perrita café, mediana, muy dócil. La tengo en casa mientras aparece su familia.",
+                "animalTypeId": "dog",
+                "breed": "",
+                "size": "MEDIUM",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.543,
+                    "longitude": -75.67,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "La Castellana"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m3",
+                    "reviewedAt": 1793776974706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 1,
+                "createdAt": 1793690574706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p4": {
+                "id": "p4",
+                "authorId": "u4",
+                "title": "Hogar de paso para gatitos",
+                "categoryId": "temporary",
+                "description": "Ofrezco hogar temporal para hasta dos gatitos mientras consiguen adopción. Tengo experiencia.",
+                "animalTypeId": "cat",
+                "breed": "",
+                "size": "SMALL",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.518,
+                    "longitude": -75.689,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Barrio La Patria, sur"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m1",
+                    "reviewedAt": 1793604174706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793517774706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p5": {
+                "id": "p5",
+                "authorId": "u3",
+                "title": "Jornada de vacunación gratuita",
+                "categoryId": "veterinary",
+                "description": "Este sábado de 8 a. m. a 12 m. en el Parque de la Vida. Vacuna antirrábica para perros y gatos.",
+                "animalTypeId": null,
+                "breed": "",
+                "size": null,
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.547,
+                    "longitude": -75.656,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Parque de la Vida"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m4",
+                    "reviewedAt": 1793841774706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793776974706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p6": {
+                "id": "p6",
+                "authorId": "u1",
+                "title": "Conejo busca familia",
+                "categoryId": "adoption",
+                "description": "Conejo blanco de un año, muy tranquilo. Lo entrego con su jaula y comedero.",
+                "animalTypeId": "other",
+                "breed": "",
+                "size": "SMALL",
+                "ageInMonths": 12,
+                "vaccinated": false,
+                "neutered": false,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.556,
+                    "longitude": -75.659,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Universidad del Quindío"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m5",
+                    "reviewedAt": 1793877774706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793776974706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p7": {
+                "id": "p7",
+                "authorId": "u2",
+                "title": "Esterilización a bajo costo",
+                "categoryId": "veterinary",
+                "description": "Campaña de esterilización para gatos y perros pequeños. Cupos limitados, inscripción previa.",
+                "animalTypeId": null,
+                "breed": "",
+                "size": null,
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.528,
+                    "longitude": -75.664,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Estadio Centenario"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m2",
+                    "reviewedAt": 1793913774706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793841774706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p8": {
+                "id": "p8",
+                "authorId": "u2",
+                "title": "Perrita herida necesita hogar urgente",
+                "categoryId": "adoption",
+                "description": "La encontré atropellada; ya la vio un veterinario, pero no puedo quedármela.",
+                "animalTypeId": "dog",
+                "breed": "Criolla",
+                "size": "MEDIUM",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.552,
+                    "longitude": -75.662,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Av. Bolívar, norte"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "UNVERIFIED",
+                    "priorityLevel": "URGENT",
+                    "priorityReason": "Animal herido que necesita atención",
+                    "rejectionReason": null,
+                    "reviewedBy": null,
+                    "reviewedAt": null
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793931774706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p9": {
+                "id": "p9",
+                "authorId": "u4",
+                "title": "Labrador perdido cerca del estadio",
+                "categoryId": "lost",
+                "description": "Labrador café, responde al nombre de Max. Tiene una mancha blanca en el pecho.",
+                "animalTypeId": "dog",
+                "breed": "Labrador",
+                "size": "LARGE",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.528,
+                    "longitude": -75.664,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Estadio Centenario"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "UNVERIFIED",
+                    "priorityLevel": "MEDIUM",
+                    "priorityReason": "Mascota perdida recientemente",
+                    "rejectionReason": null,
+                    "reviewedBy": null,
+                    "reviewedAt": null
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793920974706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p10": {
+                "id": "p10",
+                "authorId": "u3",
+                "title": "Hogar temporal para tres cachorros",
+                "categoryId": "temporary",
+                "description": "Busco hogar temporal para tres cachorros rescatados de la calle.",
+                "animalTypeId": "dog",
+                "breed": "",
+                "size": "SMALL",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.543,
+                    "longitude": -75.67,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "La Castellana"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "UNVERIFIED",
+                    "priorityLevel": "HIGH",
+                    "priorityReason": "Animales en riesgo",
+                    "rejectionReason": null,
+                    "reviewedBy": null,
+                    "reviewedAt": null
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793906574706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p11": {
+                "id": "p11",
+                "authorId": "u1",
+                "title": "Loro encontrado en el centro",
+                "categoryId": "found",
+                "description": "Loro verde, dice algunas palabras. Estaba en el parque Sucre.",
+                "animalTypeId": "bird",
+                "breed": "",
+                "size": null,
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.5339,
+                    "longitude": -75.6811,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Centro"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "UNVERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": null,
+                    "reviewedAt": null
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793942574706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p12": {
+                "id": "p12",
+                "authorId": "u4",
+                "title": "Gatitos abandonados en una caja",
+                "categoryId": "found",
+                "description": "Cuatro gatitos de pocas semanas, los dejaron frente a mi casa.",
+                "animalTypeId": "cat",
+                "breed": "",
+                "size": "SMALL",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.518,
+                    "longitude": -75.689,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Barrio La Patria, sur"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "IN_PROCESS",
+                    "priorityLevel": "HIGH",
+                    "priorityReason": "Animales muy pequeños sin cuidado",
+                    "rejectionReason": null,
+                    "reviewedBy": "m1",
+                    "reviewedAt": null
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793856174706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p13": {
+                "id": "p13",
+                "authorId": "u2",
+                "title": "Cachorros de raza a la venta",
+                "categoryId": "adoption",
+                "description": "Vendo cachorros de raza, precio negociable.",
+                "animalTypeId": "dog",
+                "breed": "",
+                "size": null,
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.552,
+                    "longitude": -75.662,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Av. Bolívar, norte"
+                },
+                "status": "IN_PROGRESS",
+                "verification": {
+                    "status": "REJECTED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": "No se permite la venta de animales",
+                    "reviewedBy": "m3",
+                    "reviewedAt": 1793877774706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793863374706,
+                "updatedAt": 1793949774723,
+                "finishedAt": null
+            },
+            "p14": {
+                "id": "p14",
+                "authorId": "u1",
+                "title": "Perro perdido en la universidad",
+                "categoryId": "lost",
+                "description": "Ya apareció, ¡gracias a todos por compartir!",
+                "animalTypeId": "dog",
+                "breed": "",
+                "size": "MEDIUM",
+                "ageInMonths": null,
+                "vaccinated": null,
+                "neutered": null,
+                "photoUrls": [
+                    "https://res.cloudinary.com/dehltwwbu/image/upload/v1791690961/hero-photo_i8ti3d.png"
+                ],
+                "location": {
+                    "latitude": 4.556,
+                    "longitude": -75.659,
+                    "city": "Armenia",
+                    "country": "Colombia",
+                    "address": "Universidad del Quindío"
+                },
+                "status": "FINISHED",
+                "verification": {
+                    "status": "VERIFIED",
+                    "priorityLevel": null,
+                    "priorityReason": "",
+                    "rejectionReason": null,
+                    "reviewedBy": "m4",
+                    "reviewedAt": 1793604174706
+                },
+                "aiReview": null,
+                "importantCount": 0,
+                "commentCount": 0,
+                "createdAt": 1793517774706,
+                "updatedAt": 1793949774723,
+                "finishedAt": 1793928174706
+            }
+        },
+        "notifications": {
+            "n1": {
+                "id": "n1",
+                "recipientId": "u1",
+                "type": "NEW_MESSAGE",
+                "actorId": "u2",
+                "actorName": "luis_9",
+                "postId": "p1",
+                "commentId": null,
+                "chatId": "u1_u2_p1",
+                "extra": null,
+                "read": false,
+                "createdAt": 1793948574706
+            },
+            "n2": {
+                "id": "n2",
+                "recipientId": "u1",
+                "type": "NEW_COMMENT",
+                "actorId": "u2",
+                "actorName": "luis_9",
+                "postId": "p1",
+                "commentId": "c1",
+                "chatId": null,
+                "extra": null,
+                "read": false,
+                "createdAt": 1793690574706
+            },
+            "n3": {
+                "id": "n3",
+                "recipientId": "u1",
+                "type": "POST_IMPORTANT",
+                "actorId": "u3",
+                "actorName": "camila_r",
+                "postId": "p1",
+                "commentId": null,
+                "chatId": null,
+                "extra": null,
+                "read": true,
+                "createdAt": 1793690574706
+            },
+            "n4": {
+                "id": "n4",
+                "recipientId": "u1",
+                "type": "POST_VERIFIED",
+                "actorId": "m5",
+                "actorName": "mod_sofia",
+                "postId": "p6",
+                "commentId": null,
+                "chatId": null,
+                "extra": null,
+                "read": false,
+                "createdAt": 1793877774706
+            },
+            "n5": {
+                "id": "n5",
+                "recipientId": "u1",
+                "type": "ADOPTION_REQUEST",
+                "actorId": "u3",
+                "actorName": "camila_r",
+                "postId": "p6",
+                "commentId": null,
+                "chatId": "u1_u3_p6",
+                "extra": null,
+                "read": true,
+                "createdAt": 1793884974706
+            },
+            "n6": {
+                "id": "n6",
+                "recipientId": "u1",
+                "type": "BADGE_UNLOCKED",
+                "actorId": null,
+                "actorName": null,
+                "postId": null,
+                "commentId": null,
+                "chatId": null,
+                "extra": "happy_ending",
+                "read": true,
+                "createdAt": 1793928174706
+            },
+            "n7": {
+                "id": "n7",
+                "recipientId": "u2",
+                "type": "POST_REJECTED",
+                "actorId": "m3",
+                "actorName": "mod_diana",
+                "postId": "p13",
+                "commentId": null,
+                "chatId": null,
+                "extra": "No se permite la venta de animales",
+                "read": false,
+                "createdAt": 1793877774706
+            },
+            "n8": {
+                "id": "n8",
+                "recipientId": "u2",
+                "type": "NEW_COMMENT",
+                "actorId": "u4",
+                "actorName": "andres_m",
+                "postId": "p2",
+                "commentId": "c3",
+                "chatId": null,
+                "extra": null,
+                "read": false,
+                "createdAt": 1793776974706
+            },
+            "n9": {
+                "id": "n9",
+                "recipientId": "u3",
+                "type": "ADOPTION_RESPONSE",
+                "actorId": "u1",
+                "actorName": "ana_77",
+                "postId": "p6",
+                "commentId": null,
+                "chatId": "u1_u3_p6",
+                "extra": "ACCEPTED",
+                "read": false,
+                "createdAt": 1793888574706
+            },
+            "n10": {
+                "id": "n10",
+                "recipientId": "u4",
+                "type": "POST_VERIFIED",
+                "actorId": "m1",
+                "actorName": "mod_laura",
+                "postId": "p4",
+                "commentId": null,
+                "chatId": null,
+                "extra": null,
+                "read": true,
+                "createdAt": 1793604174706
+            }
+        },
+        "chats": {
+            "u1_u2_p1": {
+                "id": "u1_u2_p1",
+                "participantIds": [
+                    "u2",
+                    "u1"
+                ],
+                "postId": "p1",
+                "lastMessage": "¿Podemos vernos mañana para conocerlo?",
+                "lastMessageType": "TEXT",
+                "lastMessageAt": 1793948574706,
+                "lastSenderId": "u2",
+                "unreadCounts": {
+                    "u2": 0,
+                    "u1": 1
+                },
+                "lastReadAt": {
+                    "u2": 1793948574706,
+                    "u1": 1793859774706
+                },
+                "deletedAt": {},
+                "createdAt": 1793776974706
+            },
+            "u1_u3_p6": {
+                "id": "u1_u3_p6",
+                "participantIds": [
+                    "u3",
+                    "u1"
+                ],
+                "postId": "p6",
+                "lastMessage": "¡Genial! Paso el domingo por él.",
+                "lastMessageType": "TEXT",
+                "lastMessageAt": 1793892174706,
+                "lastSenderId": "u3",
+                "unreadCounts": {
+                    "u3": 0,
+                    "u1": 0
+                },
+                "lastReadAt": {
+                    "u3": 1793892174706,
+                    "u1": 1793892174706
+                },
+                "deletedAt": {},
+                "createdAt": 1793884974706
+            },
+            "u1_u4_p4": {
+                "id": "u1_u4_p4",
+                "participantIds": [
+                    "u1",
+                    "u4"
+                ],
+                "postId": "p4",
+                "lastMessage": "Hola Ana, por ahora ya tengo los dos cupos ocupados. ¡Lo siento!",
+                "lastMessageType": "TEXT",
+                "lastMessageAt": 1793694174706,
+                "lastSenderId": "u4",
+                "unreadCounts": {
+                    "u1": 0,
+                    "u4": 0
+                },
+                "lastReadAt": {
+                    "u1": 1793694174706,
+                    "u4": 1793694174706
+                },
+                "deletedAt": {},
+                "createdAt": 1793690574706
+            },
+            "u2_u4_p2": {
+                "id": "u2_u4_p2",
+                "participantIds": [
+                    "u4",
+                    "u2"
+                ],
+                "postId": "p2",
+                "lastMessage": "Como a las 6 de la tarde, tenía el collar azul.",
+                "lastMessageType": "TEXT",
+                "lastMessageAt": 1793778174706,
+                "lastSenderId": "u4",
+                "unreadCounts": {
+                    "u4": 0,
+                    "u2": 0
+                },
+                "lastReadAt": {
+                    "u4": 1793778174706,
+                    "u2": 1793778174706
+                },
+                "deletedAt": {},
+                "createdAt": 1793776974706
+            }
+        },
+        "adoptionRequests": {
+            "p1_u2": {
+                "id": "p1_u2",
+                "postId": "p1",
+                "postAuthorId": "u1",
+                "requesterId": "u2",
+                "requesterName": "luis_9",
+                "message": "",
+                "chatId": "u1_u2_p1",
+                "status": "PENDING",
+                "createdAt": 1793776974706,
+                "respondedAt": null
+            },
+            "p6_u3": {
+                "id": "p6_u3",
+                "postId": "p6",
+                "postAuthorId": "u1",
+                "requesterId": "u3",
+                "requesterName": "camila_r",
+                "message": "",
+                "chatId": "u1_u3_p6",
+                "status": "ACCEPTED",
+                "createdAt": 1793884974706,
+                "respondedAt": 1793888574706
+            },
+            "p4_u1": {
+                "id": "p4_u1",
+                "postId": "p4",
+                "postAuthorId": "u4",
+                "requesterId": "u1",
+                "requesterName": "ana_77",
+                "message": "",
+                "chatId": "u1_u4_p4",
+                "status": "DECLINED",
+                "createdAt": 1793690574706,
+                "respondedAt": 1793694174706
+            }
+        },
+        "commentLikes": {
+            "c1_u1": {
+                "commentId": "c1",
+                "postId": "p1",
+                "userId": "u1",
+                "createdAt": 1793690574706
+            },
+            "c3_u2": {
+                "commentId": "c3",
+                "postId": "p2",
+                "userId": "u2",
+                "createdAt": 1793776974706
+            }
+        },
+        "importantVotes": {
+            "p1_u2": {
+                "postId": "p1",
+                "userId": "u2",
+                "createdAt": 1793604174706
+            },
+            "p1_u3": {
+                "postId": "p1",
+                "userId": "u3",
+                "createdAt": 1793690574706
+            },
+            "p2_u1": {
+                "postId": "p2",
+                "userId": "u1",
+                "createdAt": 1793690574706
+            },
+            "p2_u4": {
+                "postId": "p2",
+                "userId": "u4",
+                "createdAt": 1793776974706
+            }
+        },
+        "pointTransactions": {
+            "u1_POST_VERIFIED_p1": {
+                "id": "u1_POST_VERIFIED_p1",
+                "userId": "u1",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p1",
+                "actorId": "m1",
+                "createdAt": 1793517774706
+            },
+            "u1_POST_VERIFIED_p6": {
+                "id": "u1_POST_VERIFIED_p6",
+                "userId": "u1",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p6",
+                "actorId": "m5",
+                "createdAt": 1793877774706
+            },
+            "u1_POST_VERIFIED_p14": {
+                "id": "u1_POST_VERIFIED_p14",
+                "userId": "u1",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p14",
+                "actorId": "m4",
+                "createdAt": 1793604174706
+            },
+            "u1_POST_FINISHED_p14": {
+                "id": "u1_POST_FINISHED_p14",
+                "userId": "u1",
+                "reason": "POST_FINISHED",
+                "points": 30,
+                "postId": "p14",
+                "actorId": null,
+                "createdAt": 1793928174706
+            },
+            "u1_IMPORTANT_RECEIVED_p1_u2": {
+                "id": "u1_IMPORTANT_RECEIVED_p1_u2",
+                "userId": "u1",
+                "reason": "IMPORTANT_RECEIVED",
+                "points": 5,
+                "postId": "p1",
+                "actorId": "u2",
+                "createdAt": 1793604174706
+            },
+            "u1_IMPORTANT_RECEIVED_p1_u3": {
+                "id": "u1_IMPORTANT_RECEIVED_p1_u3",
+                "userId": "u1",
+                "reason": "IMPORTANT_RECEIVED",
+                "points": 5,
+                "postId": "p1",
+                "actorId": "u3",
+                "createdAt": 1793690574706
+            },
+            "u1_COMMENT_CREATED_c2": {
+                "id": "u1_COMMENT_CREATED_c2",
+                "userId": "u1",
+                "reason": "COMMENT_CREATED",
+                "points": 2,
+                "postId": "p1",
+                "actorId": null,
+                "createdAt": 1793690574706
+            },
+            "u1_COMMENT_CREATED_c4": {
+                "id": "u1_COMMENT_CREATED_c4",
+                "userId": "u1",
+                "reason": "COMMENT_CREATED",
+                "points": 2,
+                "postId": "p3",
+                "actorId": null,
+                "createdAt": 1793863374706
+            },
+            "u2_POST_VERIFIED_p2": {
+                "id": "u2_POST_VERIFIED_p2",
+                "userId": "u2",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p2",
+                "actorId": "m2",
+                "createdAt": 1793690574706
+            },
+            "u2_POST_VERIFIED_p7": {
+                "id": "u2_POST_VERIFIED_p7",
+                "userId": "u2",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p7",
+                "actorId": "m2",
+                "createdAt": 1793913774706
+            },
+            "u2_IMPORTANT_RECEIVED_p2_u1": {
+                "id": "u2_IMPORTANT_RECEIVED_p2_u1",
+                "userId": "u2",
+                "reason": "IMPORTANT_RECEIVED",
+                "points": 5,
+                "postId": "p2",
+                "actorId": "u1",
+                "createdAt": 1793690574706
+            },
+            "u2_IMPORTANT_RECEIVED_p2_u4": {
+                "id": "u2_IMPORTANT_RECEIVED_p2_u4",
+                "userId": "u2",
+                "reason": "IMPORTANT_RECEIVED",
+                "points": 5,
+                "postId": "p2",
+                "actorId": "u4",
+                "createdAt": 1793776974706
+            },
+            "u2_COMMENT_CREATED_c1": {
+                "id": "u2_COMMENT_CREATED_c1",
+                "userId": "u2",
+                "reason": "COMMENT_CREATED",
+                "points": 2,
+                "postId": "p1",
+                "actorId": null,
+                "createdAt": 1793690574706
+            },
+            "u3_POST_VERIFIED_p3": {
+                "id": "u3_POST_VERIFIED_p3",
+                "userId": "u3",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p3",
+                "actorId": "m3",
+                "createdAt": 1793776974706
+            },
+            "u3_POST_VERIFIED_p5": {
+                "id": "u3_POST_VERIFIED_p5",
+                "userId": "u3",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p5",
+                "actorId": "m4",
+                "createdAt": 1793841774706
+            },
+            "u4_POST_VERIFIED_p4": {
+                "id": "u4_POST_VERIFIED_p4",
+                "userId": "u4",
+                "reason": "POST_VERIFIED",
+                "points": 20,
+                "postId": "p4",
+                "actorId": "m1",
+                "createdAt": 1793604174706
+            },
+            "u4_COMMENT_CREATED_c3": {
+                "id": "u4_COMMENT_CREATED_c3",
+                "userId": "u4",
+                "reason": "COMMENT_CREATED",
+                "points": 2,
+                "postId": "p2",
+                "actorId": null,
+                "createdAt": 1793776974706
+            }
+        }
+    },
+    "subcollections": [
+        {
+            "path": "posts/p1/comments",
+            "docs": {
+                "c1": {
+                    "id": "c1",
+                    "postId": "p1",
+                    "parentId": null,
+                    "depth": 0,
+                    "replyToUserName": null,
+                    "authorId": "u2",
+                    "authorName": "luis_9",
+                    "authorPhotoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                    "text": "¿Todavía está disponible? Me interesa mucho.",
+                    "status": "ACTIVE",
+                    "likeCount": 1,
+                    "replyCount": 1,
+                    "edited": false,
+                    "createdAt": 1793690574706,
+                    "updatedAt": 1793949774724
+                },
+                "c2": {
+                    "id": "c2",
+                    "postId": "p1",
+                    "parentId": "c1",
+                    "depth": 1,
+                    "replyToUserName": "luis_9",
+                    "authorId": "u1",
+                    "authorName": "ana_77",
+                    "authorPhotoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                    "text": "¡Sí! Escríbeme por el chat y coordinamos.",
+                    "status": "ACTIVE",
+                    "likeCount": 0,
+                    "replyCount": 0,
+                    "edited": false,
+                    "createdAt": 1793694174706,
+                    "updatedAt": 1793949774724
+                }
+            }
+        },
+        {
+            "path": "posts/p2/comments",
+            "docs": {
+                "c3": {
+                    "id": "c3",
+                    "postId": "p2",
+                    "parentId": null,
+                    "depth": 0,
+                    "replyToUserName": null,
+                    "authorId": "u4",
+                    "authorName": "andres_m",
+                    "authorPhotoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                    "text": "Creo que lo vi ayer cerca del parque del norte.",
+                    "status": "ACTIVE",
+                    "likeCount": 1,
+                    "replyCount": 0,
+                    "edited": false,
+                    "createdAt": 1793776974706,
+                    "updatedAt": 1793949774724
+                }
+            }
+        },
+        {
+            "path": "posts/p3/comments",
+            "docs": {
+                "c4": {
+                    "id": "c4",
+                    "postId": "p3",
+                    "parentId": null,
+                    "depth": 0,
+                    "replyToUserName": null,
+                    "authorId": "u1",
+                    "authorName": "ana_77",
+                    "authorPhotoUrl": "https://res.cloudinary.com/dehltwwbu/image/upload/v1793019358/IconDefault_b3nesx.jpg",
+                    "text": "¡Qué bonita! Ojalá aparezca su familia pronto.",
+                    "status": "ACTIVE",
+                    "likeCount": 0,
+                    "replyCount": 0,
+                    "edited": false,
+                    "createdAt": 1793863374706,
+                    "updatedAt": 1793949774724
+                }
+            }
+        },
+        {
+            "path": "chats/u1_u2_p1/messages",
+            "docs": {
+                "msg1": {
+                    "id": "msg1",
+                    "senderId": "u2",
+                    "type": "ADOPTION_INTEREST",
+                    "text": "",
+                    "imageUrl": null,
+                    "sentAt": 1793776974706
+                },
+                "msg2": {
+                    "id": "msg2",
+                    "senderId": "u1",
+                    "type": "TEXT",
+                    "text": "¡Hola Luis! Gracias por escribir. Toby es muy juguetón.",
+                    "imageUrl": null,
+                    "sentAt": 1793778774706
+                },
+                "msg3": {
+                    "id": "msg3",
+                    "senderId": "u2",
+                    "type": "TEXT",
+                    "text": "¿Cómo es con niños pequeños?",
+                    "imageUrl": null,
+                    "sentAt": 1793856174706
+                },
+                "msg4": {
+                    "id": "msg4",
+                    "senderId": "u1",
+                    "type": "TEXT",
+                    "text": "Muy tranquilo, convive con mis sobrinos sin problema.",
+                    "imageUrl": null,
+                    "sentAt": 1793859774706
+                },
+                "msg5": {
+                    "id": "msg5",
+                    "senderId": "u2",
+                    "type": "TEXT",
+                    "text": "¿Podemos vernos mañana para conocerlo?",
+                    "imageUrl": null,
+                    "sentAt": 1793948574706
+                }
+            }
+        },
+        {
+            "path": "chats/u1_u3_p6/messages",
+            "docs": {
+                "msg6": {
+                    "id": "msg6",
+                    "senderId": "u3",
+                    "type": "ADOPTION_INTEREST",
+                    "text": "",
+                    "imageUrl": null,
+                    "sentAt": 1793884974706
+                },
+                "msg7": {
+                    "id": "msg7",
+                    "senderId": "u1",
+                    "type": "TEXT",
+                    "text": "¡Claro, Camila! Te lo entrego con su jaula.",
+                    "imageUrl": null,
+                    "sentAt": 1793888574706
+                },
+                "msg8": {
+                    "id": "msg8",
+                    "senderId": "u3",
+                    "type": "TEXT",
+                    "text": "¡Genial! Paso el domingo por él.",
+                    "imageUrl": null,
+                    "sentAt": 1793892174706
+                }
+            }
+        },
+        {
+            "path": "chats/u1_u4_p4/messages",
+            "docs": {
+                "msg9": {
+                    "id": "msg9",
+                    "senderId": "u1",
+                    "type": "ADOPTION_INTEREST",
+                    "text": "",
+                    "imageUrl": null,
+                    "sentAt": 1793690574706
+                },
+                "msg10": {
+                    "id": "msg10",
+                    "senderId": "u4",
+                    "type": "TEXT",
+                    "text": "Hola Ana, por ahora ya tengo los dos cupos ocupados. ¡Lo siento!",
+                    "imageUrl": null,
+                    "sentAt": 1793694174706
+                }
+            }
+        },
+        {
+            "path": "chats/u2_u4_p2/messages",
+            "docs": {
+                "msg11": {
+                    "id": "msg11",
+                    "senderId": "u4",
+                    "type": "TEXT",
+                    "text": "Hola, creo que vi a tu gato cerca del parque del norte.",
+                    "imageUrl": null,
+                    "sentAt": 1793776974706
+                },
+                "msg12": {
+                    "id": "msg12",
+                    "senderId": "u2",
+                    "type": "TEXT",
+                    "text": "¿En serio? ¿Recuerdas a qué hora fue?",
+                    "imageUrl": null,
+                    "sentAt": 1793777874706
+                },
+                "msg13": {
+                    "id": "msg13",
+                    "senderId": "u4",
+                    "type": "TEXT",
+                    "text": "Como a las 6 de la tarde, tenía el collar azul.",
+                    "imageUrl": null,
+                    "sentAt": 1793778174706
+                }
+            }
+        }
+    ]
+}

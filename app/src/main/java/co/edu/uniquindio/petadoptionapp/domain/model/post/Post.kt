@@ -1,6 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -12,6 +13,7 @@ import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
  Los campos del animal son nulables porque no aplican a todas las
  categorías (una jornada de vacunación no tiene mascota).
  */
+@Serializable
 data class Post(
     val id: String = "",
     // Id de quien publica.

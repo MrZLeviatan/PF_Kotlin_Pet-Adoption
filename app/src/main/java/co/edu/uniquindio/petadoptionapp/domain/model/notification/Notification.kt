@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.notification
 
+import kotlinx.serialization.Serializable
+
 
 /**
  Notificación interna de la aplicación, dirigida a una persona.
@@ -12,6 +14,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.notification
  Para navegar, la UI usa [chatId] si existe (mensajes y solicitudes de adopción abren el chat);
  si no, [postId] (y [commentId] si existe) y abre el detalle de la publicación relacionada.
  */
+@Serializable
 data class Notification(
     val id: String = "",
     // Id de la cuenta que recibe la notificación.

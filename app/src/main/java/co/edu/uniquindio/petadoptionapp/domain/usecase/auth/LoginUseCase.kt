@@ -40,6 +40,8 @@ class LoginUseCase(
                 authRepository.requestTwoFactorCode(result.accountId)
                     // Mapea el resultado para devolverlo.
                     .map { result }
+                    // Si el código no salió, no se deja la sesión a medias: se cierra y se avisa.
+                    .onFailure { authRepository.logout() }
 
             // Ejecuta este bloque si el inicio de sesión fue exitoso.
             is LoginResult.Success ->

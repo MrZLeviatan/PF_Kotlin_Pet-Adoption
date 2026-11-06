@@ -26,7 +26,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.component.button.BackButton
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
@@ -34,6 +34,7 @@ import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.header.IconHeader
 import co.edu.uniquindio.petadoptionapp.core.component.icon.IconCircle
+import co.edu.uniquindio.petadoptionapp.core.component.text.ErrorText
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 
@@ -47,7 +48,7 @@ Conecta el [RecoverPasswordViewModel] con la UI; [RecoverPasswordContent] solo d
 fun RecoverPasswordScreen(
     onBack: () -> Unit,
     onEmailSent: () -> Unit,
-    viewModel: RecoverPasswordViewModel = viewModel(),
+    viewModel: RecoverPasswordViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnEmailSent by rememberUpdatedState(onEmailSent)
@@ -111,12 +112,24 @@ private fun RecoverPasswordContent(
             ),
         )
 
+        uiState.error?.let { error ->
+            Spacer(Modifier.height(12.dp))
+            ErrorText(
+                text = stringResource(
+                    when (error) {
+                        RecoverPasswordError.INVALID_EMAIL -> R.string.login_error_email_invalid
+                        RecoverPasswordError.GENERIC -> R.string.recover_error_generic
+                    }
+                )
+            )
+        }
+
         Spacer(Modifier.height(32.dp))
 
         PrimaryButton(
-            text = stringResource(R.string.recover_send_button),
+            text = stringResource(if (uiState.isSending) R.string.recover_sending else R.string.recover_send_button),
             onClick = onSendClick,
-            enabled = uiState.isEmailFilled,
+            enabled = uiState.isEmailFilled && !uiState.isSending,
         )
     }
 

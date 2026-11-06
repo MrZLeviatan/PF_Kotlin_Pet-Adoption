@@ -25,6 +25,15 @@ interface AuthRepository {
 
 
     /**
+    Recupera la sesión guardada en el teléfono al abrir la app.
+
+    - Qué recibe: La [Account] si había una sesión completa, o `null` si no hay (o si quedó a mitad de la A2F).
+    Así la persona no tiene que iniciar sesión cada vez que abre la app.
+     */
+    suspend fun restoreSession(): Account?
+
+
+    /**
     Finaliza la sesión actual del usuario.
 
     - Qué recibe: Ningún valor de retorno (`Unit` implícito).

@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.users
 
+import kotlinx.serialization.Serializable
+
 
 /**
  Datos de identidad de una cuenta. Es la pieza compartida por
@@ -14,6 +16,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.users
  primero un objeto vacío y luego lo llena; sin valores por defecto, la
  lectura de documentos fallaría.
  */
+@Serializable
 data class Account(
     // Corresponde al `uid` que entrega Firebase Auth al registrar la cuenta; así se enlaza el login con el perfil sin consultas adicionales.
     val id: String = "",

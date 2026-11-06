@@ -35,6 +35,21 @@
         <string name="login_error_inactive_moderator">Tu cuenta de moderador está inactiva o suspendida. Contacta al administrador.</string>
         <string name="login_error_account_deleted">Esta cuenta fue eliminada.</string>
         <string name="login_error_generic">No pudimos iniciar sesión. Inténtalo de nuevo.</string>
+        <string name="login_error_code_not_sent">No pudimos enviar el código de verificación a tu correo. Inténtalo de nuevo.</string>
+        <string name="two_factor_title">Autenticación A2F</string>
+        <string name="two_factor_subtitle">Ingresa el código de %1$d dígitos enviado a tu correo electrónico</string>
+        <string name="two_factor_code_description">Código de verificación</string>
+        <string name="two_factor_close">Cancelar inicio de sesión</string>
+        <string name="two_factor_verify">Verificar código</string>
+        <string name="two_factor_verifying">Verificando…</string>
+        <string name="two_factor_resend">Reenviar código</string>
+        <string name="two_factor_resend_in">Reenviar código en %1$s</string>
+        <string name="two_factor_resending">Enviando código…</string>
+        <string name="two_factor_error_wrong">Código incorrecto. Revísalo e inténtalo de nuevo.</string>
+        <string name="two_factor_error_expired">El código venció. Pide uno nuevo.</string>
+        <string name="two_factor_error_too_many">Demasiados intentos. Pide un código nuevo.</string>
+        <string name="two_factor_error_not_sent">No pudimos enviar el código. Revisa tu conexión.</string>
+        <string name="two_factor_error_generic">No pudimos verificar el código. Inténtalo de nuevo.</string>
 
     <!--Strings nativos de la pantalla de Registrar Cuenta -->
         <string name="register_title">Crear cuenta</string>
@@ -203,6 +218,8 @@
         <string name="recover_success_title">Correo enviado</string>
         <string name="recover_success_message">Hemos enviado un enlace de recuperación a tu correo electrónico. Haz clic en el enlace para restablecer tu contraseña.</string>
         <string name="recover_success_button">Aceptar</string>
+        <string name="recover_sending">Enviando…</string>
+        <string name="recover_error_generic">No pudimos enviar el correo. Revisa tu conexión e inténtalo de nuevo.</string>
 
     <!--Strings de la pantalla Nueva contraseña-->
         <string name="new_password_title">Nueva contraseña</string>

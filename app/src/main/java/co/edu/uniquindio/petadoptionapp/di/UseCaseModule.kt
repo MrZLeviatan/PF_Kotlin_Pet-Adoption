@@ -22,6 +22,7 @@ import co.edu.uniquindio.petadoptionapp.domain.repository.GeocodingRepository
 import co.edu.uniquindio.petadoptionapp.domain.repository.ImageStorageRepository
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.CheckRegistrationAvailabilityUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ResendTwoFactorCodeUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.RestoreSessionUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.SendPasswordResetUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.VerifyTwoFactorCodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.catalog.CheckPostCatalogUseCase
@@ -115,6 +116,35 @@ object UseCaseModule {
         authRepository: AuthRepository,
         checkProfile: CheckProfileUseCase,
     ): LoginUseCase = LoginUseCase(authRepository, checkProfile)
+
+    // Segundo paso del login (A2F): verificar el código y pedir uno nuevo.
+    @Provides
+    @ViewModelScoped
+    fun provideVerifyTwoFactorCodeUseCase(
+        authRepository: AuthRepository,
+        checkProfile: CheckProfileUseCase,
+    ): VerifyTwoFactorCodeUseCase = VerifyTwoFactorCodeUseCase(authRepository, checkProfile)
+
+    @Provides
+    @ViewModelScoped
+    fun provideResendTwoFactorCodeUseCase(
+        authRepository: AuthRepository,
+    ): ResendTwoFactorCodeUseCase = ResendTwoFactorCodeUseCase(authRepository)
+
+    // Recuperar contraseña (Firebase envía el correo con el enlace).
+    @Provides
+    @ViewModelScoped
+    fun provideSendPasswordResetUseCase(
+        authRepository: AuthRepository,
+    ): SendPasswordResetUseCase = SendPasswordResetUseCase(authRepository)
+
+    // Al abrir la app: recuperar la sesión guardada en el teléfono.
+    @Provides
+    @ViewModelScoped
+    fun provideRestoreSessionUseCase(
+        authRepository: AuthRepository,
+        checkProfile: CheckProfileUseCase,
+    ): RestoreSessionUseCase = RestoreSessionUseCase(authRepository, checkProfile)
 
     @Provides
     @ViewModelScoped

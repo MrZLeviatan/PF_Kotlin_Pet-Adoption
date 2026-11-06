@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.auth
 
+import kotlinx.serialization.Serializable
+
 /**
  Verificación en dos pasos (A2F) de una cuenta.
 
@@ -17,6 +19,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.auth
  por usuario cuyo id es el mismo `Account.id`. NO va dentro de [User]
  porque es un dato temporal y sensible que el cliente nunca debe leer.
  */
+@Serializable
 data class TwoFactorChallenge(
     val userId: String = "",
     // Hash del código de 6 dígitos. Nunca el código real.

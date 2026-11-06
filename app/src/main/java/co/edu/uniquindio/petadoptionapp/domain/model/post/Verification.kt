@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
+import kotlinx.serialization.Serializable
+
 /**
  Resultado del análisis de IA y de la revisión del moderador.
 
@@ -7,6 +9,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.post
  sugiere una prioridad y la explica; el moderador decide el estado final.
  La IA ayuda a ordenar la cola de revisión, pero NO verifica por sí sola.
  */
+@Serializable
 data class Verification(
 
     // Proceso de verificación.

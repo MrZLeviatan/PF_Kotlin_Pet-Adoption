@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -25,6 +26,7 @@ import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
 /**
 Grupo de chips que bajan de línea cuando no caben (a diferencia de AppChipRow, que hace scroll).
 Selección única: `selectedIndex = null` significa que no hay ninguna elegida.
+[leading] dibuja algo antes del texto de cada chip (por ejemplo, el ícono de la categoría).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -33,6 +35,7 @@ fun AppChipGroup(
     selectedIndex: Int?,
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    leading: (@Composable (index: Int) -> Unit)? = null,
 ) {
     FlowRow(
         modifier = modifier,
@@ -52,20 +55,27 @@ fun AppChipGroup(
                     ),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    // El peso distingue el chip activo sin depender solo del color.
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = AppTheme.colors.textPrimary,
+                Row(
                     modifier = Modifier
                         .background(
                             if (selected) AppTheme.colors.chipSelected else AppTheme.colors.surface,
                             CircleShape,
                         )
                         .border(1.dp, AppTheme.colors.border, CircleShape)
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                )
+                        .padding(start = if (leading != null) 6.dp else 14.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    leading?.invoke(index)
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        // El peso distingue el chip activo sin depender solo del color.
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        color = AppTheme.colors.textPrimary,
+                        modifier = Modifier.padding(vertical = 2.dp),
+                    )
+                }
             }
         }
     }

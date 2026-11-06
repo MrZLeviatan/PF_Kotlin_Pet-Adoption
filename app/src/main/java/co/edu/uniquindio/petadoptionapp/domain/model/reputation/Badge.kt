@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
+import kotlinx.serialization.Serializable
+
 /**
  Insignia del catálogo del sistema.
 
@@ -11,6 +13,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.reputation
  - requirementType Qué se mide para desbloquearla.
  - Cantidad que hay que alcanzar (ej. 10 verificadas).
  */
+@Serializable
 data class Badge(
     val id: String = "",
     val name: String = "",

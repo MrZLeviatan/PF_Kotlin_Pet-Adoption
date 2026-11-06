@@ -65,7 +65,6 @@ private const val HERO_ASPECT_RATIO = 2f / 1f
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    onTwoFactorRequired: (accountId: String) -> Unit,
     onForgotPasswordClick: () -> Unit,
     onRegisterClick: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
@@ -73,13 +72,11 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val currentOnLoginSuccess by rememberUpdatedState(onLoginSuccess)
-    val currentOnTwoFactorRequired by rememberUpdatedState(onTwoFactorRequired)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 LoginEvent.LoginSuccess -> currentOnLoginSuccess()
-                is LoginEvent.TwoFactorRequired -> currentOnTwoFactorRequired(event.accountId)
             }
         }
     }
@@ -94,6 +91,17 @@ fun LoginScreen(
         onForgotPasswordClick = onForgotPasswordClick,
         onRegisterClick = onRegisterClick,
     )
+
+    // Segundo paso: el código A2F que llegó al correo.
+    uiState.twoFactor?.let { twoFactor ->
+        TwoFactorDialog(
+            state = twoFactor,
+            onCodeChange = viewModel::onTwoFactorCodeChange,
+            onVerifyClick = viewModel::onVerifyTwoFactorClick,
+            onResendClick = viewModel::onResendTwoFactorClick,
+            onDismiss = viewModel::onDismissTwoFactor,
+        )
+    }
 }
 
 // Sin lógica ni ViewModel: recibe el estado y dibuja. Es lo que se previsualiza y prueba.
@@ -230,6 +238,7 @@ private fun loginErrorMessage(error: LoginError?): String? = when (error) {
     LoginError.INVALID_CREDENTIALS -> stringResource(R.string.login_error_invalid_credentials)
     LoginError.INACTIVE_MODERATOR -> stringResource(R.string.login_error_inactive_moderator)
     LoginError.ACCOUNT_DELETED -> stringResource(R.string.login_error_account_deleted)
+    LoginError.CODE_NOT_SENT -> stringResource(R.string.login_error_code_not_sent)
     LoginError.GENERIC -> stringResource(R.string.login_error_generic)
 }
 

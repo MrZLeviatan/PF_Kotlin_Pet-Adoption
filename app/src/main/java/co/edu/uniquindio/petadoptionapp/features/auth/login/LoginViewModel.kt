@@ -5,11 +5,17 @@ import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.domain.error.AuthException
 import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.auth.Credentials
+import co.edu.uniquindio.petadoptionapp.domain.model.auth.TwoFactorChallenge
 import co.edu.uniquindio.petadoptionapp.domain.repository.LoginResult
 import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LoginUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.LogoutUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.ResendTwoFactorCodeUseCase
+import co.edu.uniquindio.petadoptionapp.domain.usecase.auth.VerifyTwoFactorCodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.AuthValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +46,32 @@ enum class LoginError {
     INVALID_CREDENTIALS,
     INACTIVE_MODERATOR,
     ACCOUNT_DELETED,
+    CODE_NOT_SENT,
     GENERIC
+}
+
+/** Errores del diálogo de verificación en dos pasos (A2F). */
+enum class TwoFactorError {
+    WRONG_CODE,
+    EXPIRED,
+    TOO_MANY_ATTEMPTS,
+    NOT_SENT,
+    GENERIC
+}
+
+/**
+ Estado del diálogo A2F: se muestra cuando el email y la contraseña fueron correctos y falta el código.
+ [resendSeconds] cuenta hacia atrás; en 0 se puede pedir otro código.
+ */
+data class TwoFactorUiState(
+    val accountId: String,
+    val code: String = "",
+    val isVerifying: Boolean = false,
+    val isResending: Boolean = false,
+    val error: TwoFactorError? = null,
+    val resendSeconds: Int = 0,
+) {
+    val isCodeComplete: Boolean get() = code.length == TwoFactorChallenge.CODE_LENGTH
 }
 
 /**
@@ -54,6 +85,8 @@ data class LoginUiState(
     val passwordError: PasswordError? = null,
     val loginError: LoginError? = null,
     val isLoading: Boolean = false,
+    // Diálogo A2F abierto; null si no hace falta.
+    val twoFactor: TwoFactorUiState? = null,
 ) {
     /**
      Evalúa la validez del formulario directamente a partir de los valores de entrada, no de los errores actuales.
@@ -69,18 +102,16 @@ data class LoginUiState(
  ante cambios de configuración o rotaciones de pantalla.
  */
 sealed interface LoginEvent {
+    // Sesión abierta (directo, o después de escribir el código A2F en el diálogo).
     data object LoginSuccess : LoginEvent
-
-    /**
-     Notifica que se requiere autenticación de dos factores, proporcionando el identificador
-     de cuenta necesario para completar el flujo de verificación.
-     */
-    data class TwoFactorRequired(val accountId: String) : LoginEvent
 }
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
+    private val verifyTwoFactorCode: VerifyTwoFactorCodeUseCase,
+    private val resendTwoFactorCode: ResendTwoFactorCodeUseCase,
+    private val logout: LogoutUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -92,6 +123,9 @@ class LoginViewModel @Inject constructor(
     // Registra el historial de interacción del foco para prevenir validaciones prematuras durante la composición inicial antes de que el usuario interactúe con el formulario.
     private var emailHadFocus = false
     private var passwordHadFocus = false
+
+    // Cuenta regresiva para "Reenviar código".
+    private var resendTimer: Job? = null
 
     fun onEmailChange(value: String) {
         // Ejecuta la validación en tiempo real y limpia los errores globales previos de autenticación.
@@ -143,14 +177,101 @@ class LoginViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false) }
                     when (result) {
                         is LoginResult.Success -> _events.send(LoginEvent.LoginSuccess)
-                        is LoginResult.TwoFactorRequired ->
-                            _events.send(LoginEvent.TwoFactorRequired(result.accountId))
+                        // El código ya salió al correo: se abre el diálogo para escribirlo.
+                        is LoginResult.TwoFactorRequired -> {
+                            _uiState.update { it.copy(twoFactor = TwoFactorUiState(accountId = result.accountId)) }
+                            startResendTimer()
+                        }
                     }
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, loginError = error.toLoginError()) }
                 }
         }
+    }
+
+    // A2F
+
+    fun onTwoFactorCodeChange(value: String) {
+        // Solo dígitos y como máximo la longitud del código (también al pegarlo completo).
+        val digits = value.filter { it.isDigit() }.take(TwoFactorChallenge.CODE_LENGTH)
+        _uiState.update { state ->
+            state.copy(twoFactor = state.twoFactor?.copy(code = digits, error = null))
+        }
+    }
+
+    fun onVerifyTwoFactorClick() {
+        val twoFactor = _uiState.value.twoFactor ?: return
+        if (!twoFactor.isCodeComplete || twoFactor.isVerifying) return
+        updateTwoFactor { it.copy(isVerifying = true, error = null) }
+
+        viewModelScope.launch {
+            verifyTwoFactorCode(twoFactor.accountId, twoFactor.code)
+                .onSuccess {
+                    resendTimer?.cancel()
+                    _uiState.update { it.copy(twoFactor = null) }
+                    _events.send(LoginEvent.LoginSuccess)
+                }
+                .onFailure { error ->
+                    when (error) {
+                        // El perfil no sirve (cuenta eliminada, moderador inactivo): se cierra el diálogo y se avisa en el login.
+                        UserException.AccountDeleted, AuthException.InactiveModerator, UserException.ProfileNotFound -> {
+                            resendTimer?.cancel()
+                            _uiState.update { it.copy(twoFactor = null, loginError = error.toLoginError()) }
+                        }
+                        else -> updateTwoFactor {
+                            // Un código equivocado se borra para escribirlo de nuevo.
+                            it.copy(isVerifying = false, code = "", error = error.toTwoFactorError())
+                        }
+                    }
+                }
+        }
+    }
+
+    fun onResendTwoFactorClick() {
+        val twoFactor = _uiState.value.twoFactor ?: return
+        if (twoFactor.resendSeconds > 0 || twoFactor.isResending) return
+        updateTwoFactor { it.copy(isResending = true, error = null) }
+
+        viewModelScope.launch {
+            resendTwoFactorCode(twoFactor.accountId)
+                .onSuccess {
+                    updateTwoFactor { it.copy(isResending = false, code = "") }
+                    startResendTimer()
+                }
+                .onFailure { error ->
+                    updateTwoFactor { it.copy(isResending = false, error = error.toTwoFactorError()) }
+                }
+        }
+    }
+
+    // Cerrar el diálogo cancela el inicio de sesión (Firebase tenía la sesión abierta a la espera del código).
+    fun onDismissTwoFactor() {
+        resendTimer?.cancel()
+        _uiState.update { it.copy(twoFactor = null, password = "") }
+        viewModelScope.launch { logout() }
+    }
+
+    private fun updateTwoFactor(transform: (TwoFactorUiState) -> TwoFactorUiState) {
+        _uiState.update { state -> state.copy(twoFactor = state.twoFactor?.let(transform)) }
+    }
+
+    private fun startResendTimer() {
+        resendTimer?.cancel()
+        resendTimer = viewModelScope.launch {
+            for (seconds in RESEND_WAIT_SECONDS downTo 0) {
+                updateTwoFactor { it.copy(resendSeconds = seconds) }
+                if (seconds > 0) delay(1_000)
+            }
+        }
+    }
+
+    private fun Throwable.toTwoFactorError(): TwoFactorError = when (this) {
+        AuthException.WrongCode, AuthException.InvalidCode -> TwoFactorError.WRONG_CODE
+        AuthException.CodeExpired -> TwoFactorError.EXPIRED
+        AuthException.TooManyAttempts -> TwoFactorError.TOO_MANY_ATTEMPTS
+        AuthException.CodeNotSent -> TwoFactorError.NOT_SENT
+        else -> TwoFactorError.GENERIC
     }
 
     /**
@@ -164,10 +285,14 @@ class LoginViewModel @Inject constructor(
         AuthException.WrongPassword -> LoginError.INVALID_CREDENTIALS
         AuthException.InactiveModerator -> LoginError.INACTIVE_MODERATOR
         UserException.AccountDeleted -> LoginError.ACCOUNT_DELETED
+        AuthException.CodeNotSent -> LoginError.CODE_NOT_SENT
         else -> LoginError.GENERIC
     }
 
     companion object {
+        // Espera mínima entre reenvíos del código A2F.
+        const val RESEND_WAIT_SECONDS = 30
+
         /**
          Valida el formato del correo electrónico respetando las reglas de la capa de dominio,
          garantizando consistencia entre la capa de presentación y las reglas de negocio.

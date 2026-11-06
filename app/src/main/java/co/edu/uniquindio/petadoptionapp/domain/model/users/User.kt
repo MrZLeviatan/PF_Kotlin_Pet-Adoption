@@ -4,6 +4,7 @@ import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 import co.edu.uniquindio.petadoptionapp.domain.model.reputation.Reputation
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.PublicProfile
 import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSettings
+import kotlinx.serialization.Serializable
 
 /**
  Perfil de una persona que se registra desde la aplicación.
@@ -18,6 +19,7 @@ import co.edu.uniquindio.petadoptionapp.domain.model.users.profile.UserSettings
  Todas las propiedades tienen valor por defecto porque Firestore crea
  primero un objeto vacío y luego lo llena.
  */
+@Serializable
 data class User (
 
     // Cuenta asociada al usuario.

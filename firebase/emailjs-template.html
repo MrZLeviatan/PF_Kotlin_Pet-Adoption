@@ -1,0 +1,11 @@
+<!-- Plantilla del correo A2F para EmailJS (Email Templates → Create New Template → pestaña "Code").
+     Asunto sugerido: {{code}} es tu código de verificación de Huellas
+     En "To Email" escribe: {{to_email}} -->
+<div style="font-family: Arial, sans-serif; background: #FFF6E0; padding: 32px 16px;">
+  <div style="max-width: 420px; margin: 0 auto; background: #FFFFFF; border: 1px solid #C98F55; border-radius: 20px; padding: 28px; text-align: center; color: #4A2C0F;">
+    <h2 style="margin: 0 0 8px;">Autenticación A2F</h2>
+    <p style="margin: 0 0 20px;">Hola {{user_name}}, este es tu código para iniciar sesión:</p>
+    <div style="font-size: 32px; font-weight: bold; letter-spacing: 10px; background: #FBEBC4; border-radius: 12px; padding: 14px 0;">{{code}}</div>
+    <p style="margin: 20px 0 0; font-size: 14px;">Vence en {{minutes}} minutos. Si no fuiste tú, cambia tu contraseña.</p>
+  </div>
+</div>

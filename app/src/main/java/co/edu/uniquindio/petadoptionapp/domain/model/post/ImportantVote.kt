@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.post
 
+import kotlinx.serialization.Serializable
+
 /**
  Voto "Es importante" de una persona sobre una publicación.
 
@@ -9,6 +11,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.post
 
  Se guarda en la colección `importantVotes`.
  */
+@Serializable
 data class ImportantVote(
     // Publicación votada.
     val postId: String = "",

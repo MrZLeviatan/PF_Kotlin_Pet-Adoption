@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.reputation
 
+import kotlinx.serialization.Serializable
+
 /**
  Registro de una insignia que una persona ya desbloqueó.
 
@@ -7,6 +9,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.reputation
  la descripción: si el catálogo cambia, la insignia se ve actualizada
  sin modificar a ningún usuario.
  */
+@Serializable
 data class UnlockedBadge(
     val badgeId: String = "",
     val unlockedAt: Long = System.currentTimeMillis()

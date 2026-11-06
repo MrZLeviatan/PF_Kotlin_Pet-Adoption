@@ -37,7 +37,9 @@ import androidx.compose.ui.unit.dp
 import co.edu.uniquindio.petadoptionapp.R
 import co.edu.uniquindio.petadoptionapp.core.theme.AppTheme
 import co.edu.uniquindio.petadoptionapp.core.theme.PetAdoptionAppTheme
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
 import co.edu.uniquindio.petadoptionapp.core.component.text.PawTitle
 
@@ -56,22 +58,25 @@ private val CardCornerRadius = 24.dp
 
 /**
 Pantalla de carga inicial.
-Solo contiene la lógica de tiempo; el dibujo vive en [SplashContent].
-No decide a dónde navegar: avisa que terminó y AppNavigation resuelve el destino.
+Mientras se muestra la marca, recupera la sesión guardada; el dibujo vive en [SplashContent].
+No decide a dónde navegar: avisa si hay sesión y AppNavigation resuelve el destino.
  */
 @Composable
 fun SplashScreen(
     // Sin valor por defecto: si se olvida pasarlo, el compilador lo señala.
-    onFinished: () -> Unit,
+    onFinished: (hasSession: Boolean) -> Unit,
+    viewModel: SplashViewModel = hiltViewModel(),
 ) {
     // Siempre apunta al callback más reciente sin reiniciar la espera.
     val currentOnFinished by rememberUpdatedState(onFinished)
 
     // Key `Unit`: se ejecuta una sola vez al entrar a la pantalla.
     LaunchedEffect(Unit) {
-        delay(SPLASH_DURATION_MS)   // Espera 2.5L
+        // La sesión se recupera mientras corre la espera; se avanza cuando terminan las dos.
+        val session = async { viewModel.hasSession() }
+        delay(SPLASH_DURATION_MS)   // Espera 2.5 s
         // Ejecuta la acción para cambiar de pantalla
-        currentOnFinished()
+        currentOnFinished(session.await())
     }
     // Dibuja la interfaz de la pantalla
     SplashContent()

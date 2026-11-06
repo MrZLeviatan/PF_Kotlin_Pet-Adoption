@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.comment
 
+import kotlinx.serialization.Serializable
+
 /**
  "Me gusta" de una persona sobre un comentario.
 
@@ -10,6 +12,7 @@ package co.edu.uniquindio.petadoptionapp.domain.model.comment
  Se incluye [postId] para poder pintar de una sola consulta todos los
  corazones de una publicación (`postId == X` y `userId == yo`).
  */
+@Serializable
 data class CommentLike(
     val commentId: String = "",
     val postId: String = "",

@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 
+import kotlinx.serialization.Serializable
+
 /**
 Conversación entre dos personas, normalmente originada por una
 publicación (por ejemplo, alguien interesado en adoptar una mascota).
@@ -8,6 +10,7 @@ Solo guarda un resumen del último mensaje para poder dibujar la lista de
 chats sin descargar los mensajes. Los mensajes completos viven en la
 subcolección `messages`.
  */
+@Serializable
 data class Chat(
 
     // Identificador del chat. Conviene generarlo con [buildId] para que dos personas no abran conversaciones duplicadas por la misma publicación.

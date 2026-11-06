@@ -1,5 +1,7 @@
 package co.edu.uniquindio.petadoptionapp.domain.model.messaging
 
+import kotlinx.serialization.Serializable
+
 /**
 Mensaje individual dentro de un [Chat].
 
@@ -7,6 +9,7 @@ Se guarda en la subcolección `chats/{chatId}/messages`, por eso no
 necesita un campo `chatId`: la ruta del documento ya lo indica.
 Si el mensaje fue leído se deduce de [Chat.lastReadAt], no se guarda aquí.
  */
+@Serializable
 data class Message(
     // Identificador del mensaje; lo genera Firestore al guardar.
     val id: String = "",
