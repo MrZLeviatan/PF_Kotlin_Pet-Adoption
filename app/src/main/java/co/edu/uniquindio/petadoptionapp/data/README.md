@@ -1,98 +1,136 @@
-<h1 align="center">
+# Capa de Datos
 
-_Capa de Datos_
+## Propósito
 
-</h1>
+La capa de datos implementa los contratos definidos en `domain/repository` y es la única parte de la aplicación que se comunica con servicios externos: **Firebase Authentication**, **Cloud Firestore**, **Cloudinary**, **OpenRouter**, **EmailJS** y el **geocodificador de Android**. Traduce entre los modelos del dominio y el formato que exige cada servicio, y convierte los errores técnicos en errores del dominio.
 
-**En pocas palabras:** aquí vive todo lo que habla con el exterior. La app guarda y lee la información en **Firebase**, sube las fotos a **Cloudinary**, pide análisis a la **IA (OpenRouter)**, envía correos con **EmailJS** y convierte direcciones con el **GPS del teléfono**. El resto de la app no sabe nada de esto: solo usa los contratos que define `domain/repository`.
+Ningún caso de uso ni pantalla conoce estas clases. Hilt entrega la implementación adecuada a quien solicita una interfaz (`di/RepositoryModule.kt`).
 
-<br>
-
-## Qué hay aquí
+## Estructura
 
 ```text
 data/repository/
-├── firebase/   Cuentas (Firebase Auth) y base de datos (Cloud Firestore)
-├── remote/     Servicios web: Cloudinary, OpenRouter y EmailJS
-└── device/     Servicios del teléfono: geocodificador
+├── firebase/    Firebase Authentication y Cloud Firestore
+├── remote/      Servicios HTTP: Cloudinary, OpenRouter y EmailJS
+└── device/      Servicios del sistema operativo: geocodificador
 ```
 
-| Archivo | Cumple el contrato | Qué hace |
+## Contenido por archivo
+
+### `firebase/`
+
+| Archivo | Implementa | Responsabilidad | Funciones principales |
+|---|---|---|---|
+| `FirebaseAuthRepository.kt` | `AuthRepository` | Inicio de sesión con correo y contraseña, registro, restauración de la sesión, recuperación y cambio de contraseña, reautenticación, eliminación de la cuenta y verificación en dos pasos propia. El rol y el alias se leen del perfil en Firestore. | `login`, `restoreSession`, `register`, `requestTwoFactorCode`, `verifyTwoFactorCode`, `sendPasswordReset`, `changePassword`, `deleteAccount` |
+| `FirestoreUserRepository.kt` | `UserRepository` | Perfiles en `users` y `moderators`. Mantiene los índices de valores únicos (`emails`, `userNames`, `phones`) y escucha en tiempo real el perfil de la sesión. | `save`, `findById`, `searchByUserName`, `existsByPhone`, `updateProfile`, `updateSettings`, `anonymize` |
+| `FirestorePostRepository.kt` | `PostRepository` | Publicaciones en `posts`. Filtra en Firestore por estado y refina en la aplicación (ciudad, tamaño, vacunas, distancia). Verifica publicaciones mediante transacción. | `create`, `getFeed`, `getPendingModeration`, `updateVerification`, `updateAiAnalysis`, `countForModeration` |
+| `FirestoreCatalogRepository.kt` | `CatalogRepository` | Categorías y tipos de animal escuchados en tiempo real desde el arranque; expuestos como `StateFlow`. | `categories`, `animalTypes`, `refresh`, `createCategory`, `updateCategory` |
+| `FirestoreCommentRepository.kt` | `CommentRepository` | Comentarios en `posts/{id}/comments` y "me gusta" en `commentLikes`. Ajusta los contadores en la misma transacción. | `create`, `getTopLevel`, `getReplies`, `toggleLike`, `markDeleted` |
+| `FirestoreImportantVoteRepository.kt` | `ImportantVoteRepository` | Votos en `importantVotes` y su contador en la publicación. | `toggle`, `hasVoted`, `getVotedAmong`, `getVotedPostIds` |
+| `FirestoreNotificationRepository.kt` | `NotificationRepository` | Notificaciones en `notifications`; usa consultas de agregación para contar las no leídas. | `create`, `getByRecipient`, `countUnread`, `markAllAsRead` |
+| `FirestoreChatRepository.kt` | `ChatRepository` | Chats, mensajes en tiempo real y solicitudes de adopción. Mensaje y resumen del chat se guardan en una transacción. | `openChat`, `sendMessage`, `observeMessages`, `sendAdoptionInterest`, `updateRequestStatus` |
+| `FirestoreReputationRepository.kt` | `ReputationRepository` | Historial en `pointTransactions`, puntos e insignias dentro del perfil y catálogo de insignias. | `award`, `unlockBadge`, `getTransactions`, `countByReason` |
+| `FirestoreMapper.kt` | — | Convierte modelos `@Serializable` en mapas de Firestore y viceversa. | `toFirestore()`, `toModel()`, `toModels()` |
+| `FirestoreCollections.kt` | — | Nombres de todas las colecciones, compartidos con las reglas y el script de datos. | Constantes |
+
+### `remote/`
+
+| Archivo | Implementa | Responsabilidad | Funciones principales |
+|---|---|---|---|
+| `CloudinaryImageRepository.kt` | `ImageStorageRepository` | Sube imágenes a Cloudinary mediante su API REST con un *upload preset* sin firma. | `upload` |
+| `OpenRouterAiRepository.kt` | `AiAnalysisRepository` | Envía la publicación a un modelo de lenguaje y convierte su respuesta JSON en un `AiPostAnalysis`. | `analyze`, `parseAiAnswer` |
+| `BackgroundPostAnalysisScheduler.kt` | `PostAnalysisScheduler` | Ejecuta `AnalyzePostUseCase` en un alcance de corrutinas propio de la aplicación, independiente de la pantalla. | `schedule` |
+| `EmailJsCodeSender.kt` | — (lo usa `FirebaseAuthRepository`) | Envía el correo con el código de verificación en dos pasos. | `sendTwoFactorCode` |
+
+### `device/`
+
+| Archivo | Implementa | Responsabilidad | Funciones principales |
+|---|---|---|---|
+| `AndroidGeocodingRepository.kt` | `GeocodingRepository` | Usa `android.location.Geocoder` para convertir direcciones en coordenadas y coordenadas en direcciones. No requiere llaves. | `search`, `reverse` |
+
+## Modelo de datos en Firestore
+
+| Colección | Documento | Contenido |
 |---|---|---|
-| `firebase/FirebaseAuthRepository` | `AuthRepository` | Inicio de sesión, registro, sesión guardada, contraseña y verificación en dos pasos |
-| `firebase/FirestoreUserRepository` | `UserRepository` | Perfiles de usuarios y moderadores, búsqueda por alias, ajustes |
-| `firebase/FirestorePostRepository` | `PostRepository` | Publicaciones, feed con filtros y cola de moderación |
-| `firebase/FirestoreCatalogRepository` | `CatalogRepository` | Categorías y tipos de animal (en vivo) |
-| `firebase/FirestoreCommentRepository` | `CommentRepository` | Comentarios, respuestas y "me gusta" |
-| `firebase/FirestoreImportantVoteRepository` | `ImportantVoteRepository` | Votos "Es importante" |
-| `firebase/FirestoreNotificationRepository` | `NotificationRepository` | Notificaciones |
-| `firebase/FirestoreChatRepository` | `ChatRepository` | Chats, mensajes en vivo y solicitudes de adopción |
-| `firebase/FirestoreReputationRepository` | `ReputationRepository` | Puntos, niveles e insignias |
-| `remote/CloudinaryImageRepository` | `ImageStorageRepository` | Sube fotos y devuelve su enlace |
-| `remote/OpenRouterAiRepository` | `AiAnalysisRepository` | Analiza publicaciones con IA |
-| `remote/BackgroundPostAnalysisScheduler` | `PostAnalysisScheduler` | Lanza ese análisis en segundo plano |
-| `remote/EmailJsCodeSender` | — | Envía el correo con el código A2F |
-| `device/AndroidGeocodingRepository` | `GeocodingRepository` | Dirección ↔ coordenadas, sin llaves |
-| `firebase/FirestoreMapper` | — | Convierte los modelos en documentos de Firestore y al revés |
-| `firebase/FirestoreCollections` | — | Nombres de las colecciones |
+| `users` | `{uid}` | Perfil de usuario y campo auxiliar `userNameLower` para la búsqueda |
+| `moderators` | `{uid}` | Perfil de moderador; su existencia define el rol |
+| `emails`, `userNames`, `phones` | `{valor}` | `{ uid }` del propietario; garantizan unicidad sin exponer los perfiles |
+| `twoFactorChallenges` | `{uid}` | Huella SHA-256 del código, vencimiento e intentos |
+| `categories`, `animalTypes`, `badges` | `{id}` | Catálogos |
+| `posts` | `{id}` | Publicación con su verificación y análisis de IA |
+| `posts/{id}/comments` | `{id}` | Comentarios y respuestas |
+| `commentLikes` | `{commentId_userId}` | "Me gusta" |
+| `importantVotes` | `{postId_userId}` | Votos "Es importante" |
+| `notifications` | `{id}` | Notificaciones con su destinatario |
+| `chats` | `{userA_userB_postId}` | Resumen de la conversación |
+| `chats/{id}/messages` | `{id}` | Mensajes |
+| `adoptionRequests` | `{postId_requesterId}` | Solicitudes de adopción |
+| `pointTransactions` | `{userId_MOTIVO_origen}` | Historial de puntos |
+| `deletionFeedback` | `{id}` | Motivo anónimo de eliminación de cuenta |
 
-<br>
+## Funcionamiento interno
 
-## Cómo se guardan los datos en Firestore
+### Conversión de modelos (`FirestoreMapper`)
 
-Firestore guarda **documentos** (parecidos a objetos JSON) dentro de **colecciones**:
+El SDK de Firestore solo puede deserializar clases con propiedades mutables y constructor vacío. Los modelos del dominio son inmutables, por lo que la conversión se realiza a través de JSON con kotlinx.serialization:
 
-| Colección | Qué guarda |
-|---|---|
-| `users/{uid}`, `moderators/{uid}` | Perfiles. El rol depende de en cuál está la cuenta |
-| `emails`, `userNames`, `phones` | Índices de valores únicos: permiten saber si un correo, alias o teléfono ya existe |
-| `posts/{id}` y `posts/{id}/comments` | Publicaciones (con su verificación y análisis de IA) y sus comentarios |
-| `categories`, `animalTypes`, `badges` | Catálogos |
-| `importantVotes`, `commentLikes` | Votos y "me gusta" (un documento por persona) |
-| `chats/{id}` y `chats/{id}/messages` | Conversaciones y mensajes |
-| `adoptionRequests` | Solicitudes de adopción |
-| `notifications` | Notificaciones de cada persona |
-| `pointTransactions` | Historial de puntos (cada hecho suma una sola vez) |
-| `twoFactorChallenges/{uid}` | Código A2F pendiente (solo su huella SHA-256, nunca el código) |
+```text
+Modelo ──encodeToJsonElement──► JsonObject ──fromJson──► Map<String, Any?> ──set()──► Firestore
+Firestore ──get()──► Map<String, Any?> ──toJson──► JsonObject ──decodeFromJsonElement──► Modelo
+```
 
-**Tres ideas que se repiten en todo el código:**
-- **Transacciones:** cuando un cambio toca varios documentos (votar y sumar al contador, enviar un mensaje y actualizar el chat, aprobar una publicación), todo se guarda junto o nada se guarda.
-- **Identificadores fijos:** un voto se llama `publicación_persona`. Un doble toque nunca crea dos votos.
-- **Datos en vivo:** el perfil de la sesión, los catálogos y los mensajes del chat se actualizan solos. Firestore guarda una copia local, así la app abre rápido y funciona sin conexión.
+La configuración escribe los valores por defecto (necesarios para las consultas), ignora campos desconocidos y guarda los enumerados como texto. Un documento mal formado se descarta en lugar de interrumpir la pantalla.
 
-<br>
+### Consistencia
+
+- **Transacciones** en toda operación que modifica varios documentos o depende del estado actual: verificación de publicaciones, comentarios y respuestas, votos, "me gusta", mensajes, solicitudes de adopción, puntos, insignias y validación del código A2F.
+- **Identificadores deterministas** para votos, chats, solicitudes y transacciones de puntos, de modo que las operaciones repetidas no generan duplicados.
+- **Traducción de errores.** Las excepciones de Firebase se convierten en errores del dominio; `unwrapTransactionError()` recupera el error original lanzado dentro de una transacción.
+
+### Tiempo real y caché
+
+Los *snapshot listeners* mantienen actualizados el perfil de la sesión, los catálogos, las insignias y los mensajes del chat. Firestore conserva una copia local, lo que permite abrir la aplicación con rapidez y consultar datos sin conexión.
 
 ## Servicios externos
 
-Las llaves se escriben en `local.properties`, Gradle las copia a `BuildConfig` al compilar y el código las lee de ahí. Ninguna llave está escrita en el código.
+La configuración de cada servicio se lee de `local.properties` y llega al código como constantes de `BuildConfig` (ver el [README principal](../../../../../../../../../README.md#configuración-de-llaves)).
 
 ### Firebase Authentication
-Correo y contraseña. Al iniciar sesión se lee el perfil en Firestore para saber el rol y si la cuenta usa verificación en dos pasos. Al abrir la app se recupera la sesión guardada. Recuperar la contraseña usa el correo de Firebase con un enlace.
 
-### Verificación en dos pasos (EmailJS)
+1. `login` autentica con correo y contraseña y lee el perfil para conocer el rol y la configuración de A2F.
+2. Si la cuenta no tiene A2F, publica la cuenta en `currentAccount` y la sesión queda abierta.
+3. `restoreSession` recupera la sesión al abrir la aplicación; si había una verificación en dos pasos pendiente, la cierra.
+4. `sendPasswordResetEmail` envía el enlace de restablecimiento. Por seguridad, la respuesta es la misma exista o no la cuenta.
+
+### Verificación en dos pasos con EmailJS
+
 ```text
-Correo y contraseña correctos
-   └─ ¿A2F activa? → se genera un código de 6 dígitos
-         ├─ Firestore guarda su huella SHA-256, vence en 5 minutos y admite 5 intentos
-         └─ EmailJS envía el correo
-El código se valida en una transacción → se abre la sesión
+login correcto ─► perfil con A2F activa
+   └─ requestTwoFactorCode
+        ├─ genera un código de 6 dígitos con SecureRandom
+        ├─ guarda SHA-256(uid:código) en twoFactorChallenges/{uid} (5 minutos, máximo 5 intentos)
+        └─ EmailJsCodeSender ─► POST https://api.emailjs.com/api/v1.0/email/send
+verifyTwoFactorCode ─► transacción: vencido / agotado / incorrecto (+1 intento) / correcto (un solo uso)
+                    ─► se abre la sesión de la aplicación
 ```
-Si la app se cierra a mitad del proceso, la próxima vez la sesión empieza cerrada.
 
-### Cloudinary (fotos)
-Cada foto se reduce a 1600 px, se sube con un *upload preset* sin firma a la carpeta `KogMaw-Adoption App/{posts|profiles|chats}` y se guarda su enlace `https`. El *API secret* nunca está en la app.
+La petición a EmailJS incluye `service_id`, `template_id`, `user_id` (llave pública), `accessToken` (llave privada, cuando la cuenta está en modo estricto) y los parámetros de la plantilla: `to_email`, `user_name`, `code` y `minutes`.
 
-### OpenRouter (IA)
-Envía el texto de la publicación, hasta 3 fotos y hasta 10 publicaciones parecidas. Recibe un JSON con prioridad, resumen, alertas y posible duplicado. Corre en segundo plano al publicar o editar. La IA **solo sugiere**: aprobar o rechazar siempre lo decide un moderador.
+### Cloudinary
 
-### Geocodificador del teléfono
-`android.location.Geocoder` convierte una dirección escrita en coordenadas y un punto del mapa en dirección. No necesita llaves.
+`POST https://api.cloudinary.com/v1_1/{cloud_name}/image/upload` en formato *multipart*, con el archivo, el `upload_preset` sin firma y la carpeta `KogMaw-Adoption App/{posts|profiles|chats}`. La respuesta contiene la `secure_url` que se guarda en el modelo. Antes de subirla, la imagen se reduce a 1600 píxeles en `core/util/LocalImageStore`.
 
-<br>
+### OpenRouter
 
-## Para desarrolladores
+`POST https://openrouter.ai/api/v1/chat/completions` (API compatible con OpenAI) con `Authorization: Bearer <llave>`, temperatura 0.2 y respuesta en formato JSON. El mensaje incluye el texto de la publicación, hasta tres imágenes (como URL o en base64) y hasta diez publicaciones similares. `parseAiAnswer` valida la respuesta, acota los valores y descarta duplicados que no estén entre las candidatas enviadas.
 
-- **¿Agregar una función que guarda datos?** Primero declara la operación en la interfaz de `domain/repository` y luego impleméntala aquí.
-- **¿Un modelo nuevo para Firestore?** Márcalo con `@Serializable`, dale valores por defecto y usa `modelo.toFirestore()` para guardar y `snapshot.toModel<T>()` para leer.
-- **¿Una consulta nueva con filtro y orden?** Probablemente necesite un índice: agrégalo en `firebase/firestore.indexes.json` y publícalo.
-- **Los errores** de Firebase se traducen a errores del dominio (`AuthException`, `PostException`…), así las pantallas muestran mensajes claros.
+### Geocodificador de Android
+
+`Geocoder.getFromLocationName` y `Geocoder.getFromLocation`, con la API asíncrona en Android 13 o superior. No requiere llaves; si el dispositivo no ofrece el servicio, la persona puede elegir el punto directamente en el mapa.
+
+## Guía de extensión
+
+1. Declarar la operación en la interfaz del dominio e implementarla en la clase correspondiente.
+2. Para un modelo nuevo, marcarlo con `@Serializable`, asignar valores por defecto y usar `toFirestore()` y `toModel()`.
+3. Si una consulta combina filtros con orden, agregar el índice compuesto en `firebase/firestore.indexes.json` y publicarlo.
+4. Si se agrega una colección, declararla en `FirestoreCollections` y protegerla en `firebase/firestore.rules`.

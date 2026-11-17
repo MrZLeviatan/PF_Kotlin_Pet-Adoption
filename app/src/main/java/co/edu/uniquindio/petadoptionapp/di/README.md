@@ -1,47 +1,49 @@
-<h1 align="center">
+# Inyección de Dependencias
 
-_Inyección de dependencias (di)_
+## Propósito
 
-</h1>
+La aplicación utiliza **Hilt** (basado en Dagger) para construir sus objetos y entregarlos a quien los necesita. Ninguna clase crea sus dependencias manualmente: un ViewModel declara en su constructor el caso de uso que requiere, el caso de uso declara sus repositorios y Hilt resuelve toda la cadena. Esta carpeta contiene los módulos que indican a Hilt cómo construir cada pieza.
 
-**En pocas palabras:** las clases de la app necesitan otras para funcionar (un ViewModel necesita un caso de uso, y este, un repositorio). En lugar de crearlas a mano, **Hilt** las fabrica y las entrega. Esta carpeta le dice a Hilt **cómo** fabricar cada una.
+## Contenido por archivo
 
-<br>
+| Archivo | Componente | Responsabilidad | Funciones principales |
+|---|---|---|---|
+| `FirebaseModule.kt` | `SingletonComponent` | Entrega una única instancia de Firebase Authentication (con los correos en el idioma de la aplicación) y de Cloud Firestore. Ambas leen su configuración de `google-services.json`. | `provideFirebaseAuth`, `provideFirestore` |
+| `RepositoryModule.kt` | `SingletonComponent` | Enlaza cada contrato del dominio con su implementación mediante `@Binds @Singleton`. Es el único lugar donde se decide qué tecnología usa la aplicación. | `bindAuth`, `bindUser`, `bindPost`, `bindCatalog`, `bindComment`, `bindVote`, `bindNotification`, `bindChat`, `bindReputation`, `bindImageStorage`, `bindAiAnalysis`, `bindPostAnalysisScheduler`, `bindGeocoding` |
+| `UseCaseModule.kt` | `ViewModelComponent` | Construye cada caso de uso con `@Provides @ViewModelScoped`, entregándole sus repositorios y los casos de uso de los que depende. | Una función `provide…UseCase` por caso de uso |
 
-## Qué hay aquí
+## Ciclo de vida de las dependencias
 
-| Archivo | Qué entrega | Cuánto vive |
+| Ámbito | Qué contiene | Motivo |
 |---|---|---|
-| `FirebaseModule.kt` | `FirebaseAuth` y `FirebaseFirestore` | Toda la app (una sola instancia) |
-| `RepositoryModule.kt` | Qué implementación usa cada contrato del dominio | Toda la app |
-| `UseCaseModule.kt` | Los casos de uso, con sus repositorios | Mientras viva la pantalla que los pidió |
+| `Singleton` | Firebase, repositorios y servicios remotos | Una sola instancia para toda la aplicación: comparten caché, sesión y *listeners* |
+| `ViewModelScoped` | Casos de uso | Viven mientras exista el ViewModel que los solicitó |
 
-<br>
-
-## Cómo funciona
-
-`RepositoryModule` es el lugar donde se decide la tecnología:
-
-```kotlin
-// "Cuando alguien pida un PostRepository, entrégale FirestorePostRepository"
-@Binds @Singleton abstract fun bindPost(impl: FirestorePostRepository): PostRepository
-```
-
-Así se arma la cadena completa, por ejemplo, para el login:
+## Cadena de resolución
 
 ```text
-LoginViewModel
-  └─ necesita LoginUseCase                 ← UseCaseModule lo fabrica
-       └─ necesita AuthRepository          ← RepositoryModule: FirebaseAuthRepository
-            └─ necesita FirebaseAuth       ← FirebaseModule
+@HiltViewModel LoginViewModel(loginUseCase, verifyTwoFactorCode, …)
+   └─ UseCaseModule.provideLoginUseCase(authRepository, checkProfile)
+        └─ RepositoryModule.bindAuth: AuthRepository → FirebaseAuthRepository
+             ├─ FirebaseModule.provideFirebaseAuth()
+             ├─ FirebaseModule.provideFirestore()
+             └─ EmailJsCodeSender (@Inject constructor)
 ```
 
-- `PetAdoptionApp` (`@HiltAndroidApp`) arranca Hilt y `MainActivity` (`@AndroidEntryPoint`) lo habilita en las pantallas.
-- Los ViewModels se marcan con `@HiltViewModel` y se obtienen con `hiltViewModel()`.
+## Puntos de entrada
 
-<br>
+| Clase | Anotación | Función |
+|---|---|---|
+| `PetAdoptionApp` (`Application.kt`) | `@HiltAndroidApp` | Crea el contenedor global de dependencias al iniciar el proceso |
+| `MainActivity` | `@AndroidEntryPoint` | Habilita la inyección en la actividad y en sus pantallas |
+| ViewModels | `@HiltViewModel` | Se obtienen en las pantallas con `hiltViewModel()` |
 
-## Para desarrolladores
+## Decisiones de diseño
 
-- **¿Un caso de uso nuevo?** Agrega su función `@Provides` en `UseCaseModule`. Los casos de uso no llevan anotaciones de Hilt: así el dominio sigue siendo Kotlin puro.
-- **¿Cambiar de tecnología** (por ejemplo, otra base de datos)? Escribe la nueva implementación en `data/` y cambia una línea en `RepositoryModule`. Nada más se entera.
+- **Dominio sin Hilt.** Los casos de uso son clases Kotlin puras sin anotaciones; `UseCaseModule` actúa como fábrica. Esto mantiene el dominio independiente del framework.
+- **Reemplazo de tecnología localizado.** Sustituir Firestore por otra base de datos solo requiere escribir la nueva implementación en `data/` y cambiar la línea correspondiente en `RepositoryModule`.
+
+## Guía de extensión
+
+- Un caso de uso nuevo requiere una función `@Provides` en `UseCaseModule`.
+- Un repositorio nuevo requiere su interfaz en el dominio, su implementación anotada con `@Inject constructor` y un `@Binds` en `RepositoryModule`.

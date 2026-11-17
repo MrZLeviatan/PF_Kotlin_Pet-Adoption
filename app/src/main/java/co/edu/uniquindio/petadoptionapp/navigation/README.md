@@ -1,48 +1,44 @@
-<h1 align="center">
+# Navegación
 
-_Navegación_
+## Propósito
 
-</h1>
+Esta carpeta define el recorrido entre pantallas. Utiliza **Navigation Compose** con rutas tipadas: cada destino es un objeto o una clase de Kotlin anotada con `@Serializable`, y sus argumentos (por ejemplo, el identificador de una publicación) viajan como propiedades, sin construir cadenas de texto manualmente.
 
-**En pocas palabras:** esta carpeta decide **a qué pantalla se va** después de cada acción. Usa Navigation Compose con rutas tipadas: cada pantalla es un objeto de Kotlin y sus datos (por ejemplo, el id de la publicación) viajan como propiedades.
+Las pantallas no se conocen entre sí. Cada una expone funciones como `onPostClick(postId)` y esta capa decide a qué destino conducen.
 
-<br>
+## Contenido por archivo
 
-## Qué hay aquí
+| Archivo | Responsabilidad | Elementos principales |
+|---|---|---|
+| `MainRoutes.kt` | Catálogo de destinos de nivel superior. Los `data object` representan pantallas sin argumentos y las `data class` llevan los argumentos necesarios. | `Splash`, `Login`, `Register`, `RecoverPassword`, `NewPassword`, `Main`, `CreatePost`, `EditPost(postId)`, `PostDetail(postId)`, `PostComments(postId, replyToCommentId)`, `Chat(chatId)`, `UserProfile(userId)`, `RejectPost(postId)`, `Settings`, `EditProfile`, `Notifications`, `Metrics`, `MyPosts`, `MyLikes` |
+| `AppNavigation.kt` | Grafo de navegación raíz. Registra cada ruta en un `NavHost`, crea su pantalla y conecta sus eventos con acciones del `NavController`. Lo monta `MainActivity`. | `AppNavigation()` |
 
-| Archivo | Qué contiene |
-|---|---|
-| `MainRoutes.kt` | La lista de destinos: `Splash`, `Login`, `Register`, `Main`, `PostDetail(postId)`, `Chat(chatId)`, `UserProfile(userId)`, `CreatePost`, `EditPost(postId)`, `Settings`, `Notifications`… |
-| `AppNavigation.kt` | El mapa de navegación: para cada destino, qué pantalla se muestra y a dónde lleva cada botón |
-
-```kotlin
-composable<MainRoutes.PostDetail> {
-    PostDetailScreen(onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) })
-}
-```
-
-<br>
-
-## Recorrido de la app
+## Flujo de la aplicación
 
 ```text
-Splash ── ¿hay sesión? ──sí──► Main
-   └──no──► Login ──► (código A2F) ──► Main
-              ├──► Registro
-              └──► Recuperar contraseña
+Splash
+ ├─ sesión válida ──────────────────────────────► Main
+ └─ sin sesión ──► Login
+                    ├─ credenciales correctas ──► (código A2F, si aplica) ──► Main
+                    ├─► Register
+                    └─► RecoverPassword
 
-Main = barra inferior (features/dashboard)
-   Usuario:    Inicio · Explorar · Mensajes · Perfil
-   Moderador:  Inicio · Publicaciones · Estadísticas · Perfil
-        └──► Detalle, Chat, Perfil público, Publicar, Ajustes, Notificaciones…
+Main (barra inferior, definida en features/dashboard)
+ ├─ Usuario:    Inicio · Explorar · Mensajes · Perfil
+ └─ Moderador:  Inicio · Publicaciones · Estadísticas · Perfil
+        │
+        └─► PostDetail ─► PostComments, Chat, UserProfile, EditPost, RejectPost
+            CreatePost, Settings, EditProfile, Notifications, Metrics, MyPosts, MyLikes
 ```
 
-- Al iniciar o cerrar sesión se limpia el historial: el botón "atrás" nunca vuelve a la sesión anterior.
-- Las pestañas de la barra inferior tienen su propia navegación en `features/dashboard/DashboardNavigation.kt`.
+## Comportamiento relevante
 
-<br>
+- **Limpieza de la pila.** Al iniciar o cerrar sesión, y al eliminar la cuenta, se elimina el historial con `popUpTo`, de modo que el botón "Atrás" nunca regresa a una sesión anterior.
+- **Argumentos.** Los ViewModels leen los argumentos de la ruta desde `SavedStateHandle` (por ejemplo, `savedStateHandle["chatId"]`).
+- **Navegación interna del panel.** Las pestañas de la barra inferior tienen su propio `NavHost`, definido en `features/dashboard/DashboardNavigation.kt` con las rutas de `DashboardRoutes`.
 
-## Para desarrolladores
+## Guía de extensión
 
-- **¿Una pantalla nueva?** Agrega su ruta en `MainRoutes.kt` y su `composable<…>` en `AppNavigation.kt`.
-- **¿Pasar un dato?** Ponlo como propiedad de la ruta (`data class PostDetail(val postId: String)`); el ViewModel lo lee de `SavedStateHandle`.
+1. Declarar la ruta en `MainRoutes.kt`.
+2. Registrar su `composable<…>` en `AppNavigation.kt` y conectar los eventos de la pantalla.
+3. Si la pantalla necesita datos de entrada, declararlos como propiedades de la ruta y leerlos en el ViewModel.

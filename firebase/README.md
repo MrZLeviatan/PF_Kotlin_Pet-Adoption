@@ -1,36 +1,37 @@
-<h1 align="center">
+# Configuración de Firebase
 
-_Firebase: configuración paso a paso_
+## Propósito
 
-</h1>
+Esta carpeta contiene los recursos que Firebase necesita fuera del código de la aplicación: las **reglas de seguridad** y los **índices** de Cloud Firestore, la **plantilla del correo** de verificación en dos pasos y el **script de carga de datos de prueba**. Todos los servicios utilizados funcionan con el plan gratuito de Firebase (Spark).
 
-Esta carpeta tiene todo lo que Firebase necesita fuera de la app: las **reglas de seguridad**, los **índices** de la base de datos, la **plantilla del correo** del código A2F y el **script que carga los datos de prueba**. Todo funciona con el plan gratuito, sin tarjeta.
+## Contenido por archivo
 
-```text
-firebase/
-├── firestore.rules          Quién puede leer y escribir cada colección
-├── firestore.indexes.json   Índices que necesitan las consultas de la app
-├── emailjs-template.html    Diseño del correo con el código de verificación
-└── seed/                    Script para cargar los datos de prueba
-    ├── seed.mjs             El script (Node.js + Firebase Admin SDK)
-    ├── seed.json            Los datos (generados desde SeedData.kt)
-    └── .env.example         Plantilla para las contraseñas de prueba
-```
+| Archivo | Descripción |
+|---|---|
+| `firestore.rules` | Reglas de seguridad: determinan quién puede leer, crear, modificar o eliminar cada documento. |
+| `firestore.indexes.json` | Índices compuestos requeridos por las consultas que combinan filtros y orden (feed, comentarios, chats, notificaciones, historial de puntos). |
+| `emailjs-template.html` | Diseño del correo con el código de verificación en dos pasos. Recibe las variables `to_email`, `user_name`, `code` y `minutes`. |
+| `seed/seed.mjs` | Script de Node.js que, con el SDK de administración de Firebase, crea las cuentas de prueba con identificadores fijos y carga los documentos iniciales. |
+| `seed/seed.json` | Datos de prueba. Se genera automáticamente desde `SeedData.kt` y no contiene contraseñas. |
+| `seed/.env.example` | Plantilla para definir las contraseñas de las cuentas de prueba. |
+| `seed/package.json` | Dependencias del script (`firebase-admin`). |
 
-<br>
+En la raíz del proyecto, `firebase.json` indica a Firebase CLI dónde se encuentran las reglas y los índices, y `.firebaserc` define el proyecto por defecto.
 
-## 1. Consola de Firebase
+---
 
-1. **Authentication → Método de acceso:** activa *Correo electrónico/contraseña*.
-2. **Authentication → Plantillas:** idioma *español* y nombre del remitente (por ejemplo, "Huellas"). Es el correo de "¿Olvidaste tu contraseña?".
-3. **Firestore Database → Crear base de datos:** modo producción. La región no se puede cambiar después (sugerida: `southamerica-east1`).
-4. Comprueba que `app/google-services.json` esté en su lugar (ver el [README principal](../README.md#poner-en-marcha-el-proyecto-desarrolladores)).
+## 1. Configuración en la consola
 
-<br>
+1. **Authentication > Método de acceso:** habilitar *Correo electrónico/contraseña*.
+2. **Authentication > Plantillas:** seleccionar el idioma español y definir el nombre del remitente. Esta plantilla corresponde al correo de restablecimiento de contraseña.
+3. **Firestore Database > Crear base de datos:** seleccionar el modo de producción. La región no puede modificarse posteriormente; se sugiere `southamerica-east1`.
+4. **Configuración del proyecto > Tus apps:** registrar la aplicación Android con el paquete `co.edu.uniquindio.petadoptionapp` y copiar `google-services.json` en `app/`.
+
+---
 
 ## 2. Reglas e índices
 
-Se publican desde la **raíz del proyecto**, que ya trae `firebase.json` y `.firebaserc`:
+Se publican desde la raíz del proyecto con Firebase CLI:
 
 ```bash
 npx firebase-tools login
@@ -39,73 +40,87 @@ npx firebase-tools login
 npx firebase-tools deploy --only firestore
 ```
 
-- Los índices tardan unos minutos en quedar listos (*Firestore → Índices*). Mientras tanto, algunas listas pueden salir vacías.
-- `.firebaserc` apunta al proyecto `kog-maw-adoption`. Si usas tu propio proyecto, cambia ese nombre o agrega `--project tu-proyecto` al comando.
+`.firebaserc` apunta al proyecto `kog-maw-adoption`. Para utilizar otro proyecto, se debe modificar ese archivo o agregar `--project <id-del-proyecto>` al comando. La creación de los índices puede tardar algunos minutos; su estado se consulta en *Firestore > Índices*.
 
-**Qué protegen las reglas, en pocas palabras:**
-- Cada persona solo edita su perfil, sus publicaciones y sus comentarios.
-- Los chats y las solicitudes de adopción solo los ven sus participantes.
-- Nadie puede aprobar su propia publicación ni crearse un perfil de moderador.
-- Los catálogos (categorías, tipos de animal, insignias) los lee cualquiera y solo los cambia un moderador.
+### Resumen de las reglas
 
-<br>
+| Colección | Lectura | Escritura |
+|---|---|---|
+| `users` | Personas autenticadas | El titular; otras personas solo pueden modificar la reputación |
+| `moderators` | Personas autenticadas | El titular, únicamente la verificación en dos pasos; no se pueden crear desde la aplicación |
+| `emails`, `userNames`, `phones` | Consulta individual, incluso sin sesión | Solo creación por el titular; nunca sobrescritura |
+| `twoFactorChallenges` | El titular | El titular |
+| `categories`, `animalTypes`, `badges` | Cualquier persona | Moderadores |
+| `posts` | Personas autenticadas | El autor (sin aprobarse a sí mismo), los moderadores y los contadores de votos y comentarios |
+| `posts/{id}/comments` | Personas autenticadas | El autor, los moderadores y los contadores |
+| `chats` y `messages` | Participantes | Participantes |
+| `adoptionRequests` | Solicitante y autor de la publicación | Solicitante y autor de la publicación |
+| `notifications` | Destinatario | Creación por personas autenticadas; lectura y borrado por el destinatario |
+| `pointTransactions` | El titular | Personas autenticadas |
+
+---
 
 ## 3. Datos de prueba
 
-Cargan 4 usuarios, 5 moderadores, 5 categorías (con su ícono de mapa), 14 publicaciones, comentarios, chats y notificaciones.
+Cargan 4 usuarios, 5 moderadores, 5 categorías con su configuración de marcador, 5 tipos de animal, 4 insignias, 14 publicaciones en distintos estados, comentarios, votos, chats, solicitudes de adopción, notificaciones e historial de puntos.
 
-1. **Llave de administrador:** Consola → ⚙ *Configuración del proyecto* → *Cuentas de servicio* → **Generar nueva clave privada**. Guárdala como `firebase/seed/service-account.json`.
-2. **Contraseñas:** copia `firebase/seed/.env.example` como `firebase/seed/.env` y escribe las contraseñas de las cuentas de prueba (mínimo 6 caracteres).
-3. **Cargar** desde la raíz del proyecto:
-   ```bash
-   npm --prefix firebase/seed install
-   ```
-   ```bash
-   npm --prefix firebase/seed run seed -- --reset
-   ```
-   `--reset` borra **todo** Firestore antes de cargar (también lo creado desde la app). Sin `--reset`, solo agrega o actualiza.
+### Procedimiento
 
-> 🔒 `service-account.json` y `.env` están en `.gitignore`. La llave de administrador da control total del proyecto: nunca la compartas.
+1. **Llave de administrador.** En *Configuración del proyecto > Cuentas de servicio*, seleccionar **Generar nueva clave privada** y guardar el archivo como `firebase/seed/service-account.json`.
+2. **Contraseñas.** Copiar `firebase/seed/.env.example` como `firebase/seed/.env` y definir `SEED_USER_PASSWORD` y `SEED_MODERATOR_PASSWORD` (mínimo 6 caracteres).
+3. **Instalación y carga**, desde la raíz del proyecto:
 
-**Cuentas que quedan creadas** (con las contraseñas de tu `.env`):
+```bash
+npm --prefix firebase/seed install
+```
+```bash
+npm --prefix firebase/seed run seed -- --reset
+```
+
+La opción `--reset` elimina todo el contenido de Firestore, incluido el creado desde la aplicación, y las cuentas que usen los correos de prueba con un identificador distinto. Sin esta opción, el script agrega o actualiza los datos existentes.
+
+> La llave de administrador otorga control total sobre el proyecto. `service-account.json` y `.env` están excluidos de git y no deben compartirse.
+
+### Cuentas creadas
 
 | Rol | Correos |
 |---|---|
-| Usuario | `n@gmail.com` (ana_77), `luis@correo.com`, `camila@correo.com`, `andres@correo.com` |
-| Moderador | `mod@petadoption.com`, `mod2@petadoption.com` … `mod5@petadoption.com` |
+| Usuario | `n@gmail.com`, `luis@correo.com`, `camila@correo.com`, `andres@correo.com` |
+| Moderador | `mod@petadoption.com`, `mod2@petadoption.com`, `mod3@petadoption.com`, `mod4@petadoption.com`, `mod5@petadoption.com` |
 
-**Para cambiar los datos:** edita `app/src/test/.../seed/SeedData.kt` y regenera `seed.json`:
+Las contraseñas son las definidas en `firebase/seed/.env`.
+
+### Modificación de los datos
+
+Los datos se definen en `app/src/test/java/co/edu/uniquindio/petadoptionapp/seed/SeedData.kt`. Tras modificarlos, se regenera `seed.json` con:
+
 ```bash
 ./gradlew :app:testDebugUnitTest --tests "*SeedExportTest*"
 ```
 
-**Moderadores nuevos:** créalos en *Authentication → Agregar usuario* y agrega a mano su documento `moderators/{uid}` con los mismos campos que `m1`. Por seguridad, la app nunca permite crear moderadores.
+### Moderadores adicionales
 
-<br>
+La aplicación no permite crear moderadores. Para agregar uno, se crea la cuenta en *Authentication > Agregar usuario* y se crea manualmente el documento `moderators/{uid}` con la misma estructura que el moderador `m1`.
 
-## 4. EmailJS (correo del código A2F)
+---
 
-1. En [emailjs.com](https://www.emailjs.com): **Email Services** → conecta tu Gmail → copia el *Service ID*.
-2. **Email Templates** → nueva plantilla. En la pestaña de código pega `emailjs-template.html`; en *To Email* escribe `{{to_email}}`; en el asunto, `{{code}} es tu código de verificación`. Copia el *Template ID*.
-3. **Account → General:** copia la *Public Key*.
-4. **Account → Security:** activa **"Allow EmailJS API for non-browser applications"** (sin esto, EmailJS rechaza a la app). Si activas *Use Private Key*, copia también la *Private Key*.
-5. Escribe los valores en `local.properties`:
-   ```properties
-   EMAILJS_SERVICE_ID=service_...
-   EMAILJS_TEMPLATE_ID=template_...
-   EMAILJS_PUBLIC_KEY=...
-   EMAILJS_PRIVATE_KEY=...
-   ```
+## 4. EmailJS
 
-Cada persona activa la verificación en dos pasos desde **Ajustes → Verificación en dos pasos**.
+1. En [emailjs.com](https://www.emailjs.com), sección **Email Services**, conectar una cuenta de correo y copiar el *Service ID*.
+2. En **Email Templates**, crear una plantilla con el contenido de `emailjs-template.html`. En el campo *To Email* escribir `{{to_email}}` y en el asunto `{{code}} es tu código de verificación`. Copiar el *Template ID*.
+3. En **Account > General**, copiar la *Public Key*.
+4. En **Account > Security**, habilitar **Allow EmailJS API for non-browser applications**. Si se activa *Use Private Key*, copiar también la *Private Key*.
+5. Registrar los valores en `local.properties` (ver el [README principal](../README.md#configuración-de-llaves)).
 
-<br>
+Cada persona activa la verificación en dos pasos desde **Configuración > Verificación en dos pasos**.
 
-## Problemas comunes
+---
 
-| Síntoma | Causa probable |
-|---|---|
-| "No pudimos enviar el código de verificación" | Faltan llaves de EmailJS, no está activado *non-browser applications* o falta la *Private Key* en modo estricto. El motivo exacto sale en Logcat con el filtro `EmailJsCodeSender`. |
-| Listas vacías o error *"requires an index"* | Los índices aún se están creando o no se publicaron. |
-| *PERMISSION_DENIED* | Las reglas no se publicaron, o la acción no está permitida para ese rol. |
-| "Correo ya utilizado" con un correo que no aparece en la app | Hay una cuenta en *Authentication* sin perfil en Firestore. Bórrala desde la consola. |
+## Solución de problemas
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| "No pudimos enviar el código de verificación" | Llaves de EmailJS ausentes, acceso para aplicaciones no habilitado o llave privada faltante en modo estricto | Revisar la configuración de EmailJS; el motivo exacto aparece en Logcat con el filtro `EmailJsCodeSender` |
+| Listas vacías o error *requires an index* | Índices no publicados o en construcción | Ejecutar el despliegue y esperar a que los índices estén habilitados |
+| Error *PERMISSION_DENIED* | Reglas no publicadas o acción no permitida para el rol | Publicar las reglas y verificar el rol de la cuenta |
+| "Correo ya utilizado" para una cuenta inexistente en la aplicación | Cuenta en Authentication sin perfil en Firestore | Eliminar la cuenta desde *Authentication > Usuarios* |
