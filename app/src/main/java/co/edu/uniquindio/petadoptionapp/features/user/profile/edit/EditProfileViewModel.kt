@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.edu.uniquindio.petadoptionapp.domain.error.UserException
 import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
+import co.edu.uniquindio.petadoptionapp.domain.usecase.location.ReverseGeocodeUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.ObserveCurrentUserUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.user.UpdateProfileUseCase
 import co.edu.uniquindio.petadoptionapp.domain.usecase.validator.UserValidator
@@ -56,18 +57,10 @@ data class EditProfileUiState(
     val fullName: String = "",
     // Teléfono (solo dígitos).
     val phone: String = "",
-    // Ciudad de residencia.
-    val city: String = "",
-    // Dirección de residencia.
-    val address: String = "",
     // Error actual del campo nombre (null si es válido).
     val nameError: ProfileFieldError? = null,
     // Error actual del campo teléfono.
     val phoneError: ProfileFieldError? = null,
-    // Error actual del campo ciudad.
-    val cityError: ProfileFieldError? = null,
-    // Error actual del campo dirección.
-    val addressError: ProfileFieldError? = null,
     // Error general al guardar, que no pertenece a un campo concreto.
     val saveError: EditProfileError? = null,
     // Indica si ya se cargaron los datos iniciales del usuario.
@@ -81,20 +74,43 @@ data class EditProfileUiState(
     val savedFullName: String = "",
     // Teléfono guardado.
     val savedPhone: String = "",
-    // Ciudad guardada.
-    val savedCity: String = "",
-    // Dirección guardada.
-    val savedAddress: String = "",
     // Foto guardada.
     val savedPhotoUrl: String? = null,
+    // Ubicación guardada en el perfil (con coordenadas): la referencia para saber si cambió.
+    val savedLocation: Location = Location(),
+    // true si la persona eligió "Ubicación actual"; false si la elige en el mapa (ciudad y dirección).
+    val useCurrentLocation: Boolean = false,
+    // Ubicación leída del GPS y su dirección; null hasta que se pida.
+    val currentLocation: Location? = null,
+    // true mientras se pide el permiso y se lee el GPS.
+    val isLocating: Boolean = false,
+    // true si no se pudo obtener la ubicación (permiso negado o GPS apagado).
+    val locationUnavailable: Boolean = false,
+    // Ubicación elegida en el mapa; arranca con la guardada para que el selector la muestre.
+    val mapLocation: Location? = null,
+    // true si al guardar no hay una ubicación válida elegida.
+    val locationError: Boolean = false,
 ) {
+    // Ubicación que se guardará, según el modo elegido.
+    val selectedLocation: Location? get() = if (useCurrentLocation) currentLocation else mapLocation
+
+    // ¿La ubicación elegida es distinta de la guardada? (punto, ciudad o dirección)
+    val locationChanged: Boolean
+        get() = selectedLocation?.let {
+            it.latitude != savedLocation.latitude || it.longitude != savedLocation.longitude ||
+                it.city.trim() != savedLocation.city.trim() || it.address.trim() != savedLocation.address.trim()
+        } ?: false
+
+    // Hay ubicación válida: con coordenadas y ciudad.
+    val hasValidLocation: Boolean
+        get() = selectedLocation?.let { it.hasCoordinates() && it.city.isNotBlank() } == true
+
     // Se compara sin espacios sobrantes: agregar un espacio al final no cuenta como cambio.
     val hasChanges: Boolean
         // Hay cambios si cualquiera de los campos difiere de su valor guardado.
         get() = fullName.trim() != savedFullName.trim() ||
             phone != savedPhone ||
-            city.trim() != savedCity.trim() ||
-            address.trim() != savedAddress.trim() ||
+            locationChanged ||
             photoUrl != savedPhotoUrl
 
     // "Guardar Cambios" solo se habilita si hay algo nuevo y todo es válido.
@@ -106,8 +122,9 @@ data class EditProfileUiState(
     val isFormValid: Boolean
         // Requiere datos cargados, ningún error de campo y ningún campo vacío.
         get() = isLoaded &&
-            listOf(nameError, phoneError, cityError, addressError).all { it == null } &&
-            listOf(fullName, phone, city, address).all { it.isNotBlank() }
+            listOf(nameError, phoneError).all { it == null } &&
+            listOf(fullName, phone).all { it.isNotBlank() } &&
+            hasValidLocation
 }
 
 // Eventos de una sola vez que el ViewModel envía a la pantalla (no forman parte del estado).
@@ -123,6 +140,8 @@ class EditProfileViewModel @Inject constructor(
     private val observeCurrentUser: ObserveCurrentUserUseCase,
     // Caso de uso que valida y guarda los cambios del perfil.
     private val updateProfile: UpdateProfileUseCase,
+    // Caso de uso que convierte las coordenadas del GPS en ciudad y dirección.
+    private val reverseGeocode: ReverseGeocodeUseCase,
 ) : ViewModel() {
 
     // Estado mutable interno del formulario.
@@ -138,8 +157,6 @@ class EditProfileViewModel @Inject constructor(
     // Datos que no se muestran pero se deben conservar al guardar.
     // Identificador del usuario, necesario para actualizar su documento.
     private var userId = ""
-    // Ubicación guardada completa (incluye coordenadas que el formulario no edita).
-    private var savedLocation = Location()
 
     // Bloque de inicialización: carga los datos del usuario al crear el ViewModel.
     init {
@@ -149,8 +166,6 @@ class EditProfileViewModel @Inject constructor(
             val user = observeCurrentUser().filterNotNull().first()
             // Guarda el id de la cuenta para el guardado posterior.
             userId = user.account.id
-            // Guarda la ubicación original para conservar sus coordenadas.
-            savedLocation = user.location
             // Rellena el formulario y los valores "guardados" con los datos actuales.
             _uiState.update {
                 it.copy(
@@ -161,13 +176,12 @@ class EditProfileViewModel @Inject constructor(
                     // Valores iniciales de los campos editables.
                     fullName = user.name,
                     phone = user.phone,
-                    city = user.location.city,
-                    address = user.location.address,
+                    // El selector del mapa arranca en la ubicación guardada.
+                    mapLocation = user.location,
                     // Copia de lo guardado para detectar cambios.
                     savedFullName = user.name,
                     savedPhone = user.phone,
-                    savedCity = user.location.city,
-                    savedAddress = user.location.address,
+                    savedLocation = user.location,
                     savedPhotoUrl = user.photoUrl,
                     // Marca el formulario como cargado.
                     isLoaded = true,
@@ -192,18 +206,36 @@ class EditProfileViewModel @Inject constructor(
         _uiState.update { it.copy(phone = digits, phoneError = validatePhone(digits), saveError = null) }
     }
 
-    // Actualiza la ciudad y valida que no quede vacía.
-    fun onCityChange(value: String) =
-        _uiState.update { it.copy(city = value, cityError = validateRequired(value), saveError = null) }
+    // Cambia entre "Ubicación actual" y "Seleccionar mapa".
+    fun onUseCurrentLocationChange(value: Boolean) =
+        _uiState.update { it.copy(useCurrentLocation = value, locationError = false, saveError = null) }
 
-    // Actualiza la dirección y valida que no quede vacía.
-    fun onAddressChange(value: String) =
-        _uiState.update { it.copy(address = value, addressError = validateRequired(value), saveError = null) }
+    // La pantalla pidió el permiso y está leyendo el GPS.
+    fun onLocatingStarted() = _uiState.update { it.copy(isLocating = true, locationUnavailable = false) }
 
-    // Acción del botón "Fijar ubicación" del recuadro de mapa (aún sin implementar).
-    fun onSetLocationClick() {
-        // TODO (MapLibre, con LocationPicker): elegir el punto en el mapa y actualizar coordenadas, ciudad y dirección.
+    /**
+    Ubicación actual del teléfono (o null si no se pudo leer): se le busca la ciudad y la dirección.
+    **/
+    fun onCurrentLocationResult(latitude: Double?, longitude: Double?) {
+        // Sin coordenadas (permiso negado o GPS apagado): se avisa y se termina.
+        if (latitude == null || longitude == null) {
+            // Termina la localización con el aviso de ubicación no disponible.
+            _uiState.update { it.copy(isLocating = false, locationUnavailable = true) }
+            // No hay nada más que hacer.
+            return
+        }
+        // Busca la dirección en segundo plano.
+        viewModelScope.launch {
+            // Convierte las coordenadas en una ubicación con ciudad y dirección.
+            val location = reverseGeocode(latitude, longitude)
+            // Guarda la ubicación actual y termina la localización.
+            _uiState.update { it.copy(isLocating = false, currentLocation = location, locationError = false, saveError = null) }
+        }
     }
+
+    // Punto elegido en el mapa, con la ciudad del selector y la dirección buscada o tocada.
+    fun onMapLocationPicked(location: Location) =
+        _uiState.update { it.copy(mapLocation = location, locationError = false, saveError = null) }
 
     // Valida todo el formulario y, si es posible, guarda los cambios del perfil.
     fun onSaveClick() {
@@ -218,14 +250,12 @@ class EditProfileViewModel @Inject constructor(
         _uiState.update { it.copy(isSaving = true, saveError = null) }
         // Lanza el guardado en una corrutina ligada al ViewModel.
         viewModelScope.launch {
-            // Las coordenadas se conservan hasta que exista el mapa; solo cambian los textos.
-            val location = savedLocation.copy(city = state.city.trim(), address = state.address.trim())
+            // La ubicación elegida (actual o del mapa), con sus textos limpios; isFormValid garantiza que existe.
+            val location = state.selectedLocation!!.let { it.copy(city = it.city.trim(), address = it.address.trim()) }
             // Invoca el caso de uso con los datos del formulario.
             updateProfile(userId, state.fullName, state.phone, state.photoUrl, location)
                 // Si se guardó correctamente:
                 .onSuccess {
-                    // Actualiza la ubicación de referencia con la recién guardada.
-                    savedLocation = location
                     // Termina el guardado, muestra el diálogo y sincroniza los valores "guardados".
                     _uiState.update {
                         it.copy(
@@ -233,8 +263,9 @@ class EditProfileViewModel @Inject constructor(
                             showSuccessDialog = true,
                             savedFullName = it.fullName,
                             savedPhone = it.phone,
-                            savedCity = it.city,
-                            savedAddress = it.address,
+                            // La recién guardada pasa a ser la referencia; el mapa queda en ella.
+                            savedLocation = location,
+                            mapLocation = location,
                             savedPhotoUrl = it.photoUrl,
                         )
                     }
@@ -256,8 +287,8 @@ class EditProfileViewModel @Inject constructor(
     private fun EditProfileUiState.withAllErrors() = copy(
         nameError = validateName(fullName),
         phoneError = validatePhone(phone),
-        cityError = validateRequired(city),
-        addressError = validateRequired(address),
+        // Sin una ubicación válida elegida se muestra el aviso bajo el selector.
+        locationError = !hasValidLocation,
     )
 
     // Traduce el error del caso de uso al campo que corresponde.
@@ -294,9 +325,5 @@ class EditProfileViewModel @Inject constructor(
             !UserValidator.isPhoneValid(phone) -> ProfileFieldError.INVALID
             else -> null
         }
-
-        // Valida un campo obligatorio: solo comprueba que no esté vacío.
-        fun validateRequired(value: String): ProfileFieldError? =
-            if (value.isBlank()) ProfileFieldError.EMPTY else null
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +24,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,9 +49,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.MaterialTheme
 import co.edu.uniquindio.petadoptionapp.R
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material3.CircularProgressIndicator
+import co.edu.uniquindio.petadoptionapp.core.component.button.SecondaryButton
+import co.edu.uniquindio.petadoptionapp.core.component.form.OptionSelector
+import co.edu.uniquindio.petadoptionapp.core.component.form.SelectorOption
+import co.edu.uniquindio.petadoptionapp.core.component.map.AppMap
+import co.edu.uniquindio.petadoptionapp.core.component.map.toGeoPoint
+import co.edu.uniquindio.petadoptionapp.core.component.map.LocationPicker
+import co.edu.uniquindio.petadoptionapp.core.component.map.MapMarker
+import co.edu.uniquindio.petadoptionapp.core.component.map.MarkerKind
+import co.edu.uniquindio.petadoptionapp.core.component.map.rememberCurrentLocationRequester
+import co.edu.uniquindio.petadoptionapp.core.component.text.IconTextRow
+import co.edu.uniquindio.petadoptionapp.domain.model.location.Location
 import co.edu.uniquindio.petadoptionapp.core.component.button.PrimaryButton
 import co.edu.uniquindio.petadoptionapp.core.component.card.AppCard
-import co.edu.uniquindio.petadoptionapp.core.component.card.LocationMapPlaceholder
 import co.edu.uniquindio.petadoptionapp.core.component.dialog.AppInfoDialog
 import co.edu.uniquindio.petadoptionapp.core.component.form.AppTextField
 import co.edu.uniquindio.petadoptionapp.core.component.header.AppTopBar
@@ -120,12 +132,14 @@ fun EditProfileScreen(
             onPhotoPicked = viewModel::onPhotoPicked,
             // Cambios en el teléfono.
             onPhoneChange = viewModel::onPhoneChange,
-            // Cambios en la ciudad.
-            onCityChange = viewModel::onCityChange,
-            // Cambios en la dirección.
-            onAddressChange = viewModel::onAddressChange,
-            // Toque en "Fijar ubicación".
-            onSetLocationClick = viewModel::onSetLocationClick,
+            // Cambio entre ubicación actual y mapa.
+            onUseCurrentLocationChange = viewModel::onUseCurrentLocationChange,
+            // Inicio de la lectura del GPS.
+            onLocatingStarted = viewModel::onLocatingStarted,
+            // Resultado del GPS (o null si no se pudo).
+            onCurrentLocationResult = viewModel::onCurrentLocationResult,
+            // Punto elegido en el mapa.
+            onMapLocationPicked = viewModel::onMapLocationPicked,
             // Toque en "Guardar Cambios".
             onSaveClick = viewModel::onSaveClick,
             // Aceptar el diálogo de éxito.
@@ -144,12 +158,14 @@ private data class EditProfileActions(
     val onPhotoPicked: (String) -> Unit = {},
     // Se llama al escribir en el campo teléfono.
     val onPhoneChange: (String) -> Unit = {},
-    // Se llama al escribir en el campo ciudad.
-    val onCityChange: (String) -> Unit = {},
-    // Se llama al escribir en el campo dirección.
-    val onAddressChange: (String) -> Unit = {},
-    // Se llama al tocar el botón del recuadro de mapa.
-    val onSetLocationClick: () -> Unit = {},
+    // Se llama al elegir "Ubicación actual" (true) o "Seleccionar mapa" (false).
+    val onUseCurrentLocationChange: (Boolean) -> Unit = {},
+    // Se llama justo antes de pedir el permiso y leer el GPS.
+    val onLocatingStarted: () -> Unit = {},
+    // Se llama con las coordenadas del GPS (null si no se pudieron leer).
+    val onCurrentLocationResult: (Double?, Double?) -> Unit = { _, _ -> },
+    // Se llama cada vez que cambia el punto, la ciudad o la dirección del mapa.
+    val onMapLocationPicked: (Location) -> Unit = {},
     // Se llama al tocar "Guardar Cambios".
     val onSaveClick: () -> Unit = {},
     // Se llama al aceptar el diálogo de éxito.
@@ -246,28 +262,8 @@ private fun EditProfileContent(
                         keyboardType = KeyboardType.Phone,
                         required = true,
                     )
-                    // Campo ciudad (obligatorio).
-                    AppTextField(
-                        value = uiState.city,
-                        onValueChange = actions.onCityChange,
-                        label = stringResource(R.string.edit_profile_city),
-                        leadingIcon = Icons.Outlined.Public,
-                        errorMessage = requiredErrorMessage(uiState.cityError, R.string.edit_profile_error_city),
-                        required = true,
-                    )
-                    // Campo dirección (obligatorio); es el último, por eso el teclado muestra "Listo".
-                    AppTextField(
-                        value = uiState.address,
-                        onValueChange = actions.onAddressChange,
-                        label = stringResource(R.string.edit_profile_address),
-                        leadingIcon = Icons.Outlined.LocationOn,
-                        errorMessage = requiredErrorMessage(uiState.addressError, R.string.edit_profile_error_address),
-                        // Acción "Listo" del teclado.
-                        imeAction = ImeAction.Done,
-                        required = true,
-                    )
-                    // Recuadro provisional: aquí irá el mapa.
-                    LocationMapPlaceholder(onSetLocationClick = actions.onSetLocationClick)
+                    // Ubicación: la actual del teléfono o elegida en el mapa (ciudad y dirección).
+                    ProfileLocationSection(uiState = uiState, actions = actions)
                 }
             }
 
@@ -345,14 +341,127 @@ private fun saveErrorMessage(error: EditProfileError?): String? = when (error) {
     EditProfileError.GENERIC -> stringResource(R.string.settings_error_generic)
 }
 
+/**
+Sección de ubicación del perfil, igual a la de crear publicación:
+- "Ubicación actual": pide el permiso, lee el GPS y busca la ciudad y la dirección; se ve en un mapa.
+- "Seleccionar mapa": LocationPicker con la ciudad (lista), la dirección (búsqueda) y el punto tocado.
+La ubicación del perfil sirve para centrar Explorar y como punto de partida al publicar.
+**/
+@Composable
+private fun ProfileLocationSection(uiState: EditProfileUiState, actions: EditProfileActions) {
+    // Pide el permiso de ubicación y entrega las coordenadas al ViewModel.
+    val requestLocation = rememberCurrentLocationRequester { point ->
+        actions.onCurrentLocationResult(point?.latitude, point?.longitude)
+    }
+    // Avisa que empezó la búsqueda (muestra "Obteniendo tu ubicación…") y la lanza.
+    val locate = {
+        actions.onLocatingStarted()
+        requestLocation()
+    }
+
+    // Bloque de ubicación con sus elementos separados 12 dp.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Título de la sección.
+        Text(
+            text = stringResource(R.string.edit_profile_location),
+            style = MaterialTheme.typography.titleSmall,
+            color = AppTheme.colors.textPrimary,
+        )
+        // Selector de dos opciones: ubicación actual o elegir en el mapa.
+        OptionSelector(
+            options = listOf(
+                SelectorOption(stringResource(R.string.create_post_location_current), Icons.Outlined.MyLocation),
+                SelectorOption(stringResource(R.string.create_post_location_map), Icons.Outlined.Map),
+            ),
+            selectedIndex = if (uiState.useCurrentLocation) 0 else 1,
+            onSelect = { index ->
+                // Cambia el modo en el ViewModel.
+                actions.onUseCurrentLocationChange(index == 0)
+                // La primera vez que elige "Ubicación actual", la busca de inmediato.
+                if (index == 0 && uiState.currentLocation == null && !uiState.isLocating) locate()
+            },
+            fillWidth = true,
+        )
+
+        // Muestra el modo elegido.
+        if (uiState.useCurrentLocation) {
+            // Mapa fijo con el punto del GPS, su dirección y el botón para actualizarla.
+            CurrentLocationContent(uiState = uiState, onLocate = locate)
+        } else {
+            // Selector completo: ciudad, búsqueda de dirección y toque en el mapa; arranca en la ubicación guardada.
+            LocationPicker(
+                initial = uiState.mapLocation,
+                onLocationChange = actions.onMapLocationPicked,
+                key = "profile-location",
+            )
+        }
+
+        // Aviso si se intentó guardar sin una ubicación válida.
+        if (uiState.locationError) {
+            ErrorText(text = stringResource(R.string.edit_profile_error_location), modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+// Ubicación actual: mapa no interactivo con el punto, la dirección encontrada y el botón para buscarla de nuevo.
+@Composable
+private fun CurrentLocationContent(uiState: EditProfileUiState, onLocate: () -> Unit) {
+    // Ubicación leída del GPS (null hasta que se obtenga).
+    val current = uiState.currentLocation
+    // Punto del mapa; solo existe si la ubicación tiene coordenadas.
+    val point = current?.toGeoPoint()
+    // Elementos separados 12 dp.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Con punto: muestra el mapa y la dirección.
+        if (point != null) {
+            // Mapa fijo centrado en la ubicación actual, con un marcador.
+            AppMap(
+                center = point,
+                zoom = 15.0,
+                markers = listOf(MapMarker("current", point, AppTheme.colors.stateError, kind = MarkerKind.PIN, icon = Icons.Filled.MyLocation)),
+                interactive = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(1.dp, AppTheme.colors.border, RoundedCornerShape(16.dp)),
+            )
+            // Dirección, ciudad y país encontrados, separados por comas.
+            IconTextRow(
+                icon = Icons.Outlined.LocationOn,
+                text = listOf(current.address, current.city, current.country).filter { it.isNotBlank() }.joinToString(", "),
+            )
+        }
+        // Estado de la búsqueda: cargando o no disponible.
+        when {
+            // Buscando: indicador con su texto.
+            uiState.isLocating -> Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = AppTheme.colors.textPrimary)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.create_post_locating), color = AppTheme.colors.textPrimary)
+            }
+            // No se pudo leer el GPS: aviso con la alternativa del mapa.
+            uiState.locationUnavailable -> ErrorText(text = stringResource(R.string.create_post_location_unavailable))
+        }
+        // Botón para obtener (o actualizar) la ubicación, oculto mientras se busca.
+        if (!uiState.isLocating) {
+            SecondaryButton(
+                text = stringResource(if (point == null) R.string.create_post_use_my_location else R.string.create_post_refresh_location),
+                icon = Icons.Outlined.MyLocation,
+                onClick = onLocate,
+            )
+        }
+    }
+}
+
 // Estado de ejemplo compartido por las vistas previas.
 private val previewState = EditProfileUiState(
     userName = "nicolas_cs",
     email = "nicolas.cabreras@uqvirtual.edu.co",
     fullName = "Nicolas Cabrera Serrano",
     phone = "3054819209",
-    city = "Armenia",
-    address = "Oro negro, Calle 20 Norte",
+    savedLocation = Location(4.5339, -75.6811, "Armenia", "Colombia", "Oro negro, Calle 20 Norte"),
+    mapLocation = Location(4.5339, -75.6811, "Armenia", "Colombia", "Oro negro, Calle 20 Norte"),
     isLoaded = true,
 )
 
@@ -449,8 +558,7 @@ private fun EditProfileErrorsPreview() {
             uiState = previewState.copy(
                 phone = "305481",
                 phoneError = ProfileFieldError.INVALID,
-                city = "",
-                cityError = ProfileFieldError.EMPTY,
+                locationError = true,
             ),
             actions = EditProfileActions(),
         )

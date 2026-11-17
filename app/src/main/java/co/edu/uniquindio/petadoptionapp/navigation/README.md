@@ -4,41 +4,45 @@ _Navegación_
 
 </h1>
 
-La carpeta `navigation` define **cómo se pasa de una pantalla a otra**. Usa Navigation Compose con **rutas con tipo** (`@Serializable`): cada destino es un objeto o una clase de Kotlin, y sus argumentos (por ejemplo, `postId`) viajan como propiedades, sin construir textos de URL a mano.
+**En pocas palabras:** esta carpeta decide **a qué pantalla se va** después de cada acción. Usa Navigation Compose con rutas tipadas: cada pantalla es un objeto de Kotlin y sus datos (por ejemplo, el id de la publicación) viajan como propiedades.
 
 <br>
 
-## Archivos
+## Qué hay aquí
 
-### `MainRoutes.kt`
-Rutas de nivel superior: `Splash`, `Login`, `Register`, `RecoverPassword`, `Main` (el dashboard con barra inferior), `PostDetail(postId)`, `EditPost(postId)`, `PostComments(postId, replyToCommentId)`, `Chat(chatId)`, `UserProfile(userId)`, `RejectPost(postId)`, `CreatePost`, `Settings`, `EditProfile`, `Notifications`, `Metrics`, `MyPosts`, `MyLikes`.
-
-### `AppNavigation.kt`
-El `NavHost` principal. Para cada ruta crea su pantalla y le entrega lambdas de navegación:
+| Archivo | Qué contiene |
+|---|---|
+| `MainRoutes.kt` | La lista de destinos: `Splash`, `Login`, `Register`, `Main`, `PostDetail(postId)`, `Chat(chatId)`, `UserProfile(userId)`, `CreatePost`, `EditPost(postId)`, `Settings`, `Notifications`… |
+| `AppNavigation.kt` | El mapa de navegación: para cada destino, qué pantalla se muestra y a dónde lleva cada botón |
 
 ```kotlin
 composable<MainRoutes.PostDetail> {
-    PostDetailScreen(onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) }, …)
+    PostDetailScreen(onOpenChat = { chatId -> navController.navigate(MainRoutes.Chat(chatId)) })
 }
 ```
 
-Los ViewModels leen sus argumentos de la ruta desde `SavedStateHandle` (por ejemplo, `savedStateHandle["chatId"]`), así las pantallas no los reciben por parámetro.
+<br>
+
+## Recorrido de la app
+
+```text
+Splash ── ¿hay sesión? ──sí──► Main
+   └──no──► Login ──► (código A2F) ──► Main
+              ├──► Registro
+              └──► Recuperar contraseña
+
+Main = barra inferior (features/dashboard)
+   Usuario:    Inicio · Explorar · Mensajes · Perfil
+   Moderador:  Inicio · Publicaciones · Estadísticas · Perfil
+        └──► Detalle, Chat, Perfil público, Publicar, Ajustes, Notificaciones…
+```
+
+- Al iniciar o cerrar sesión se limpia el historial: el botón "atrás" nunca vuelve a la sesión anterior.
+- Las pestañas de la barra inferior tienen su propia navegación en `features/dashboard/DashboardNavigation.kt`.
 
 <br>
 
-## Flujo principal
+## Para desarrolladores
 
-```text
-Splash ──(hay sesión)──▶ Main
-   └──(sin sesión)──▶ Login ──▶ (A2F en diálogo) ──▶ Main
-                        ├──▶ Register
-                        └──▶ RecoverPassword
-
-Main (barra inferior, features/dashboard)
-  usuario:    Inicio · Explorar · Mensajes · Perfil
-  moderador:  Inicio · Publicaciones · Estadísticas · Perfil
-     └──▶ PostDetail, Chat, UserProfile, CreatePost, Settings, Notifications…
-```
-
-- Al iniciar sesión, cerrarla o eliminar la cuenta se limpia la pila (`popUpTo`): "atrás" nunca vuelve a una pantalla de la sesión anterior.
-- Las pestañas de la barra inferior tienen su propio `NavHost` en `features/dashboard/DashboardNavigation.kt` (rutas en `DashboardRoutes`).
+- **¿Una pantalla nueva?** Agrega su ruta en `MainRoutes.kt` y su `composable<…>` en `AppNavigation.kt`.
+- **¿Pasar un dato?** Ponlo como propiedad de la ruta (`data class PostDetail(val postId: String)`); el ViewModel lo lee de `SavedStateHandle`.

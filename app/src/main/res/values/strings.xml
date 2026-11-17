@@ -351,6 +351,8 @@
     <string name="edit_profile_save">Guardar Cambios</string>
     <string name="edit_profile_error_city">Debe llenar el campo ciudad</string>
     <string name="edit_profile_error_address">Debe llenar el campo dirección</string>
+    <string name="edit_profile_location">Ubicación</string>
+    <string name="edit_profile_error_location">Elige tu ubicación: usa la actual o márcala en el mapa.</string>
     <string name="edit_profile_success_title">Perfil actualizado</string>
     <string name="edit_profile_success_message">Tus datos se guardaron correctamente.</string>
     <string name="edit_profile_success_button">Aceptar</string>

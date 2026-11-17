@@ -1,11 +1,19 @@
 <h1 align="center">
 
-_Huellas — KogMaw Adoption App_
+🐾 _Huellas — KogMaw Adoption App_ 🐾
 
 </h1>
 
 <p align="center">
-Aplicación móvil nativa para Android, escrita en Kotlin con Jetpack Compose, para la <b>adopción responsable de mascotas</b>, el reporte de animales <b>perdidos y encontrados</b>, los <b>hogares de paso</b> y la difusión de <b>jornadas veterinarias</b>.
+Aplicación Android para la <b>adopción responsable de mascotas</b>, el reporte de animales <b>perdidos y encontrados</b>, los <b>hogares de paso</b> y las <b>jornadas veterinarias</b>.
+</p>
+
+<p align="center">
+  <img alt="Android" src="https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white">
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white">
+  <img alt="Jetpack Compose" src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white">
+  <img alt="Firebase" src="https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?logo=firebase&logoColor=black">
+  <img alt="Licencia" src="https://img.shields.io/badge/Licencia-Apache%202.0-blue">
 </p>
 
 <br>
@@ -19,189 +27,191 @@ Aplicación móvil nativa para Android, escrita en Kotlin con Jetpack Compose, p
 
 ## Contenido
 
-1. [Funcionalidades](#funcionalidades)
-2. [Arquitectura](#arquitectura)
-3. [Tecnologías](#tecnologías)
-4. [Servicios externos: cómo se implementaron](#servicios-externos-cómo-se-implementaron)
-5. [Puesta en marcha](#puesta-en-marcha)
+1. [¿Qué es Huellas?](#qué-es-huellas)
+2. [Instalar la app (usuarios)](#instalar-la-app-usuarios)
+3. [Poner en marcha el proyecto (desarrolladores)](#poner-en-marcha-el-proyecto-desarrolladores)
+4. [Generar y publicar el APK](#generar-y-publicar-el-apk)
+5. [Cómo está construida](#cómo-está-construida)
 6. [Seguridad](#seguridad)
-7. [Estructura del repositorio](#estructura-del-repositorio)
+7. [Licencia](#licencia)
 
 <br>
 
-## Funcionalidades
+## ¿Qué es Huellas?
 
-**Personas usuarias**
-- Registro en dos pasos con validación de correo y teléfono únicos, y ubicación elegida en el mapa.
-- Inicio de sesión con **verificación en dos pasos (A2F)** por correo, sesión guardada y recuperación de contraseña.
-- Publicaciones de cinco categorías (adopción, perdidos, encontrados, hogar temporal, veterinaria) con fotos de cámara o galería, datos del animal y ubicación.
-- Feed con filtros y orden, y **mapa de Explorar** con un marcador por categoría, filtros por cercanía y ubicación aproximada para proteger la dirección.
-- Comentarios con respuestas y "me gusta", votos "Es importante", solicitudes de adopción y **chat en vivo** con fotos.
-- Notificaciones, reputación (puntos, niveles e insignias) y métricas para compartir.
-- Perfil público o privado, edición de perfil y foto, cambio de idioma (español, inglés, francés) y eliminación de cuenta.
+Huellas conecta a personas que quieren ayudar a los animales. Cualquiera puede publicar una mascota en adopción, avisar que perdió o encontró un animal, ofrecer un hogar de paso o difundir una jornada veterinaria. Un equipo de **moderadores** revisa cada publicación antes de que sea pública, con ayuda de **inteligencia artificial**.
 
-**Moderadores**
-- Cola de revisión ordenada por prioridad, tomar, aprobar o rechazar con motivo, y finalizar publicaciones.
-- **Análisis con IA** de cada publicación: prioridad sugerida, resumen, puntos clave, relevancia, inconsistencias, revisión de fotos, contenido inapropiado, posibles duplicados y acciones recomendadas.
-- Estadísticas propias y acceso al perfil completo de quien publica.
+| Para quien usa la app | Para quien modera |
+|---|---|
+| 📝 Crea publicaciones con fotos (cámara o galería) y ubicación | ✅ Revisa la cola ordenada por prioridad |
+| 🗺️ Explora el mapa con un ícono por categoría y filtros | 🤖 Ve el análisis de IA: resumen, alertas y posibles duplicados |
+| 💬 Comenta, marca "Es importante" y chatea en vivo | ❌ Aprueba o rechaza con un motivo |
+| 🏠 Envía y responde solicitudes de adopción | 📊 Consulta sus estadísticas |
+| 🏅 Gana puntos, niveles e insignias | 👤 Ve el perfil completo de quien publica |
+| 🔐 Inicia sesión con verificación en dos pasos por correo | |
+| 🌎 Usa la app en español, inglés o francés | |
 
 <br>
 
-## Arquitectura
+## Instalar la app (usuarios)
 
-El proyecto sigue **Clean Architecture** con **MVVM** en la presentación. Las dependencias apuntan siempre hacia el dominio:
+**Opción 1 — GitHub:** descarga el archivo `app-release.apk` de la última versión en la sección [**Releases**](https://github.com/MrZLeviatan/PF_Kotlin_Pet-Adoption/releases) del repositorio.
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│  features/  (Compose + ViewModel)        navigation/          │  Presentación
-│  core/      (tema, componentes, mapa, utilidades)             │
-└───────────────┬──────────────────────────────────────────────┘
-                │ llama a casos de uso
-┌───────────────▼──────────────────────────────────────────────┐
-│  domain/    modelos · casos de uso · contratos de repositorio │  Dominio (Kotlin puro)
-└───────────────▲──────────────────────────────────────────────┘
-                │ implementa los contratos
-┌───────────────┴──────────────────────────────────────────────┐
-│  data/      Firebase · Cloudinary · OpenRouter · EmailJS ·    │  Datos
-│             geocodificador del teléfono                       │
-└──────────────────────────────────────────────────────────────┘
-        di/  (Hilt) une interfaces con implementaciones
+**Opción 2 — Firebase App Distribution:** si te invitaron como tester, recibirás un correo. Ábrelo en el teléfono, acepta la invitación y descarga la app desde ahí.
+
+**Para instalar el APK:**
+1. Abre el archivo descargado en el teléfono (Android 7.0 o superior).
+2. Si Android lo pide, permite **"Instalar apps desconocidas"** para el navegador o el gestor de archivos.
+3. Abre Huellas, crea tu cuenta y listo.
+
+> La app pide permiso de **ubicación** (para el mapa y las publicaciones) y de **cámara** (para las fotos). Puedes negarlos y elegir la ubicación o las fotos a mano.
+
+<br>
+
+## Poner en marcha el proyecto (desarrolladores)
+
+### Requisitos
+
+| Herramienta | Para qué |
+|---|---|
+| Android Studio (reciente) con JDK 17 o superior | Compilar y ejecutar la app |
+| Un proyecto de Firebase (plan gratuito) | Cuentas y base de datos |
+| Node.js 22 o superior | Publicar reglas y cargar los datos de prueba |
+| Cuentas gratuitas de Cloudinary, EmailJS y OpenRouter | Fotos, correo del código A2F e IA |
+
+### Paso a paso
+
+**1. Clonar el repositorio**
+```bash
+git clone https://github.com/MrZLeviatan/PF_Kotlin_Pet-Adoption.git
 ```
 
-**Ejemplo de un flujo completo — aprobar una publicación:**
+**2. Conectar Firebase.** En la [consola de Firebase](https://console.firebase.google.com), registra una app Android con el paquete `co.edu.uniquindio.petadoptionapp`, descarga `google-services.json` y cópialo en `app/google-services.json`.
 
-1. El moderador pulsa "Aprobar" en `PostDetailScreen`.
-2. `PostDetailViewModel` llama a `ApprovePostUseCase`.
-3. El caso de uso comprueba que sea un moderador activo (`RequireModeratorUseCase`), pide a `PostRepository.updateVerification` el cambio, otorga puntos al autor (`AwardPointsUseCase`) y le envía una notificación (`NotifyUseCase`).
-4. `FirestorePostRepository` hace la escritura en una **transacción** de Firestore: si otro moderador ya la decidió, falla con `PostException.AlreadyReviewed`.
-5. El ViewModel actualiza su `uiState` y la pantalla se redibuja.
-
-Documentación de cada capa:
-
-| Capa | README |
-|---|---|
-| Dominio | [domain/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/README.md) · [model](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/model/README.md) · [repository](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/repository/README.md) · [usecase](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/usecase/README.md) |
-| Datos | [data/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/data/README.md) |
-| Presentación | [features/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/features/README.md) |
-| Núcleo compartido | [core/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/core/README.md) |
-| Inyección de dependencias | [di/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/di/README.md) |
-| Navegación | [navigation/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/navigation/README.md) |
-| Firebase (consola, reglas, datos) | [firebase/README.md](firebase/README.md) |
-| Modelo de datos | [docs/modelo-datos.md](docs/modelo-datos.md) |
-
-<br>
-
-## Tecnologías
-
-| Tecnología | Versión | Uso |
-|---|---|---|
-| Kotlin | 2.4.20 | Lenguaje |
-| Android Gradle Plugin | 9.4.1 | Compilación (minSdk 24, targetSdk 37) |
-| Jetpack Compose (BoM) + Material 3 | 2026.09.00 | Interfaz declarativa |
-| Navigation Compose | 2.10.2 | Navegación con rutas con tipo |
-| Hilt (Dagger) + KSP | 2.60.1 | Inyección de dependencias |
-| Coroutines / Flow | 1.10.2 | Asincronía y estado reactivo |
-| kotlinx.serialization | 1.11.0 | JSON (rutas, Firestore, OpenRouter, EmailJS) |
-| Firebase BoM (Auth, Firestore) | 35.1.0 | Cuentas y base de datos |
-| OkHttp | 4.12.0 | Llamadas REST (Cloudinary, OpenRouter, EmailJS) |
-| Coil | 3.6.3 | Carga de imágenes desde URL |
-| MapLibre Android | 11.13.5 | Mapas (estilo OpenFreeMap) |
-| AppCompat | 1.7.1 | Idioma de la app por aplicación |
-
-<br>
-
-## Servicios externos: cómo se implementaron
-
-Todas las llaves se escriben en **`local.properties`** (ignorado por git). `app/build.gradle.kts` las lee al compilar y las expone como constantes de **`BuildConfig`**; el código nunca contiene una llave escrita.
+**3. Escribir las llaves en `local.properties`** (en la raíz; git lo ignora). Android Studio crea este archivo con la ruta del SDK; agrega debajo:
 
 ```properties
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_UPLOAD_PRESET=...
-OPENROUTER_API_KEY=...
-OPENROUTER_MODEL=openai/gpt-4o-mini   # opcional
-EMAILJS_SERVICE_ID=...
-EMAILJS_TEMPLATE_ID=...
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_UPLOAD_PRESET=tu_preset_sin_firma
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_MODEL=openai/gpt-4o-mini
+EMAILJS_SERVICE_ID=service_...
+EMAILJS_TEMPLATE_ID=template_...
 EMAILJS_PUBLIC_KEY=...
-EMAILJS_PRIVATE_KEY=...                # si la cuenta de EmailJS está en modo estricto
+EMAILJS_PRIVATE_KEY=...
 ```
 
-### Firebase Authentication y Cloud Firestore
-- **Configuración**: plugin `com.google.gms.google-services` + `app/google-services.json`. `di/FirebaseModule` entrega `FirebaseAuth` y `FirebaseFirestore` como singletons.
-- **Autenticación** (`FirebaseAuthRepository`): correo y contraseña; el rol y el alias se leen del perfil en Firestore. La sesión se recupera al abrir la app. Recuperar contraseña usa el correo de Firebase.
-- **Base de datos**: cada contrato del dominio tiene su repositorio de Firestore. Los modelos `@Serializable` se convierten en documentos con `FirestoreMapper` (kotlinx.serialization), sin anotaciones de Firebase en el dominio.
-- **Consistencia**: transacciones para contadores, votos, mensajes, verificaciones y puntos; ids deterministas para evitar duplicados.
-- **Tiempo real**: *snapshot listeners* para el perfil de la sesión, catálogos y mensajes del chat. La caché local permite usar la app sin conexión.
-- **Seguridad**: `firebase/firestore.rules` (cada quien escribe lo suyo, los chats solo los leen sus participantes, nadie se auto-verifica, los moderadores no se crean desde la app) e índices en `firebase/firestore.indexes.json`. Se publican con `npx firebase-tools deploy --only firestore`.
-- **Datos de prueba**: `SeedExportTest` convierte `SeedData.kt` en `firebase/seed/seed.json`, y `firebase/seed/seed.mjs` (Firebase Admin SDK) los carga.
+| Llave | Dónde se consigue | ¿Obligatoria? |
+|---|---|---|
+| `CLOUDINARY_*` | Cloudinary → *Settings → Upload → Upload presets* (crea uno **Unsigned**) | Sí, para subir fotos |
+| `OPENROUTER_*` | openrouter.ai → *Keys*. El modelo es opcional | No: sin ella la IA queda desactivada |
+| `EMAILJS_*` | emailjs.com → *Email Services*, *Email Templates* y *Account* | Sí, para la verificación en dos pasos |
 
-### Verificación en dos pasos con EmailJS
-Firebase Auth no envía códigos por correo, y sus Cloud Functions requieren el plan de pago. Por eso:
-1. Con correo y contraseña correctos, si la cuenta tiene A2F, se genera un código de **6 dígitos** con `SecureRandom`.
-2. En `twoFactorChallenges/{uid}` se guarda solo su **hash SHA-256**, el vencimiento (5 min), los intentos (máx. 5) y si ya se usó.
-3. `EmailJsCodeSender` llama a `POST https://api.emailjs.com/api/v1.0/email/send` (OkHttp) con la plantilla `firebase/emailjs-template.html`.
-4. El código se valida en una **transacción**; solo entonces se abre la sesión de la app.
+**4. Configurar Firebase** (Authentication, Firestore, reglas, índices y la plantilla de EmailJS). Sigue la guía [**firebase/README.md**](firebase/README.md). En resumen:
+```bash
+npx firebase-tools login
+```
+```bash
+npx firebase-tools deploy --only firestore
+```
 
-> Limitación: al generarse en el teléfono, esta A2F es adecuada para un proyecto académico; en producción el código debería generarse en un servidor.
+**5. Cargar los datos de prueba** (opcional, pero recomendado): 4 usuarios, 5 moderadores, 5 categorías y 14 publicaciones. También está explicado en [firebase/README.md](firebase/README.md#3-datos-de-prueba).
 
-### Cloudinary — almacenamiento de imágenes
-- `CloudinaryImageRepository` sube cada foto con **upload preset sin firma** (`POST https://api.cloudinary.com/v1_1/{cloud}/image/upload`, multipart) a la carpeta `KogMaw-Adoption App/{posts|profiles|chats}` y guarda la `secure_url`.
-- Antes de subirla, `LocalImageStore` la copia a la carpeta privada de la app y la reduce a 1600 px en JPEG.
-- El *API secret* nunca está en la app; solo el *cloud name* y el nombre del preset.
-- Las imágenes se muestran con **Coil**.
-
-### MapLibre + OpenFreeMap — mapas
-- `core/component/map/AppMap` integra el `MapView` de MapLibre en Compose (`AndroidView`) con el estilo gratuito **OpenFreeMap** (`tiles.openfreemap.org/styles/liberty`), sin llaves ni tarjeta.
-- Marcadores en una `SymbolLayer` con íconos dibujados como *bitmaps* (`MarkerImages`); el ícono, el color y la forma salen de la **categoría guardada en Firestore**. Las áreas aproximadas son una `FillLayer`.
-- Ubicación: permiso en tiempo de ejecución + `LocationManager`. Direcciones: `android.location.Geocoder` (`AndroidGeocodingRepository`), sin llaves.
-- Se usa en el registro, al crear publicaciones (ubicación actual o elegida), en el detalle (zona aproximada de 400 m) y en Explorar.
-
-### OpenRouter — inteligencia artificial
-- `OpenRouterAiRepository` llama a `POST https://openrouter.ai/api/v1/chat/completions` (API compatible con OpenAI) con el modelo de `OPENROUTER_MODEL` (por defecto `openai/gpt-4o-mini`, que admite imágenes), `temperature 0.2` y respuesta en JSON.
-- Envía el texto de la publicación, hasta 3 fotos y hasta 10 publicaciones parecidas (mismo autor o misma categoría a menos de 10 km) para detectar duplicados.
-- `BackgroundPostAnalysisScheduler` lo ejecuta en segundo plano al crear o editar; los moderadores pueden analizar o re-analizar a demanda.
-- La IA **sugiere**; la decisión de aprobar o rechazar siempre es de un moderador.
-
-### Idiomas
-`AppCompatDelegate.setApplicationLocales` con `res/xml/locales_config.xml` y traducciones en `values/`, `values-en/` y `values-fr/`. El cambio se aplica al instante, sin reiniciar la app.
+**6. Ejecutar.** Abre el proyecto en Android Studio, espera la sincronización de Gradle y pulsa **Run ▶** con un emulador o un teléfono conectado.
 
 <br>
 
-## Puesta en marcha
+## Generar y publicar el APK
 
-1. Clona el repositorio y ábrelo en Android Studio.
-2. Copia `app/google-services.json` de tu proyecto de Firebase (no está en el repositorio).
-3. Completa `local.properties` con las llaves de la sección anterior.
-4. Configura Firebase (Authentication, Firestore, reglas, índices y datos de prueba) siguiendo [firebase/README.md](firebase/README.md).
-5. Ejecuta la app (`./gradlew :app:assembleDebug` o el botón Run).
+### 1. Preparar la versión
+En `app/build.gradle.kts`, sube los números en cada entrega:
+```kotlin
+versionCode = 2        // entero, siempre mayor que el anterior
+versionName = "1.1"    // el texto que ve la persona
+```
+
+### 2. Crear el APK firmado
+1. En Android Studio: **Build → Generate Signed App Bundle / APK → APK → Next**.
+2. La primera vez pulsa **Create new…** y crea tu *keystore* (`.jks`): ruta, contraseña, alias y datos del autor.
+   > ⚠️ Guarda el `.jks` y sus contraseñas **fuera del repositorio** y haz una copia: sin ellos no podrás publicar actualizaciones.
+3. Elige la variante **release** y pulsa **Create**. El APK queda en `app/release/app-release.apk`.
+4. **Pruébalo antes de repartirlo**: la versión release reduce y ofusca el código (R8). Instálalo y revisa el inicio de sesión, el mapa, las fotos y el chat.
+
+### 3. Distribuirlo con Firebase App Distribution
+Sirve para enviar la app a testers por correo, sin publicarla en Play Store.
+
+**Desde la consola:**
+1. Firebase → **App Distribution → Comenzar**.
+2. Pestaña **Testers y grupos**: crea un grupo (por ejemplo `testers`) y agrega los correos.
+3. Pestaña **Releases**: arrastra `app-release.apk`, escribe las notas de la versión, elige el grupo y pulsa **Distribuir**.
+
+**Desde la terminal** (con `firebase-tools` ya iniciado con `login`):
+```bash
+npx firebase-tools appdistribution:distribute app/release/app-release.apk --app 1:836401713678:android:456aff273f61d634ba225f --groups testers --release-notes "Versión 1.1"
+```
+> El valor de `--app` es el *App ID* de Firebase (Configuración del proyecto → Tus apps).
+
+### 4. Publicarlo en GitHub
+El APK no se guarda en el código: se adjunta a una **Release**.
+1. En el repositorio: **Releases → Draft a new release**.
+2. Crea la etiqueta (por ejemplo `v1.1.0`), escribe el título y las novedades.
+3. Arrastra `app-release.apk` a *Attach binaries* y pulsa **Publish release**.
+
+<br>
+
+## Cómo está construida
+
+La app sigue **Clean Architecture** con **MVVM**: cada capa tiene una sola responsabilidad y solo conoce a la de abajo.
+
+```text
+  Pantallas (features/ + core/)      Lo que ves: Jetpack Compose y ViewModels
+              │ piden acciones
+              ▼
+  Dominio (domain/)                  Las reglas: modelos, casos de uso y contratos
+              ▲ cumplen los contratos
+              │
+  Datos (data/)                      Los servicios: Firebase, Cloudinary, OpenRouter, EmailJS, GPS
+```
+
+Hilt (`di/`) une las piezas y `navigation/` mueve entre pantallas. Cada carpeta tiene su propia guía:
+
+| Capa | Qué encontrarás |
+|---|---|
+| [domain](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/README.md) | Reglas del negocio: [modelos](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/model/README.md), [casos de uso](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/usecase/README.md) y [repositorios](app/src/main/java/co/edu/uniquindio/petadoptionapp/domain/repository/README.md) |
+| [data](app/src/main/java/co/edu/uniquindio/petadoptionapp/data/README.md) | Cómo se guardan y traen los datos (Firestore y servicios externos) |
+| [features](app/src/main/java/co/edu/uniquindio/petadoptionapp/features/README.md) | Todas las pantallas y cómo están hechas |
+| [core](app/src/main/java/co/edu/uniquindio/petadoptionapp/core/README.md) | Tema visual, componentes reutilizables y mapa |
+| [di](app/src/main/java/co/edu/uniquindio/petadoptionapp/di/README.md) · [navigation](app/src/main/java/co/edu/uniquindio/petadoptionapp/navigation/README.md) | Inyección de dependencias y rutas |
+| [firebase](firebase/README.md) · [modelo de datos](docs/modelo-datos.md) | Configuración de Firebase y diagrama de entidades |
+
+### Tecnologías y servicios
+
+| Tecnología | Uso en la app |
+|---|---|
+| **Kotlin 2.4 + Jetpack Compose (Material 3)** | Lenguaje e interfaz |
+| **Hilt** | Inyección de dependencias |
+| **Navigation Compose** | Navegación con rutas tipadas |
+| **Coroutines / Flow** | Tareas en segundo plano y datos en vivo |
+| **Firebase Authentication** | Cuentas, sesión y recuperación de contraseña |
+| **Cloud Firestore** | Base de datos en tiempo real, con caché sin conexión |
+| **EmailJS** | Envío del código de verificación en dos pasos |
+| **Cloudinary** | Almacenamiento de fotos (subida sin firma) |
+| **MapLibre + OpenFreeMap** | Mapas gratuitos, sin llaves |
+| **OpenRouter** | IA que analiza las publicaciones para los moderadores |
+| **Coil · OkHttp · kotlinx.serialization** | Imágenes, llamadas web y JSON |
+
+¿Cómo se integró cada servicio? Está explicado paso a paso en [data/README.md](app/src/main/java/co/edu/uniquindio/petadoptionapp/data/README.md#servicios-externos).
 
 <br>
 
 ## Seguridad
 
-- Fuera del repositorio (`.gitignore`): `local.properties`, `app/google-services.json`, `firebase/seed/service-account.json` y `firebase/seed/.env` (contraseñas de las cuentas de prueba).
-- Las llaves de `local.properties` sí quedan dentro del APK compilado. Para distribuir la app, conviene mover OpenRouter y EmailJS a un servidor (por ejemplo, Cloud Functions) y fijar límites de gasto.
-- Las reglas de Firestore son la barrera real de seguridad: la app nunca confía solo en lo que valida la interfaz.
+- **Nunca se suben al repositorio:** `local.properties`, `app/google-services.json`, `firebase/seed/service-account.json`, `firebase/seed/.env` y el keystore `.jks`.
+- **Las reglas de Firestore** (`firebase/firestore.rules`) son la protección real: cada quien edita solo lo suyo, los chats solo los ven sus participantes y nadie se auto-aprueba.
+- **Las llaves de `local.properties` viajan dentro del APK.** Antes de publicarlo, pon un límite de gasto a la llave de OpenRouter. En un producto real, OpenRouter y EmailJS deberían llamarse desde un servidor.
 
 <br>
 
-## Estructura del repositorio
+## Licencia
 
-```text
-├── app/
-│   ├── build.gradle.kts            Dependencias, BuildConfig con las llaves
-│   └── src/main/
-│       ├── java/co/edu/uniquindio/petadoptionapp/
-│       │   ├── domain/             Modelos, casos de uso, contratos
-│       │   ├── data/               Firebase, Cloudinary, OpenRouter, EmailJS, Geocoder
-│       │   ├── di/                 Módulos de Hilt
-│       │   ├── core/               Tema, componentes, mapa, utilidades
-│       │   ├── features/           Pantallas y ViewModels
-│       │   ├── navigation/         Rutas y NavHost
-│       │   ├── MainActivity.kt
-│       │   └── Application.kt
-│       └── res/                    Textos (es/en/fr), íconos, imágenes
-├── firebase/                       Reglas, índices, plantilla de EmailJS y script de datos
-├── docs/                           Modelo de datos
-├── firebase.json / .firebaserc     Configuración de Firebase CLI
-└── gradle/libs.versions.toml       Catálogo de versiones
-```
+Distribuido bajo la licencia **Apache 2.0**. Consulta el archivo [LICENSE](LICENSE).

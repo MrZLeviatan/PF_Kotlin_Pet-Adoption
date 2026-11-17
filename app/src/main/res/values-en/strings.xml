@@ -277,6 +277,8 @@
     <string name="edit_profile_save">Save Changes</string>
     <string name="edit_profile_error_city">Please fill in the city field</string>
     <string name="edit_profile_error_address">Please fill in the address field</string>
+    <string name="edit_profile_location">Location</string>
+    <string name="edit_profile_error_location">Choose your location: use your current one or mark it on the map.</string>
     <string name="edit_profile_success_title">Profile updated</string>
     <string name="edit_profile_success_message">Your details were saved successfully.</string>
     <string name="edit_profile_success_button">OK</string>

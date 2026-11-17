@@ -1,209 +1,65 @@
 <h1 align="center">
 
-_Casos de uso del dominio_
+_Casos de uso_
 
 </h1>
 
-Esta carpeta contiene las acciones que puede realizar la aplicación. Cada caso de uso coordina una tarea concreta, aplica las reglas del negocio y utiliza los contratos de `domain/repository` para leer o cambiar datos.
-
-Los casos de uso no dibujan pantallas ni implementan el almacenamiento. La interfaz los invoca desde sus ViewModels; los repositorios concretos realizan las operaciones sobre los datos.
-
-<br>
-
-## Estructura
-
-### `auth/`
-
-Acciones de autenticación y sesión:
-
-- `RegisterUseCase`: valida datos y coordina la creación de la cuenta y el perfil.
-- `LoginUseCase`: inicia sesión, gestiona el paso de doble factor cuando aplica y valida el perfil.
-- `VerifyTwoFactorCodeUseCase` y `ResendTwoFactorCodeUseCase`: verifican o vuelven a solicitar el código de doble factor.
-- `SendPasswordResetUseCase`: solicita el restablecimiento de contraseña.
-- `ChangePasswordUseCase`: valida la contraseña nueva y solicita el cambio.
-- `ObserveSessionUseCase`: expone el estado observable de la cuenta actual.
-- `RestoreSessionUseCase`: al abrir la app recupera la sesión guardada por Firebase Auth y valida el perfil; si quedó a mitad de la A2F, la cierra.
-- `CheckRegistrationAvailabilityUseCase`: antes del segundo paso del registro revisa si el correo o el teléfono ya los usa otra cuenta.
-- `LogoutUseCase`: cierra la sesión.
-
-Usan principalmente `AuthRepository` y, para los datos de perfil, `UserRepository` y `CheckProfileUseCase`. La implementación real vive en `data/repository/firebase/FirebaseAuthRepository`: Firebase Auth valida correo y contraseña, y el código A2F (6 dígitos, 5 minutos, 5 intentos, un solo uso) se envía por correo con EmailJS.
-
-<Br>
-
-### `user/`
-
-Acciones sobre cuentas y perfiles:
-
-- `CheckProfileUseCase`: confirma que exista un perfil válido para la cuenta y su rol.
-- `RequireUserUseCase`, `RequireModeratorUseCase` y `RequireOwnUserUseCase`: comprueban sesión, rol o titularidad.
-- `GetUserProfileUseCase` y `SearchUsersUseCase`: consultan perfiles públicos o buscan usuarios.
-- `ObserveCurrentUserUseCase`: expone el perfil de la sesión actual.
-- `UpdateProfileUseCase` y `UpdateSettingsUseCase`: validan y actualizan perfil y preferencias.
-- `DeleteAccountUseCase`: coordina la reautenticación, el cierre de publicaciones, la anonimización del perfil y la eliminación de la cuenta.
-
-Se relacionan con `Account`, `User`, `Moderator` y los modelos de `users/profile/`. Usan `AuthRepository`, `UserRepository` y, al eliminar la cuenta, `PostRepository`.
-
-<br>
-
-### `post/`
-
-Acciones sobre publicaciones y moderación:
-
-- `CreatePostUseCase`, `UpdatePostUseCase` y `DeletePostUseCase`: crean, editan o eliminan publicaciones propias.
-- `GetFeedUseCase`, `GetMyPostsUseCase` y `GetPostDetailUseCase`: consultan el feed, las publicaciones del autor y el detalle.
-- `FinishPostUseCase`: marca una publicación como finalizada.
-- `GetPostStatsUseCase`: calcula las métricas del dashboard.
-- `GetModerationQueueUseCase`, `StartReviewUseCase`, `ApprovePostUseCase` y `RejectPostUseCase`: permiten a moderadores consultar, tomar, aprobar o rechazar publicaciones.
-
-Usan `PostRepository`, los modelos de `post/` y, según el proceso, `CatalogRepository`, `RequireModeratorUseCase`, `NotifyUseCase` o `AwardPointsUseCase`.
-
-<br>
-
-### `catalog/`
-
-Acciones para cargar, observar y administrar categorías y tipos de animal:
-
-- `LoadCatalogUseCase`, `ObserveCategoriesUseCase` y `ObserveAnimalTypesUseCase`: cargan o exponen los catálogos.
-- `CheckPostCatalogUseCase`: comprueba que la categoría y el tipo de animal existan y estén activos.
-- `CreateCategoryUseCase`, `CreateAnimalTypeUseCase`, `UpdateCategoryUseCase` y `UpdateAnimalTypeUseCase`: permiten a un moderador crear o modificar elementos del catálogo.
-
-Usan `CatalogRepository`, `Category`, `AnimalType` y `RequireModeratorUseCase`.
-
-<br>
-
-### `comment/`
-
-Acciones para crear, consultar y administrar comentarios:
-
-- `CreateCommentUseCase`: crea comentarios o respuestas y coordina notificaciones y puntos.
-- `GetCommentsUseCase`: consulta comentarios principales o respuestas.
-- `EditCommentUseCase` y `DeleteCommentUseCase`: editan o eliminan lógicamente comentarios.
-- `ToggleCommentLikeUseCase` y `GetLikedCommentsUseCase`: agregan/quitan “me gusta” y consultan los comentarios marcados.
-
-Usan `CommentRepository`, `PostRepository` y, según la acción, `UserRepository`, `NotifyUseCase`, `AwardPointsUseCase` o `RequireUserUseCase`.
-
-<br>
-
-### `chat/`
-
-Acciones de conversaciones y mensajes:
-
-- `StartChatUseCase`: abre o recupera una conversación relacionada con una publicación.
-- `GetMyChatsUseCase` y `CountUnreadChatsUseCase`: consultan chats propios y el conteo de no leídos.
-- `RequireChatMemberUseCase`: verifica que la sesión pertenezca al chat.
-- `SendMessageUseCase`: valida y envía un mensaje.
-- `ObserveMessagesUseCase` y `GetOlderMessagesUseCase`: observan mensajes recientes o consultan mensajes anteriores.
-- `MarkChatReadUseCase`: marca la conversación como leída.
-
-Usan `ChatRepository`; los flujos asociados con publicaciones también usan `PostRepository`.
-
-
-
-#### `chat/adoption/`
-
-Acciones de solicitudes de adopción:
-
-- `SendAdoptionInterestUseCase`: valida el interés, crea la solicitud y coordina chat y mensaje inicial.
-- `RespondAdoptionRequestUseCase` y `CancelAdoptionRequestUseCase`: permiten responder o cancelar solicitudes pendientes.
-- `GetMyAdoptionRequestUseCase` y `GetPostAdoptionRequestsUseCase`: consultan la solicitud propia o las solicitudes recibidas por el autor.
-
-Usan `ChatRepository`, `PostRepository`, `CatalogRepository` y `RequireUserUseCase`; las acciones pueden generar notificaciones.
-
-<br>
-
-### `importantVote/`
-
-Acciones del botón “Es importante”:
-
-- `ToggleImportantUseCase`: alterna el voto y coordina la notificación y los puntos al autor cuando corresponde.
-- `GetMyVotedPostIdsUseCase`: consulta qué publicaciones de una lista ya votó la persona.
-- `GetMyImportantPostsUseCase`: lista las publicaciones visibles que la persona marcó.
-
-Usan `ImportantVoteRepository`, `PostRepository` y `RequireUserUseCase`.
-
-<br>
-
-### `notification/`
-
-Acciones de notificaciones:
-
-- `NotifyUseCase`: crea una notificación para un destinatario.
-- `GetNotificationsUseCase` y `CountUnreadNotificationsUseCase`: consultan notificaciones y cuentan las no leídas.
-- `MarkNotificationReadUseCase` y `MarkAllNotificationsReadUseCase`: cambian el estado de lectura.
-- `DeleteNotificationUseCase`: elimina una notificación propia.
-
-Usan `NotificationRepository`; las consultas y modificaciones de la bandeja obtienen el destinatario de la sesión.
-
-<br>
-
-### `reputation/`
-
-Acciones de puntos e insignias:
-
-- `AwardPointsUseCase`: registra puntos por una acción y puede notificar un cambio de nivel.
-- `EvaluateMyBadgesUseCase`: calcula el progreso y desbloquea insignias pendientes.
-- `GetMyPointHistoryUseCase`: consulta el historial de puntos propio.
-- `LoadBadgesUseCase` y `ObserveBadgesUseCase`: cargan u observan el catálogo de insignias.
-
-Usan `ReputationRepository` y, para calcular progreso o notificar, `UserRepository`, `PostRepository`, `NotifyUseCase` y `RequireUserUseCase`.
-
-<br>
-
-### `ai/`
-
-- `AnalyzePostUseCase`: arma la entrada para la IA (texto de la publicación, nombres de categoría y tipo de animal, y hasta 10 publicaciones parecidas como candidatas a duplicado), llama a `AiAnalysisRepository` y guarda el resultado (`AiReview`, prioridad y motivo) con `PostRepository.updateAiAnalysis`. Solo acepta un duplicado si está entre las candidatas enviadas. Nunca cambia el estado de verificación: la decisión es siempre de un moderador.
-
-Lo invocan el `PostAnalysisScheduler` (en segundo plano, al crear o editar una publicación) y los moderadores (botón "Analizar con IA").
-
-<br>
-
-### `image/`
-
-- `UploadImagesUseCase`: sube las fotos locales elegidas por la persona (cámara o galería) a `ImageStorageRepository` y devuelve sus URL públicas. Las URL que ya son remotas se conservan.
-
-<br>
-
-### `location/`
-
-- `SearchAddressUseCase`: busca direcciones escritas por la persona (para el registro y la creación de publicaciones).
-- `ReverseGeocodeUseCase`: convierte un punto tocado en el mapa en una dirección legible.
-
-Ambos usan `GeocodingRepository`, implementado con el geocodificador del teléfono (sin llaves).
-
-<br>
-
-### `validator/`
-
-Validaciones de formato independientes de la interfaz:
-
-- `AuthValidator`: correo, contraseña y código de doble factor.
-- `UserValidator`: nombre, alias y teléfono.
-- `PostValidator`: título, descripción, fotos, edad, ubicación y motivo de rechazo.
-- `CatalogValidator`: nombres e identificadores de catálogo.
-- `ChatValidator`: mensajes de chat e interés de adopción.
-- `CommentValidator`: texto de comentarios.
-
-Los casos de uso llaman estas reglas antes de solicitar cambios al repositorio. Las validaciones de formato no reemplazan la comprobación de permisos ni las reglas de estado.
-
-<br>
-
-## Conexión con las capas
-
-```text
-Pantalla / ViewModel
-        ↓
-Caso de uso en domain/usecase
-  valida, autoriza y coordina
-        ↓
-Modelo de domain/model
-  representa los datos y estados
-        ↓
-Contrato de domain/repository
-  define las operaciones de datos
-        ↓
-Implementación en data/
-  ejecuta las operaciones
+**En pocas palabras:** cada caso de uso es **una acción** de la app (iniciar sesión, publicar, aprobar, comentar…) con sus **reglas**. Valida los datos, revisa los permisos y pide a los repositorios lo que necesita. Las pantallas los llaman como si fueran funciones:
+
+```kotlin
+loginUseCase(Credentials(email, password))
+    .onSuccess { /* entrar */ }
+    .onFailure { error -> /* mostrar mensaje */ }
 ```
 
-Un caso de uso puede coordinar varios repositorios o casos de uso cuando una acción del negocio lo requiere. Por ejemplo, aprobar una publicación actualiza la verificación y puede generar una notificación y otorgar puntos.
+<br>
 
+## Qué hay aquí
+
+| Carpeta | Acciones |
+|---|---|
+| `auth/` | `Login`, `Register`, `CheckRegistrationAvailability`, `VerifyTwoFactorCode`, `ResendTwoFactorCode`, `SendPasswordReset`, `ChangePassword`, `RestoreSession`, `ObserveSession`, `Logout` |
+| `user/` | `CheckProfile`, `RequireUser`, `RequireModerator`, `RequireOwnUser`, `GetUserProfile`, `SearchUsers`, `ObserveCurrentUser`, `GetCurrentModerator`, `UpdateProfile`, `UpdateSettings`, `UpdateModeratorTwoFactor`, `DeleteAccount` |
+| `post/` | `CreatePost`, `UpdatePost`, `DeletePost`, `FinishPost`, `GetFeed`, `GetPostDetail`, `GetMyPosts`, `GetUserPosts`, `GetPostStats`, y para moderar: `GetModerationQueue`, `StartReview`, `ApprovePost`, `RejectPost`, `GetMyReviews`, `GetModerationStats`, `GetModeratorPerformance` |
+| `ai/` | `AnalyzePost` |
+| `catalog/` | `LoadCatalog`, `ObserveCategories`, `ObserveAnimalTypes`, `CheckPostCatalog`, `CreateCategory`, `UpdateCategory`, `CreateAnimalType`, `UpdateAnimalType` |
+| `comment/` | `GetComments`, `CreateComment`, `EditComment`, `DeleteComment`, `ToggleCommentLike`, `GetLikedComments` |
+| `importantVote/` | `ToggleImportant`, `GetMyVotedPostIds`, `GetMyImportantPosts` |
+| `chat/` | `StartChat`, `GetMyChats`, `ObserveMessages`, `SendMessage`, `GetOlderMessages`, `MarkChatRead`, `CountUnreadChats`, `DeleteChat`, `RequireChatMember` |
+| `chat/adoption/` | `SendAdoptionInterest`, `GetMyAdoptionRequest`, `GetPostAdoptionRequests`, `RespondAdoptionRequest`, `CancelAdoptionRequest` |
+| `notification/` | `Notify`, `GetNotifications`, `CountUnreadNotifications`, `MarkNotificationRead`, `MarkAllNotificationsRead`, `DeleteNotification` |
+| `reputation/` | `AwardPoints`, `EvaluateMyBadges`, `GetMyPointHistory`, `LoadBadges`, `ObserveBadges` |
+| `image/` | `UploadImages` |
+| `location/` | `SearchAddress`, `ReverseGeocode` |
+| `validator/` | `AuthValidator`, `UserValidator`, `PostValidator`, `CommentValidator`, `ChatValidator`, `CatalogValidator` |
+
+*(Todos los nombres terminan en `UseCase`, por ejemplo `LoginUseCase`; los validadores son objetos con reglas de formato.)*
+
+<br>
+
+## Ejemplos de cómo trabajan juntos
+
+**Aprobar una publicación** (`ApprovePostUseCase`):
+1. `RequireModerator` comprueba que quien aprueba sea un moderador activo.
+2. Se guarda la verificación solo si la publicación sigue pendiente (otro moderador pudo decidirla antes).
+3. `AwardPoints` suma puntos al autor y `Notify` le envía un aviso.
+
+**Publicar** (`CreatePostUseCase`):
+1. `PostValidator` revisa título, descripción, fotos y ubicación.
+2. `CheckPostCatalog` confirma que la categoría y el tipo de animal existan y estén activos.
+3. `UploadImages` sube las fotos a Cloudinary.
+4. Se guarda la publicación como **sin verificar** y se programa el análisis de IA en segundo plano.
+
+**Iniciar sesión** (`LoginUseCase`):
+1. `AuthValidator` revisa el correo.
+2. Si la cuenta usa verificación en dos pasos, se envía el código y la pantalla lo pide.
+3. `CheckProfile` confirma que el perfil exista y no esté eliminado ni inactivo.
+
+<br>
+
+## Para desarrolladores
+
+- **Un caso de uso = una acción.** Si crece demasiado, divide la lógica en otros casos de uso y combínalos.
+- **No dependen de Hilt ni de Android:** reciben sus repositorios por constructor y `di/UseCaseModule.kt` los fabrica.
+- **Siempre devuelven `Result`** con errores del dominio (`error/`), nunca mensajes de texto.
+- **Los permisos se revisan aquí**, aunque la pantalla ya oculte el botón: es la segunda barrera (la tercera son las reglas de Firestore).

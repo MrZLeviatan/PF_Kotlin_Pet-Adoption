@@ -276,6 +276,8 @@
     <string name="edit_profile_save">Enregistrer</string>
     <string name="edit_profile_error_city">Veuillez remplir le champ ville</string>
     <string name="edit_profile_error_address">Veuillez remplir le champ adresse</string>
+    <string name="edit_profile_location">Localisation</string>
+    <string name="edit_profile_error_location">Choisissez votre localisation : utilisez l\'actuelle ou indiquez-la sur la carte.</string>
     <string name="edit_profile_success_title">Profil mis à jour</string>
     <string name="edit_profile_success_message">Vos informations ont bien été enregistrées.</string>
     <string name="edit_profile_success_button">OK</string>
