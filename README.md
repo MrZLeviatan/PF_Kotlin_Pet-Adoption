@@ -38,6 +38,8 @@ La aplicación está disponible en **español, inglés y francés**, y admite mo
 
 ---
 
+<br>
+
 ## Funcionalidades
 
 ### Personas usuarias
@@ -60,6 +62,8 @@ La aplicación está disponible en **español, inglés y francés**, y admite mo
 
 ---
 
+<br>
+
 ## Uso de la aplicación
 
 ### Instalación
@@ -70,6 +74,8 @@ El archivo de instalación (`app-release.apk`) se obtiene de dos formas:
 - **Firebase App Distribution:** mediante el correo de invitación que recibe cada tester.
 
 Para instalarlo, se abre el archivo en un dispositivo con **Android 7.0 o superior** y se autoriza la instalación de aplicaciones de origen desconocido cuando el sistema lo solicite.
+
+<br>
 
 ### Flujo de uso
 
@@ -89,6 +95,8 @@ Para instalarlo, se abre el archivo en un dispositivo con **Android 7.0 o superi
 
 ---
 
+<br>
+
 ## Requisitos
 
 | Herramienta | Versión | Uso |
@@ -100,6 +108,8 @@ Para instalarlo, se abre el archivo en un dispositivo con **Android 7.0 o superi
 | Cuentas de Cloudinary, EmailJS y OpenRouter | Planes gratuitos | Imágenes, correo del código A2F e inteligencia artificial |
 
 ---
+
+<br>
 
 ## Ejecución del proyecto
 
@@ -132,6 +142,8 @@ npx firebase-tools deploy --only firestore
 
 ---
 
+<br>
+
 ## Configuración de llaves
 
 Las llaves de los servicios externos se escriben en `local.properties`, en la raíz del proyecto. Este archivo está excluido de git. Durante la compilación, `app/build.gradle.kts` las lee y las expone como constantes de `BuildConfig`; el código fuente nunca contiene una llave escrita.
@@ -157,6 +169,8 @@ EMAILJS_PRIVATE_KEY=...
 | `EMAILJS_PRIVATE_KEY` | emailjs.com, *Account > API Keys* | Solo si la cuenta usa modo estricto |
 
 ---
+
+<br>
 
 ## Generación y distribución del APK
 
@@ -203,6 +217,8 @@ El APK no se guarda en el código fuente; se adjunta a una versión publicada:
 3. Adjuntar `app-release.apk` y pulsar **Publish release**.
 
 ---
+
+<br>
 
 ## Arquitectura
 
@@ -285,6 +301,8 @@ PF_Kotlin_Pet-Adoption/
 
 ---
 
+<br>
+
 ## Librerías y servicios externos
 
 ### Resumen
@@ -304,7 +322,9 @@ PF_Kotlin_Pet-Adoption/
 | MapLibre Android | 11.13.5 | Mapas |
 | AppCompat | 1.7.1 | Idioma por aplicación |
 
-### Firebase
+<br>
+
+- ### Firebase
 
 **Authentication.** Gestiona las cuentas con correo y contraseña. `FirebaseAuthRepository` inicia sesión, registra cuentas, restaura la sesión al abrir la aplicación, envía el correo de restablecimiento de contraseña, reautentica antes de operaciones sensibles y elimina cuentas. La protección contra enumeración de correos está activa, por lo que la disponibilidad de un correo se consulta en un índice propio de Firestore.
 
@@ -318,7 +338,9 @@ PF_Kotlin_Pet-Adoption/
 
 **Integración.** El plugin `com.google.gms.google-services` procesa `app/google-services.json`; `di/FirebaseModule.kt` entrega `FirebaseAuth` y `FirebaseFirestore` como instancias únicas.
 
-### EmailJS — verificación en dos pasos
+<br>
+
+- ### EmailJS — verificación en dos pasos
 
 Firebase Authentication no envía códigos personalizados por correo, y las Cloud Functions requieren un plan de pago. Por ello, la verificación en dos pasos se implementó con EmailJS:
 
@@ -329,6 +351,8 @@ Firebase Authentication no envía códigos personalizados por correo, y las Clou
 
 Al generarse el código en el dispositivo, esta implementación es adecuada para un entorno académico; en producción el código debería generarse en un servidor.
 
+<br>
+
 ### MapLibre y OpenFreeMap — mapas
 
 El proyecto utilizó inicialmente Mapbox y migró a **MapLibre**, su alternativa de código abierto, porque no requiere tokens ni datos de facturación. El estilo de los mapas proviene de **OpenFreeMap** (`https://tiles.openfreemap.org/styles/liberty`), también gratuito y sin llaves.
@@ -338,7 +362,9 @@ El proyecto utilizó inicialmente Mapbox y migró a **MapLibre**, su alternativa
 - `LocationPicker.kt` permite elegir una ubicación por ciudad, dirección o punto en el mapa.
 - La conversión entre direcciones y coordenadas usa el `Geocoder` de Android, que no requiere llaves.
 
-### OpenRouter — inteligencia artificial
+<br>
+
+- ### OpenRouter — inteligencia artificial
 
 OpenRouter ofrece acceso a múltiples modelos de lenguaje mediante una API compatible con OpenAI.
 
@@ -347,18 +373,24 @@ OpenRouter ofrece acceso a múltiples modelos de lenguaje mediante una API compa
 - `BackgroundPostAnalysisScheduler` ejecuta el análisis en segundo plano al crear o editar una publicación; los moderadores pueden solicitarlo de nuevo de forma individual o por lotes.
 - El resultado se guarda en `Post.aiReview` y la prioridad sugerida ordena la cola de moderación. La IA nunca aprueba ni rechaza.
 
-### Cloudinary — almacenamiento de imágenes
+<br>
+
+- ### Cloudinary — almacenamiento de imágenes
 
 - `CloudinaryImageRepository` sube cada imagen con un *upload preset* sin firma (`POST https://api.cloudinary.com/v1_1/{cloud_name}/image/upload`) a la carpeta `KogMaw-Adoption App/{posts|profiles|chats}` y guarda la URL segura devuelta.
 - Antes de subirla, `LocalImageStore` reduce la imagen a 1600 píxeles en formato JPEG.
 - El *API secret* de Cloudinary nunca se incluye en la aplicación.
 - Las imágenes se muestran con Coil.
 
-### Idiomas
+<br>
+
+- ### Idiomas
 
 La aplicación usa la API de idiomas por aplicación de AppCompat (`AppCompatDelegate.setApplicationLocales`) junto con `res/xml/locales_config.xml`. Las traducciones se encuentran en `values/` (español), `values-en/` y `values-fr/`, y el cambio se aplica sin reiniciar la aplicación.
 
 ---
+
+<br>
 
 ## Seguridad
 
@@ -367,6 +399,8 @@ La aplicación usa la API de idiomas por aplicación de AppCompat (`AppCompatDel
 - **Llaves en el APK.** Las llaves de `local.properties` quedan incluidas en el APK compilado. Antes de distribuirlo, se recomienda establecer límites de gasto en OpenRouter. En un entorno de producción, las llamadas a OpenRouter y EmailJS deberían realizarse desde un servidor.
 
 ---
+
+<br>
 
 ## Licencia
 
