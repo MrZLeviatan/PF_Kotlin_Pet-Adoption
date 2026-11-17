@@ -4,6 +4,8 @@
 
 Esta carpeta contiene los recursos que Firebase necesita fuera del código de la aplicación: las **reglas de seguridad** y los **índices** de Cloud Firestore, la **plantilla del correo** de verificación en dos pasos y el **script de carga de datos de prueba**. Todos los servicios utilizados funcionan con el plan gratuito de Firebase (Spark).
 
+<br>
+
 ## Contenido por archivo
 
 | Archivo | Descripción |
@@ -19,6 +21,8 @@ Esta carpeta contiene los recursos que Firebase necesita fuera del código de la
 En la raíz del proyecto, `firebase.json` indica a Firebase CLI dónde se encuentran las reglas y los índices, y `.firebaserc` define el proyecto por defecto.
 
 ---
+
+<br>
 
 ## 1. Configuración en la consola
 
@@ -104,6 +108,8 @@ La aplicación no permite crear moderadores. Para agregar uno, se crea la cuenta
 
 ---
 
+<br>
+
 ## 4. EmailJS
 
 1. En [emailjs.com](https://www.emailjs.com), sección **Email Services**, conectar una cuenta de correo y copiar el *Service ID*.
@@ -115,6 +121,8 @@ La aplicación no permite crear moderadores. Para agregar uno, se crea la cuenta
 Cada persona activa la verificación en dos pasos desde **Configuración > Verificación en dos pasos**.
 
 ---
+
+<br>
 
 ## Solución de problemas
 
